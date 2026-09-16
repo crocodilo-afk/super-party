@@ -648,7 +648,9 @@ $("btCriar").onclick = async () => {
   if(!conferirNome()) return;
   aviso("Criando a sala...");
   await ligarMicrofone();
-  abrirPeer(novoCodigo(), true);
+  // Sala fixa: o codigo da sua turma fica gravado e e sempre o mesmo, como um
+  // servidor do Discord. Voce manda uma vez e ninguem precisa de codigo novo.
+  abrirPeer(guarda.ler("minhaSala", "") || (function(){ const c = novoCodigo(); guarda.por("minhaSala", c); return c; })(), true);
 };
 
 $("btEntrar").onclick = async () => {
@@ -667,16 +669,32 @@ function abrirPeer(cod, anfitriao){
     if(anfitriao){ entrarNaSala(); sistema("Sala criada. Mande o código pros amigos."); }
     else {
       const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor}});
-      let entrou = false;
-      con.on("open", ()=>{ entrou = true; });
+      let entrou = false, salaExiste = false;
+      con.on("open", ()=>{ entrou = true; salaExiste = true; });
+      peer.on("error", e => { if(e.type !== "peer-unavailable") salaExiste = true; });
       prepararConversa(con);
-      setTimeout(()=>{ if(!entrou && !gente.size){ aviso("Não achei essa sala. Confira o código ou peça pro amigo criar de novo."); fecharTudo(false); } }, 12000);
+      // Duas falhas diferentes, e elas NAO tem a mesma causa:
+      //  - a sala nao existe  -> codigo errado
+      //  - a sala existe mas a ligacao direta nao fecha -> os dois lados atras de
+      //    CGNAT (internet via 4G/5G ou provedor pequeno). Nesse caso o Radmin resolve.
+      setTimeout(()=>{
+        if(entrou || gente.size) return;
+        if(salaExiste){
+          aviso("A sala existe, mas a ligação direta entre os dois PCs não fechou. " +
+                "Isso acontece quando os dois lados estão atrás de CGNAT (internet via 4G/5G " +
+                "ou provedor pequeno). Solução: os dois entram no Radmin VPN, na mesma rede, " +
+                "e tentam de novo — aí funciona.");
+        }else{
+          aviso("Não achei essa sala. Confira o código ou peça pro amigo criar de novo.");
+        }
+        fecharTudo(false);
+      }, 12000);
     }
   });
   peer.on("connection", prepararConversa);
   peer.on("call", atenderChamada);
   peer.on("error", err => {
-    if(err.type === "unavailable-id" && anfitriao){ peer.destroy(); abrirPeer(novoCodigo(), true); return; }
+    if(err.type === "unavailable-id" && anfitriao){ peer.destroy(); const c = novoCodigo(); guarda.por("minhaSala", c); abrirPeer(c, true); return; }
     if(err.type === "peer-unavailable"){
       if(!$("sala").classList.contains("ativa")){ aviso("Não achei essa sala. Confira o código."); fecharTudo(false); }
       return;
