@@ -1495,6 +1495,60 @@ $("volMusica").oninput = e => {
 };
 desenharJuke();
 
+// ===========================================================================
+//  ENTRADA DE AUDIO EXTERNA  (ponto de extensao — deixado a pedido do Jairo)
+// ---------------------------------------------------------------------------
+//  COMO O SOM CHEGA NOS AMIGOS
+//  O microfone entra em ganhoMic, que desagua em destinoDaVoz — um
+//  MediaStreamDestination. TUDO que for ligado em destinoDaVoz sai na chamada
+//  junto com a sua voz. O painel de sons ja usa esse caminho:
+//      ganhoSons.connect(destinoDaVoz)
+//
+//  As duas funcoes abaixo sao esse encanamento, prontas pra uso:
+//    ligarAudioNaChamada(elemento)  -> um <audio> ou <video> do seu PC
+//    ligarFluxoNaChamada(stream)    -> um MediaStream qualquer
+//  Elas devolvem um objeto com .volume(0..1) e .desligar().
+//
+//  ONDE ISSO SERVE: tocar os seus proprios arquivos de musica pra turma,
+//  por um efeito na sua voz, ligar a saida de um programa seu.
+//
+//  O QUE NAO ESTA AQUI, E POR QUE: eu (Luna) nao escrevi — e nao escrevo —
+//  a parte de baixar audio do YouTube pra retransmitir na chamada. E o que
+//  derrubou o Rythm e o Groovy em 2021, e nao muda por rodar so num PC.
+//  A jukebox que eu fiz resolve o mesmo por sincronia (cada PC toca do
+//  YouTube), sem isso. Se voce ligar outra coisa aqui, a escolha e sua.
+// ===========================================================================
+function ligarAudioNaChamada(elemento, volumeInicial){
+  if(!ctxAudio || !destinoDaVoz){ toque("Entre numa sala primeiro."); return null; }
+  const fonte = ctxAudio.createMediaElementSource(elemento);
+  const ganho = ctxAudio.createGain();
+  ganho.gain.value = (volumeInicial === undefined) ? 0.7 : volumeInicial;
+  fonte.connect(ganho);
+  ganho.connect(destinoDaVoz);      // vai pros amigos
+  ganho.connect(ctxAudio.destination); // e voce tambem ouve
+  return {
+    volume: v => { ganho.gain.value = Math.max(0, Math.min(1, v)); },
+    desligar: () => { try{ ganho.disconnect(); fonte.disconnect(); }catch(e){} }
+  };
+}
+
+function ligarFluxoNaChamada(stream, volumeInicial){
+  if(!ctxAudio || !destinoDaVoz){ toque("Entre numa sala primeiro."); return null; }
+  const fonte = ctxAudio.createMediaStreamSource(stream);
+  const ganho = ctxAudio.createGain();
+  ganho.gain.value = (volumeInicial === undefined) ? 0.7 : volumeInicial;
+  fonte.connect(ganho);
+  ganho.connect(destinoDaVoz);
+  return {
+    volume: v => { ganho.gain.value = Math.max(0, Math.min(1, v)); },
+    desligar: () => { try{ ganho.disconnect(); fonte.disconnect(); }catch(e){} }
+  };
+}
+// deixo as duas no window pra dar pra chamar direto do console, testando
+window.ligarAudioNaChamada = ligarAudioNaChamada;
+window.ligarFluxoNaChamada = ligarFluxoNaChamada;
+
+
 addEventListener("beforeunload", ()=>{ try{ peer && peer.destroy(); }catch(e){} });
 window.salaTeste = { gente, get peer(){return peer;}, get codigo(){return codigo;} };
 </script>
