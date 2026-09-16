@@ -164,6 +164,33 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .toque{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9;background:#0d3a6b;border:1px solid var(--borda);padding:10px 18px;border-radius:12px;opacity:0;transition:opacity .25s;pointer-events:none}
 .toque.ver{opacity:1}
 @media (max-width:760px){#sala{flex-direction:column;overflow:auto}#lado{width:auto}#chat{height:200px}}
+
+/* ---------------- JUKEBOX ---------------- */
+#jukebox{padding:8px 10px;gap:8px;display:flex;flex-direction:column}
+.juke-topo{display:flex;align-items:center;gap:9px}
+.juke-fita{font-family:inherit;font-size:11px;letter-spacing:2px;color:var(--abismo);background:var(--verde);
+  padding:3px 8px;border-radius:4px;font-weight:700;flex:0 0 auto}
+#juke-agora{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;opacity:.85}
+#btJukeAbrir{background:none;border:none;color:var(--ciano);font-size:17px;cursor:pointer;flex:0 0 auto;padding:0 4px}
+#juke-corpo{display:flex;flex-direction:column;gap:8px}
+#juke-corpo[hidden]{display:none}
+#juke-tela{position:relative;width:100%;max-width:340px;aspect-ratio:16/9;background:#000;border-radius:8px;
+  overflow:hidden;border:2px solid var(--roxo);align-self:center}
+#juke-tela iframe{width:100%;height:100%;border:0;display:block}
+#btJukeLiberar{position:absolute;inset:0;width:100%;height:100%;background:rgba(10,6,22,.82);color:var(--verde);
+  border:none;font-family:inherit;font-size:14px;letter-spacing:1px;cursor:pointer}
+#juke-por{display:flex;gap:8px;align-items:center}
+#juke-link{flex:1;min-width:0}
+.juke-botoes{display:flex;align-items:center;gap:8px}
+.juke-botoes button{background:#1d1136;border:1px solid var(--roxo);color:var(--ciano);border-radius:7px;
+  padding:5px 11px;cursor:pointer;font-family:inherit;font-size:14px}
+.juke-botoes button:hover{background:#2a1a4d}
+.juke-botoes input[type=range]{flex:1;min-width:60px}
+#juke-fila{list-style:none;margin:0;padding:0;max-height:112px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+#juke-fila li{font-size:12px;padding:4px 7px;background:#170d2e;border-radius:5px;border-left:3px solid var(--rosa);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#juke-fila li .quem{opacity:.6;font-size:11px}
+@media (max-width:760px){ #juke-tela{max-width:100%} }
 </style>
 </head>
 <body>
@@ -309,6 +336,29 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   </aside>
   <main id="meio">
     <div id="palco" class="cartao"><div id="vazio"><div><b>NINGUÉM TRANSMITINDO</b>Aperte 🖥️ pra mostrar a sua tela inteira, o seu jogo ou um vídeo, com som.<button class="fita" id="btStart">APERTE START</button></div></div></div>
+    <div id="jukebox" class="cartao">
+      <div class="juke-topo">
+        <span class="juke-fita">JUKEBOX</span>
+        <span id="juke-agora">nada tocando — cole um link do YouTube</span>
+        <button id="btJukeAbrir" title="Mostrar ou esconder o vídeo">▾</button>
+      </div>
+      <div id="juke-corpo">
+        <div id="juke-tela"><div id="ytplayer"></div>
+          <button id="btJukeLiberar" hidden>▶ TOCAR JUNTO</button>
+        </div>
+        <form id="juke-por">
+          <input id="juke-link" placeholder="Cole o link do YouTube..." autocomplete="off">
+          <button class="botao-fliperama" title="Pôr na fila"><span>PÔR</span></button>
+        </form>
+        <div class="juke-botoes">
+          <button id="btJukePausa" title="Pausar/continuar pra todos">⏸</button>
+          <button id="btJukePular" title="Pular pra próxima">⏭</button>
+          <span title="Volume da música (só no seu ouvido)">🎵</span>
+          <input type="range" id="volMusica" min="0" max="100">
+        </div>
+        <ol id="juke-fila"></ol>
+      </div>
+    </div>
     <div id="chat" class="cartao">
       <div id="mensagens"></div>
       <div id="teclando"></div>
@@ -475,7 +525,8 @@ const cfg = {
   modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
   eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
   efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true),
-  banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[])
+  banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[]),
+  volMusica: guarda.ler("volMusica",60)
 };
 
 function toque(txt){ const t=$("toque"); t.textContent=txt; t.classList.add("ver"); clearTimeout(toque.t); toque.t=setTimeout(()=>t.classList.remove("ver"),2600); }
@@ -710,6 +761,28 @@ function receber(id, d){
       break;
     case "teclando":
       p.teclandoAte = Date.now() + 3000; break;
+    case "musica":
+      if(d.acao === "estado"){                 // veio do anfitriao: e a verdade da sala
+        if(souAnfitriao) break;
+        jukeFila = Array.isArray(d.fila) ? d.fila : [];
+        const trocou = (jukeAtual && jukeAtual.id) !== (d.atual && d.atual.id);
+        jukeAtual = d.atual || null; jukeTocando = !!d.tocando;
+        if(jukeAtual) porNoTocador(jukeAtual.id, d.pos || 0, jukeTocando);
+        else if(ytPronto) ytTocador.stopVideo();
+        if(trocou && jukeAtual) sistema("Tocando agora: " + (jukeAtual.titulo || jukeAtual.id));
+        desenharJuke();
+      }else if(souAnfitriao){                  // pedidos dos outros: so o anfitriao atende
+        if(d.acao === "pedir" && d.musica && idDoYoutube(d.musica.id)){
+          receberPedido({id:d.musica.id, titulo:String(d.musica.titulo||"").slice(0,120), quem:p.nome});
+        }else if(d.acao === "pular"){
+          sistema(p.nome + " pulou a música."); proximaMusica();
+        }else if(d.acao === "pausa"){
+          jukeTocando = !jukeTocando;
+          if(jukeAtual) porNoTocador(jukeAtual.id, posicaoAtual(), jukeTocando);
+          espalharJuke(posicaoAtual()); desenharJuke();
+        }
+      }
+      break;
   }
 }
 
@@ -1279,6 +1352,148 @@ setInterval(async () => {
       (quadros ? quadros + " fps · " : "") + Math.max(0, mbps).toFixed(1) + " Mbps " + seta;
   }
 }, 2000);
+
+// ============================ JUKEBOX (YouTube em sincronia) ============================
+// Nao passa audio pela chamada: cada PC toca direto do YouTube. Por isso nao gasta a sua
+// internet de subida e a qualidade e cheia. O anfitriao da sala e quem manda no relogio;
+// os outros pedem, e ele responde com a fila e a posicao.
+let ytPronto = false, ytTocador = null, ytEsperando = null;
+let jukeFila = [], jukeAtual = null, jukeTocando = false, jukeUltimoPulso = 0;
+
+function idDoYoutube(texto){
+  const t = String(texto || "").trim();
+  if(/^[A-Za-z0-9_-]{11}$/.test(t)) return t;
+  const m = t.match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+(function carregarYT(){
+  const tag = document.createElement("script");
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+})();
+
+window.onYouTubeIframeAPIReady = function(){
+  ytTocador = new YT.Player("ytplayer", {
+    height: "100%", width: "100%",
+    playerVars: {autoplay:1, controls:0, disablekb:1, modestbranding:1, rel:0, playsinline:1},
+    events: {
+      onReady: () => {
+        ytPronto = true;
+        ytTocador.setVolume(cfg.volMusica);
+        if(ytEsperando){ const e = ytEsperando; ytEsperando = null; porNoTocador(e.id, e.pos, e.tocando); }
+      },
+      onStateChange: e => {
+        // acabou a musica: quem manda na sala puxa a proxima
+        if(e.data === YT.PlayerState.ENDED && souAnfitriao) proximaMusica();
+        if(e.data === YT.PlayerState.PLAYING) $("btJukeLiberar").hidden = true;
+      }
+    }
+  });
+};
+
+function porNoTocador(id, pos, tocando){
+  if(!ytPronto){ ytEsperando = {id, pos, tocando}; return; }
+  const atual = (ytTocador.getVideoData && ytTocador.getVideoData().video_id) || "";
+  if(atual !== id){
+    ytTocador.loadVideoById({videoId:id, startSeconds: pos || 0});
+  }else{
+    const aqui = ytTocador.getCurrentTime() || 0;
+    if(Math.abs(aqui - pos) > 2) ytTocador.seekTo(pos, true);   // so corrige se saiu do compasso
+  }
+  if(tocando) ytTocador.playVideo(); else ytTocador.pauseVideo();
+  // se o navegador barrar o som automatico, aparece o botao pra pessoa liberar com um clique
+  setTimeout(() => {
+    const st = ytTocador.getPlayerState && ytTocador.getPlayerState();
+    $("btJukeLiberar").hidden = !(tocando && st !== YT.PlayerState.PLAYING);
+  }, 1600);
+}
+
+function desenharJuke(){
+  $("juke-agora").textContent = jukeAtual
+    ? (jukeTocando ? "▶ " : "⏸ ") + (jukeAtual.titulo || jukeAtual.id) + " · pôs: " + jukeAtual.quem
+    : "nada tocando — cole um link do YouTube";
+  $("juke-fila").innerHTML = jukeFila.map((m, i) =>
+    "<li>" + (i+1) + ". " + escapar(m.titulo || m.id) + " <span class='quem'>· " + escapar(m.quem) + "</span></li>").join("");
+}
+
+// ---- so o anfitriao mexe na fila; os outros pedem ----
+function proximaMusica(){
+  jukeAtual = jukeFila.shift() || null;
+  jukeTocando = !!jukeAtual;
+  if(jukeAtual) porNoTocador(jukeAtual.id, 0, true); else if(ytPronto) ytTocador.stopVideo();
+  espalharJuke(0);
+  desenharJuke();
+}
+
+function espalharJuke(pos){
+  if(!souAnfitriao) return;
+  paraTodos({t:"musica", acao:"estado", fila:jukeFila, atual:jukeAtual,
+             tocando:jukeTocando, pos: pos !== undefined ? pos : posicaoAtual()});
+}
+function posicaoAtual(){
+  try{ return (ytPronto && ytTocador.getCurrentTime()) || 0; }catch(e){ return 0; }
+}
+
+function pedirMusica(id){
+  const pedido = {id, titulo:"(carregando...)", quem: eu.nome};
+  buscarTitulo(id, t => {
+    pedido.titulo = t;
+    if(souAnfitriao){ receberPedido(pedido); }
+    else paraTodos({t:"musica", acao:"pedir", musica:pedido});
+    if(!souAnfitriao) sistema("Você pôs uma música na fila: " + t);
+  });
+}
+
+function receberPedido(m){            // so roda no anfitriao
+  if(!jukeAtual){ jukeAtual = m; jukeTocando = true; porNoTocador(m.id, 0, true); }
+  else jukeFila.push(m);
+  espalharJuke(posicaoAtual());
+  desenharJuke();
+  sistema(m.quem + " pôs na fila: " + m.titulo);
+}
+
+// O oEmbed do YouTube devolve so o titulo, sem chave de API e sem custo.
+function buscarTitulo(id, pronto){
+  const url = "https://www.youtube.com/oembed?format=json&url=https://www.youtube.com/watch?v=" + id;
+  fetch(url).then(r => r.ok ? r.json() : null)
+            .then(j => pronto((j && j.title) || id))
+            .catch(() => pronto(id));
+}
+
+// ---- pulso do anfitriao: mantem todo mundo no mesmo ponto ----
+setInterval(() => {
+  if(!souAnfitriao || !jukeAtual) return;
+  espalharJuke(posicaoAtual());
+}, 4000);
+
+// ---- botoes ----
+$("juke-por").onsubmit = e => {
+  e.preventDefault();
+  const id = idDoYoutube($("juke-link").value);
+  if(!id){ toque("Não reconheci esse link do YouTube."); return; }
+  $("juke-link").value = "";
+  pedirMusica(id);
+};
+$("btJukePular").onclick = () => {
+  if(souAnfitriao) proximaMusica(); else paraTodos({t:"musica", acao:"pular"});
+};
+$("btJukePausa").onclick = () => {
+  if(souAnfitriao){ jukeTocando = !jukeTocando; porNoTocador(jukeAtual ? jukeAtual.id : "", posicaoAtual(), jukeTocando);
+                    espalharJuke(posicaoAtual()); desenharJuke(); }
+  else paraTodos({t:"musica", acao:"pausa"});
+};
+$("btJukeLiberar").onclick = () => { try{ ytTocador.playVideo(); }catch(e){} $("btJukeLiberar").hidden = true; };
+$("btJukeAbrir").onclick = () => {
+  const c = $("juke-corpo"); c.hidden = !c.hidden;
+  $("btJukeAbrir").textContent = c.hidden ? "▸" : "▾";
+};
+$("volMusica").value = cfg.volMusica;
+$("volMusica").oninput = e => {
+  cfg.volMusica = +e.target.value; guarda.por("volMusica", cfg.volMusica);
+  if(ytPronto) ytTocador.setVolume(cfg.volMusica);
+};
+desenharJuke();
 
 addEventListener("beforeunload", ()=>{ try{ peer && peer.destroy(); }catch(e){} });
 window.salaTeste = { gente, get peer(){return peer;}, get codigo(){return codigo;} };
