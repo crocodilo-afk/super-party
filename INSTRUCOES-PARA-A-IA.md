@@ -108,3 +108,24 @@ bot do Discord faz isso — ele lê o nome da música e vai buscar no YouTube. P
 
 ---
 *Dúvida que este arquivo não responde? A pessoa pode falar com o Jairo, que fala com a Luna.*
+
+## 10. Se a ligação não fechar (plano B: Radmin VPN)
+
+**Na maioria das conexões de casa NÃO precisa de VPN.** O programa liga um PC no outro direto. Só teste normal
+primeiro.
+
+Se ao entrar na sala aparecer a mensagem dizendo que **a sala existe mas a ligação direta não fechou**, a causa é
+quase sempre **CGNAT** — o provedor não dá um endereço próprio pra essa casa. É comum em internet via 4G/5G e em
+provedores pequenos. Não é defeito do programa e não adianta reinstalar.
+
+A solução é pôr os dois PCs na mesma rede virtual:
+
+1. Baixe o **Radmin VPN** (grátis): https://www.radmin-vpn.com/
+2. Instale e abra. Clique em **Rede → Entrar em uma rede**.
+3. Peça pro Jairo o **nome da rede e a senha** que ele criou, e entre.
+4. Com os dois dentro da mesma rede do Radmin, abra o Super Party de novo e entre com o código da sala.
+
+Não precisa desligar nada, nem antivírus, nem firewall. O Radmin só cria uma rede entre vocês dois.
+
+**Importante:** só use o Radmin se a ligação direta realmente falhar. Com VPN a voz fica um pouco mais atrasada.
+
