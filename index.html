@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Super Party</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".92em" font-size="92">🎮</text></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abismo:#0a0616; --fundo:#150b2b; --agua:#241247; --vidro:rgba(45,22,82,.55); --borda:rgba(180,130,255,.24);
+  --texto:#f1eaff; --suave:#a99ecb; --ciano:#38e8ff; --roxo:#a45cff; --rosa:#ff45c8;
+  --verde:#5cff9b; --vermelho:#ff4d6d; --amarelo:#ffd166;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--abismo);color:var(--texto);font:14px "Segoe UI",system-ui,sans-serif;overflow:hidden}
+#mar{position:fixed;inset:0;z-index:0;pointer-events:none}
+.tela{position:relative;z-index:1;height:100%;display:none}
+.tela.ativa{display:flex}
+button{font:inherit;color:var(--texto);background:rgba(63,208,255,.12);border:1px solid var(--borda);border-radius:10px;padding:9px 14px;cursor:pointer;transition:background .15s,transform .1s}
+button:hover{background:rgba(63,208,255,.24)}
+button:active{transform:scale(.97)}
+button.forte{background:linear-gradient(135deg,#38e8ff,#a45cff 55%,#ff45c8);border-color:transparent;font-weight:700;color:#11062a;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+button.forte:hover{filter:brightness(1.1)}
+button.perigo{background:rgba(255,93,115,.18)}
+button.ligado{background:rgba(255,93,115,.35);border-color:var(--vermelho)}
+input,select{font:inherit;color:var(--texto);background:rgba(2,16,36,.7);border:1px solid var(--borda);border-radius:10px;padding:10px 12px;outline:none;width:100%}
+input:focus,select:focus{border-color:var(--ciano)}
+input[type=range]{padding:0;accent-color:var(--ciano)}
+label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
+.cartao{background:var(--vidro);backdrop-filter:blur(14px);border:1px solid var(--borda);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+
+/* ---------- entrada ---------- */
+#entrada{align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+#entrada .cartao{width:min(420px,100%);padding:28px;margin:auto}
+.marca{text-align:center;margin:-6px 0 16px}
+.marca .assinatura{width:100%;max-width:340px;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 6px 20px rgba(164,92,255,.45))}
+.marca small{display:block;color:var(--suave);font-size:13px;font-family:"Baloo 2","Segoe UI",sans-serif;font-weight:600;margin-top:2px}
+.fotoLinha{display:flex;align-items:center;gap:12px}
+.previa{width:56px;height:56px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:800;font-size:22px;color:#021024;background-size:cover;background-position:center;border:2px solid var(--borda)}
+.fotoLinha button{flex:0 0 auto}
+.cores{display:flex;gap:8px;flex-wrap:wrap}
+.cores span{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.cores span.sel{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.2)}
+.linha{display:flex;gap:10px;margin-top:16px}
+.linha>*{flex:1}
+.ou{text-align:center;color:var(--suave);margin:16px 0 0;font-size:12px}
+#aviso{min-height:18px;color:var(--amarelo);font-size:12px;margin-top:12px}
+
+/* ---------- sala ---------- */
+#sala{flex-direction:row;gap:12px;padding:12px}
+#lado{width:270px;display:flex;flex-direction:column;padding:14px;gap:10px}
+#topoSala{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#codigo{font-size:18px;font-weight:700;color:var(--ciano);letter-spacing:1px;cursor:pointer}
+#codigo:hover{text-decoration:underline}
+#pessoas{flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.pessoa{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:8px;padding:8px;border-radius:12px;background:rgba(2,16,36,.45)}
+.bolha{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#021024;transition:box-shadow .12s}
+.pessoa.falando .bolha{box-shadow:0 0 0 3px var(--verde),0 0 16px var(--verde)}
+.pessoa .nome{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pessoa .icones{font-size:13px;color:var(--suave)}
+.pessoa input[type=range]{grid-column:2/4;height:14px}
+#controles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#controles button{padding:10px 0;font-size:18px}
+#meio{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+#palco{flex:1;padding:12px;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));align-content:start;overflow:auto;min-height:0}
+#palco.um-grande{grid-template-columns:1fr}
+/* a tela transmitida tem cara de monitor de fliperama */
+.telinha{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;
+  border:2px solid rgba(164,92,255,.55);
+  box-shadow:0 0 0 2px rgba(8,3,18,.9),0 0 24px rgba(164,92,255,.35),inset 0 0 44px rgba(56,232,255,.08)}
+.telinha::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
+.telinha video{width:100%;height:100%;object-fit:contain;display:block}
+.telinha .rotulo{position:absolute;left:10px;top:8px;background:rgba(8,3,18,.82);border:1px solid rgba(92,255,155,.55);
+  color:#dcffeb;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.4px;
+  box-shadow:0 0 12px rgba(92,255,155,.28)}
+.telinha .barra{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  padding:8px 10px;background:linear-gradient(transparent,rgba(8,3,18,.94));opacity:0;transition:opacity .2s}
+.telinha:hover .barra{opacity:1}
+.telinha .barra input{width:92px}
+.telinha .placar{position:absolute;right:10px;top:8px;background:rgba(8,3,18,.82);border:1px solid rgba(56,232,255,.5);
+  color:#bdefff;padding:3px 8px;border-radius:6px;font:11px/1.35 Consolas,monospace;letter-spacing:.3px;
+  box-shadow:0 0 10px rgba(56,232,255,.25);pointer-events:none}
+.telinha .barra button{padding:5px 10px;border-color:rgba(56,232,255,.45);box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.telinha .barra button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.5)}
+#vazio{grid-column:1/-1;display:grid;place-items:center;color:var(--suave);text-align:center;padding:54px 20px}
+#vazio b{display:block;color:var(--texto);font-size:20px;margin-bottom:6px;letter-spacing:2px;
+  font-family:"Baloo 2","Segoe UI",sans-serif;
+  background:linear-gradient(180deg,#d8f7ff,#38e8ff 45%,#a45cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+#vazio button.fita{background:rgba(92,255,155,.12);cursor:pointer}
+#vazio button.fita:hover{background:rgba(92,255,155,.26);animation:none}
+#vazio .fita{display:block;width:fit-content;margin:16px auto 0;padding:6px 14px;border:2px solid var(--verde);color:var(--verde);
+  border-radius:6px;font-size:12px;font-weight:800;letter-spacing:2px;animation:pisca 1.2s steps(1) infinite;
+  box-shadow:0 0 16px rgba(92,255,155,.35)}
+#chat{height:230px;display:flex;flex-direction:column;padding:10px}
+#mensagens{flex:1;overflow:auto;padding:4px 6px;display:flex;flex-direction:column;gap:4px}
+.msg b{margin-right:6px}
+.msg.sistema{color:var(--suave);font-style:italic;font-size:12px}
+#escrever{display:flex;gap:8px;margin-top:8px;align-items:center}
+/* botao de fliperama pra enviar */
+.botao-fliperama{position:relative;width:54px;height:54px;flex:0 0 auto;border:none;border-radius:50%;cursor:pointer;padding:0;
+  background:radial-gradient(circle at 50% 34%,#ff7a96,#e01e46 60%,#8d0f29);
+  box-shadow:0 6px 0 #6d0a20,0 9px 16px rgba(0,0,0,.55),inset 0 2px 7px rgba(255,255,255,.45);
+  transition:transform .07s,box-shadow .07s}
+.botao-fliperama:hover{filter:brightness(1.09)}
+.botao-fliperama:active{transform:translateY(5px);box-shadow:0 1px 0 #6d0a20,0 3px 7px rgba(0,0,0,.5),inset 0 2px 7px rgba(255,255,255,.35)}
+.botao-fliperama span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.55);letter-spacing:1px}
+.anexo{flex:0 0 auto;padding:10px 12px;font-size:17px;line-height:1}
+.msg img{max-width:230px;border-radius:10px;margin-top:4px;display:block;cursor:pointer;border:1px solid var(--borda)}
+/* etiqueta verde de quem esta transmitindo */
+.aovivo{display:inline-flex;align-items:center;gap:4px;background:#0f7a3d;border:2px solid #5cff9b;color:#e2ffee;
+  font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 5px;border-radius:4px;cursor:pointer;
+  box-shadow:0 0 9px rgba(92,255,155,.5)}
+.aovivo i{width:6px;height:6px;background:#5cff9b;display:block;animation:pisca 1.1s steps(1) infinite}
+@keyframes pisca{50%{opacity:.15}}
+/* carinha teclando */
+#teclando{height:18px;color:var(--suave);font-size:12px;display:flex;align-items:center;gap:6px;padding:0 6px}
+#teclando b{color:var(--ciano)}
+.teclas{display:inline-flex;gap:2px;align-items:flex-end;height:10px}
+.teclas i{width:4px;height:4px;background:var(--ciano);display:block;animation:tecla .9s infinite}
+.teclas i:nth-child(2){animation-delay:.15s}
+.teclas i:nth-child(3){animation-delay:.3s}
+@keyframes tecla{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-4px);opacity:1}}
+
+/* ---------- ajustes ---------- */
+#ajustes,#escolha{position:fixed;inset:0;z-index:5;background:rgba(1,6,15,.6);display:none;align-items:center;justify-content:center;padding:20px}
+#ajustes.aberto,#escolha.aberto{display:flex}
+#ajustes .cartao,#escolha .cartao{width:min(460px,100%);padding:24px;max-height:100%;overflow:auto}
+#ajustes h2{margin:0 0 4px}
+.abas{display:flex;gap:4px;flex-wrap:wrap;margin:10px 0 14px;border-bottom:1px solid var(--borda);padding-bottom:10px}
+.aba{padding:7px 11px;font-size:12px;font-weight:700;border-radius:9px;background:rgba(10,4,24,.5)}
+.aba.ativa{background:linear-gradient(135deg,#38e8ff,#a45cff);color:#11062a;border-color:transparent}
+.sons{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;margin-top:8px}
+.som{position:relative;padding:12px 8px;font-size:12px;font-weight:700;border-radius:10px;text-align:center;
+  background:rgba(56,232,255,.12);border:1px solid var(--borda);cursor:pointer}
+.som:active{transform:translateY(2px)}
+.sons .dica{grid-column:1/-1;margin:0}
+.som b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px}
+.som .tirar{position:absolute;top:1px;right:5px;color:var(--vermelho);font-size:12px}
+/* a telinha de escolher o que mostrar, com moldura de gabinete de fliperama */
+.gabinete{position:relative;border:3px solid #a45cff!important;
+  box-shadow:0 0 0 6px #1b0b3a,0 0 34px rgba(164,92,255,.5),inset 0 0 50px rgba(56,232,255,.08)!important}
+.gabinete::before{content:"SUPER PARTY";position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#38e8ff,#a45cff,#ff45c8);color:#11062a;font-weight:800;font-size:11px;
+  letter-spacing:3px;padding:4px 16px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.opcoes{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0 6px}
+.opcao{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:12px;text-align:left;padding:14px 16px;
+  border-radius:12px;background:rgba(56,232,255,.1);border:2px solid var(--borda);box-shadow:0 4px 0 rgba(0,0,0,.45)}
+.opcao:hover{background:rgba(56,232,255,.2);border-color:var(--ciano)}
+.opcao:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
+.opcao span{font-size:26px;grid-row:1/3}
+.opcao b{font-size:15px}
+.opcao i{font-style:normal;font-size:12px;color:var(--suave)}
+.relatorio{background:rgba(10,4,24,.7);border:1px solid var(--borda);border-radius:10px;padding:10px;margin:0;
+  font:12px/1.5 Consolas,monospace;white-space:pre-wrap;color:var(--suave);max-height:150px;overflow:auto}
+.medidor{height:8px;border-radius:5px;background:rgba(2,16,36,.8);overflow:hidden;margin-top:6px}
+.medidor i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--verde),var(--amarelo),var(--vermelho))}
+.dica{color:var(--suave);font-size:12px;margin-top:4px}
+.toque{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9;background:#0d3a6b;border:1px solid var(--borda);padding:10px 18px;border-radius:12px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toque.ver{opacity:1}
+@media (max-width:760px){#sala{flex-direction:column;overflow:auto}#lado{width:auto}#chat{height:200px}}
+</style>
+</head>
+<body>
+<canvas id="mar"></canvas>
+
+<!-- ============ ENTRADA ============ -->
+<section id="entrada" class="tela ativa">
+  <div class="cartao">
+    <div class="marca">
+      <svg class="assinatura" viewBox="0 0 600 216" role="img" aria-label="Super Party">
+        <defs>
+          <linearGradient id="neon" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#d8f7ff"/><stop offset=".42" stop-color="#38e8ff"/><stop offset="1" stop-color="#a45cff"/>
+          </linearGradient>
+          <linearGradient id="tela" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#8ff5ff"/><stop offset="1" stop-color="#2aa8ff"/>
+          </linearGradient>
+        </defs>
+
+        <!-- pecinhas de pixel soltas, longe do nome -->
+        <g stroke="none" opacity=".7">
+          <rect x="16" y="14" width="9" height="9" fill="#38e8ff"/><rect x="44" y="34" width="6" height="6" fill="#ff45c8"/>
+          <rect x="98" y="10" width="6" height="6" fill="#5cff9b"/>
+          <rect x="580" y="118" width="7" height="7" fill="#ffd166"/><rect x="566" y="64" width="5" height="5" fill="#a45cff"/>
+        </g>
+
+        <!-- bichinho de fliperama, desenhado em quadradinhos -->
+        <g transform="translate(514 2) scale(.58)" fill="#5cff9b" stroke="none">
+          <rect x="20" y="0" width="10" height="10"/><rect x="80" y="0" width="10" height="10"/>
+          <rect x="30" y="10" width="10" height="10"/><rect x="70" y="10" width="10" height="10"/>
+          <rect x="20" y="20" width="70" height="10"/>
+          <rect x="10" y="30" width="20" height="10"/><rect x="40" y="30" width="30" height="10"/><rect x="80" y="30" width="20" height="10"/>
+          <rect x="0" y="40" width="110" height="10"/>
+          <rect x="0" y="50" width="10" height="10"/><rect x="20" y="50" width="70" height="10"/><rect x="100" y="50" width="10" height="10"/>
+          <rect x="0" y="60" width="10" height="10"/><rect x="20" y="60" width="10" height="10"/><rect x="80" y="60" width="10" height="10"/><rect x="100" y="60" width="10" height="10"/>
+          <rect x="30" y="70" width="20" height="10"/><rect x="60" y="70" width="20" height="10"/>
+          <g fill="#0a0616"><rect x="30" y="40" width="10" height="10"/><rect x="70" y="40" width="10" height="10"/></g>
+        </g>
+
+        <!-- o nome -->
+        <g font-family="'Baloo 2','Segoe UI',sans-serif" font-weight="800" fill="url(#neon)" stroke="#1b0b3a" stroke-width="7" paint-order="stroke" text-anchor="middle">
+          <text x="300" y="88" font-size="56" letter-spacing="4">SUPER</text>
+          <text x="300" y="160" font-size="80" letter-spacing="2">PARTY</text>
+        </g>
+
+        <!-- dois amigos no PC, rindo um pro outro, um de cada lado do nome -->
+        <g stroke="#1b0b3a" stroke-width="3.5" stroke-linejoin="round">
+          <!-- amigo da esquerda -->
+          <rect x="20" y="132" width="12" height="52" rx="3" fill="#2a1550"/>
+          <rect x="32" y="136" width="30" height="46" rx="4" fill="#38e8ff"/>
+          <rect x="58" y="150" width="26" height="9" rx="4" fill="#38e8ff"/>
+          <rect x="34" y="100" width="28" height="12" rx="3" fill="#2a1550"/>
+          <rect x="36" y="108" width="24" height="24" rx="4" fill="#ffd9a8"/>
+          <rect x="66" y="170" width="78" height="9" rx="2" fill="#5a3a9a"/>
+          <rect x="130" y="179" width="9" height="21" fill="#5a3a9a"/>
+          <rect x="70" y="161" width="26" height="6" rx="2" fill="#7b53c9"/>
+          <rect x="99" y="156" width="10" height="12" fill="#2a1550"/>
+          <rect x="74" y="110" width="60" height="46" rx="5" fill="#2a1550"/>
+          <rect x="80" y="116" width="48" height="34" rx="3" fill="url(#tela)" stroke="none"/>
+          <g stroke="none"><circle cx="46" cy="119" r="2.3" fill="#1b0b3a"/><circle cx="55" cy="119" r="2.3" fill="#1b0b3a"/></g>
+          <path d="M44 125 C 48 129, 54 129, 58 125" fill="none" stroke="#1b0b3a" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M52 94 L46 112 L70 97 Z" fill="#fff"/>
+          <rect x="24" y="54" width="74" height="42" rx="12" fill="#fff"/>
+          <text x="61" y="86" font-size="28" text-anchor="middle" stroke="none">😂</text>
+
+          <!-- amigo da direita -->
+          <rect x="568" y="132" width="12" height="52" rx="3" fill="#2a1550"/>
+          <rect x="538" y="136" width="30" height="46" rx="4" fill="#ff45c8"/>
+          <rect x="516" y="150" width="26" height="9" rx="4" fill="#ff45c8"/>
+          <rect x="538" y="100" width="28" height="12" rx="3" fill="#2a1550"/>
+          <rect x="540" y="108" width="24" height="24" rx="4" fill="#ffd9a8"/>
+          <rect x="456" y="170" width="78" height="9" rx="2" fill="#5a3a9a"/>
+          <rect x="461" y="179" width="9" height="21" fill="#5a3a9a"/>
+          <rect x="504" y="161" width="26" height="6" rx="2" fill="#7b53c9"/>
+          <rect x="491" y="156" width="10" height="12" fill="#2a1550"/>
+          <rect x="466" y="110" width="60" height="46" rx="5" fill="#2a1550"/>
+          <rect x="472" y="116" width="48" height="34" rx="3" fill="url(#tela)" stroke="none"/>
+          <g stroke="none"><circle cx="545" cy="119" r="2.3" fill="#1b0b3a"/><circle cx="554" cy="119" r="2.3" fill="#1b0b3a"/></g>
+          <path d="M542 125 C 546 129, 552 129, 556 125" fill="none" stroke="#1b0b3a" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M548 94 L554 112 L530 97 Z" fill="#fff"/>
+          <rect x="502" y="54" width="74" height="42" rx="12" fill="#fff"/>
+          <text x="539" y="86" font-size="28" text-anchor="middle" stroke="none">😂</text>
+        </g>
+      </svg>
+      <small>call, tela e filme junto — só a nossa turma</small>
+    </div>
+    <div id="perfilSalvo" style="display:none">
+      <div class="fotoLinha">
+        <div class="previa" id="previaSalva"></div>
+        <div style="flex:1;min-width:0">
+          <b id="nomeSalvo" style="font-size:17px;display:block;overflow:hidden;text-overflow:ellipsis"></b>
+          <small style="color:var(--suave)">sua conta do Super Party</small>
+        </div>
+        <button id="btTrocarPerfil">Trocar</button>
+      </div>
+      <div id="caixaPin" style="display:none">
+        <label for="pin">Seu PIN</label>
+        <input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+      </div>
+      <button class="forte" id="btVoltarSala" style="width:100%;margin-top:14px;display:none"></button>
+      <div class="linha" style="margin-top:10px">
+        <button id="btSalvarConta">Salvar minha conta</button>
+        <button id="btAbrirConta">Usar conta de um arquivo</button>
+        <input type="file" id="arqConta" accept=".json,application/json" style="display:none">
+      </div>
+    </div>
+    <div id="camposPerfil">
+    <label for="nome">Seu nome na sala</label>
+    <input id="nome" maxlength="24" placeholder="Ex.: Jairo">
+    <label>Sua cor</label>
+    <div class="cores" id="cores"></div>
+    <label>Sua foto (se quiser)</label>
+    <div class="fotoLinha">
+      <div class="previa" id="previa"></div>
+      <button id="btFoto">Escolher foto</button>
+      <button id="btTirarFoto" style="display:none">Tirar</button>
+      <input type="file" id="arqFoto" accept="image/*" style="display:none">
+    </div>
+    <label for="pinNovo">PIN (se quiser travar a sua conta neste PC)</label>
+    <input id="pinNovo" type="password" inputmode="numeric" maxlength="6" placeholder="4 números — pode deixar vazio">
+    </div>
+    <div class="linha"><button class="forte" id="btCriar">Criar sala</button></div>
+    <p class="ou">ou cole o código que o seu amigo mandou</p>
+    <div class="linha"><input id="codigoEntrar" placeholder="#TURMA-XXXXX"><button id="btEntrar" style="flex:0 0 auto">Entrar</button></div>
+    <div id="aviso"></div>
+  </div>
+</section>
+
+<!-- ============ SALA ============ -->
+<section id="sala" class="tela">
+  <aside id="lado" class="cartao">
+    <div id="topoSala">
+      <div><small style="color:var(--suave)">Código da sala (clique pra copiar)</small><div id="codigo">#</div></div>
+    </div>
+    <div id="pessoas"></div>
+    <div id="controles">
+      <button id="btMudo" title="Microfone">🎙️</button>
+      <button id="btSurdo" title="Fone (ouvir)">🎧</button>
+      <button id="btTela" title="Compartilhar tela">🖥️</button>
+      <button id="btAjustes" title="Ajustes">⚙️</button>
+    </div>
+    <button class="perigo" id="btSair">Sair da sala</button>
+  </aside>
+  <main id="meio">
+    <div id="palco" class="cartao"><div id="vazio"><div><b>NINGUÉM TRANSMITINDO</b>Aperte 🖥️ pra mostrar a sua tela inteira, o seu jogo ou um vídeo, com som.<button class="fita" id="btStart">APERTE START</button></div></div></div>
+    <div id="chat" class="cartao">
+      <div id="mensagens"></div>
+      <div id="teclando"></div>
+      <form id="escrever">
+        <button type="button" class="anexo" id="btImagem" title="Mandar uma imagem">🖼️</button>
+        <input id="texto" placeholder="Escreva pra turma..." autocomplete="off">
+        <input type="file" id="arqImagem" accept="image/*" style="display:none">
+        <button class="botao-fliperama" title="Enviar"><span>GO</span></button>
+      </form>
+    </div>
+  </main>
+</section>
+
+<!-- ============ AJUSTES (abas, no estilo do Discord) ============ -->
+<div id="ajustes"><div class="cartao">
+  <h2>Configurações</h2>
+  <div class="abas">
+    <button class="aba ativa" data-aba="voz">Voz e Vídeo</button>
+    <button class="aba" data-aba="transmissao">Transmissão</button>
+    <button class="aba" data-aba="sons">Sons</button>
+    <button class="aba" data-aba="sistema">Sistema</button>
+    <button class="aba" data-aba="avancado">Avançado</button>
+  </div>
+
+  <section data-painel="voz">
+    <label for="selMic">Entrada (microfone)</label><select id="selMic"></select>
+    <div class="medidor"><i id="medMic"></i></div>
+    <label for="volMic">Volume do seu microfone: <span id="volMicTxt">100%</span></label><input type="range" id="volMic" min="0" max="200" value="100">
+    <label for="selSaida">Saída (fone ou caixa de som)</label><select id="selSaida"></select>
+    <label for="volGeral">Volume das vozes: <span id="volGeralTxt">100%</span></label><input type="range" id="volGeral" min="0" max="100" value="100">
+
+    <label for="selModo">Como o seu microfone liga</label>
+    <select id="selModo">
+      <option value="voz">Por voz — abre sozinho quando você fala</option>
+      <option value="apertar">Apertar pra falar</option>
+    </select>
+    <div id="caixaSensibilidade">
+      <label for="sensibilidade">Sensibilidade da voz: <span id="sensibilidadeTxt">3%</span></label>
+      <input type="range" id="sensibilidade" min="0" max="30" value="3">
+    </div>
+    <div id="caixaTecla" style="display:none">
+      <label>Tecla de falar</label>
+      <button id="btTecla" style="width:100%">Clique aqui e aperte a tecla</button>
+      <p class="dica">A tecla só vale com a janela do Super Party na frente — página nenhuma escuta teclado por cima
+      do jogo. O Discord consegue por ser programa instalado de verdade.</p>
+    </div>
+    <label><input type="checkbox" id="chkEco" checked style="width:auto;margin-right:6px">Cancelamento de eco</label>
+    <label><input type="checkbox" id="chkRuido" checked style="width:auto;margin-right:6px">Redução de ruído de fundo</label>
+    <label><input type="checkbox" id="chkGanho" checked style="width:auto;margin-right:6px">Volume automático do microfone</label>
+  </section>
+
+  <section data-painel="transmissao" hidden>
+    <label for="selResolucao">Resolução da transmissão</label>
+    <select id="selResolucao">
+      <option value="720">720p</option>
+      <option value="1080">1080p</option>
+      <option value="1440">1440p</option>
+      <option value="0">Original — a sua tela inteira, sem reduzir</option>
+    </select>
+    <label for="selQuadros">Quadros por segundo</label>
+    <select id="selQuadros">
+      <option value="15">15 — bem leve</option>
+      <option value="30">30 — normal</option>
+      <option value="60">60 — jogo rápido</option>
+    </select>
+    <label for="volTransm">Volume das transmissões: <span id="volTransmTxt">100%</span></label>
+    <input type="range" id="volTransm" min="0" max="100" value="100">
+    <label><input type="checkbox" id="chkAbafar" style="width:auto;margin-right:6px">Abaixar a transmissão quando alguém falar</label>
+    <p class="dica">No Discord, 1080p, 60 quadros e "Original" só entram com Nitro pago. Aqui é tudo liberado, porque
+    a imagem vai direto do seu PC pro do seu amigo: quem manda no limite é a sua internet de subida.</p>
+  </section>
+
+  <section data-painel="sons" hidden>
+    <p class="dica">Painel de sons, igual ao do Discord: aperte um botão e a turma inteira ouve. Os sons entram
+    junto com a sua voz, então quem está na sala escuta na hora.</p>
+    <div id="listaSons" class="sons"></div>
+    <div class="linha">
+      <button id="btAddSom">Adicionar um som do PC</button>
+      <input type="file" id="arqSom" accept="audio/*" style="display:none">
+    </div>
+    <p class="dica">Sons curtos, de até 3 segundos. Ficam salvos no seu PC.</p>
+  </section>
+
+  <section data-painel="sistema" hidden>
+    <label><input type="checkbox" id="chkEfeitos" checked style="width:auto;margin-right:6px">Efeitos de neon no fundo</label>
+    <p class="dica">Feito pra PC gamer: os efeitos congelam sozinhos quando você sai da janela ou minimiza — enquanto
+    você joga, o programa fica praticamente parado.</p>
+    <label><input type="checkbox" id="chkAvisos" checked style="width:auto;margin-right:6px">Avisar quando alguém entrar ou sair</label>
+    <label>Seu apelido e sua foto</label>
+    <p class="dica">Ficam guardados só no seu PC. Pra trocar, saia da sala e mude na tela de entrada.</p>
+    <label>Sobre</label>
+    <p class="dica">Super Party — a imagem e a voz vão direto de PC pra PC, sem servidor no meio. Nada é gravado.</p>
+  </section>
+
+  <section data-painel="avancado" hidden>
+    <label for="selBanda">Teto da transmissão (quanto da sua internet ela pode usar)</label>
+    <select id="selBanda">
+      <option value="0">Automático</option>
+      <option value="2500">2,5 Mbps — internet fraca</option>
+      <option value="5000">5 Mbps</option>
+      <option value="10000">10 Mbps — recomendado</option>
+      <option value="20000">20 Mbps — fibra boa</option>
+    </select>
+    <label>Como está a conexão agora</label>
+    <pre id="relatorio" class="relatorio">Abra uma transmissão e aperte Medir agora.</pre>
+    <div class="linha"><button id="btMedir">Medir agora</button></div>
+    <p class="dica">Aqui aparece o que está saindo de verdade do seu PC: tamanho da imagem, quadros por segundo e
+    quanto da sua internet está sendo usada.</p>
+  </section>
+
+  <div class="linha"><button class="forte" id="btFecharAjustes">Pronto</button></div>
+</div></div>
+<div id="escolha"><div class="cartao gabinete">
+  <h2>O que você quer mostrar?</h2>
+  <div class="opcoes">
+    <button class="opcao" data-tipo="monitor"><span>🖥️</span><b>Tela inteira</b><i>tudo que aparecer, inclusive o jogo</i></button>
+    <button class="opcao" data-tipo="window"><span>🪟</span><b>Uma janela</b><i>só um programa, tipo o player do filme</i></button>
+    <button class="opcao" data-tipo="browser"><span>🌐</span><b>Uma aba</b><i>uma página do navegador</i></button>
+  </div>
+  <p class="dica">Depois desta, o Windows abre a janelinha dele pra você confirmar e marcar "compartilhar áudio".
+  Aquela é do próprio Windows e não dá pra pintar com a nossa cara.</p>
+  <div class="linha"><button id="btFecharEscolha">Cancelar</button></div>
+</div></div>
+<div class="toque" id="toque"></div>
+
+<script src="peerjs.min.js"></script>
+<script>
+"use strict";
+// =====================================================================
+//  Sala da Turma. A voz e a tela vao direto de PC pra PC (WebRTC).
+//  O servidor gratis do PeerJS so apresenta as pessoas pelo codigo.
+//  Se todos estiverem no Radmin, a conexao acha o caminho pelo Radmin sozinha.
+// =====================================================================
+const PREFIXO = "salaturma-v1-";
+const CORES = ["#3fd0ff","#39e6a8","#ffd166","#ff8fab","#b692ff","#ff9f43","#7ee8fa","#f4f1bb"];
+const REDE = {config:{iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun.cloudflare.com:3478"}]}};
+const $ = id => document.getElementById(id);
+
+const guarda = {
+  ler(k, pad){ try{ const v = localStorage.getItem("sala."+k); return v===null?pad:JSON.parse(v);}catch(e){return pad;} },
+  por(k, v){ try{ localStorage.setItem("sala."+k, JSON.stringify(v)); }catch(e){} }
+};
+
+let eu = {nome: guarda.ler("nome",""), cor: guarda.ler("cor", CORES[0]), foto: guarda.ler("foto",""),
+          pin: guarda.ler("pin",""), id: guarda.ler("id","")};
+let destravado = false;
+// trava simples, so pra ninguem entrar com a sua conta neste PC. Nao e segredo de banco.
+function embaralhar(pin){ return btoa(unescape(encodeURIComponent("superparty|" + pin))); }
+function guardarConta(){
+  guarda.por("nome", eu.nome); guarda.por("cor", eu.cor); guarda.por("foto", eu.foto);
+  guarda.por("pin", eu.pin); guarda.por("id", eu.id);
+}
+let peer = null, codigo = "", souAnfitriao = false;
+const gente = new Map(); // id -> {nome,cor,con,chamadaVoz,audio,chamadasTela:[],telaEl,mudo,surdo,tela,vol}
+let micCru = null, micSaida = null, ganhoMic = null, ctxAudio = null, analisadorMic = null;
+let telaMinha = null, mudo = false, surdo = false, destinoDaVoz = null;
+const cfg = {
+  micId: guarda.ler("micId",""), saidaId: guarda.ler("saidaId",""),
+  volMic: guarda.ler("volMic",100), volGeral: guarda.ler("volGeral",100), volTransm: guarda.ler("volTransm",100),
+  resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"),
+  modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
+  eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
+  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true),
+  banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[])
+};
+
+function toque(txt){ const t=$("toque"); t.textContent=txt; t.classList.add("ver"); clearTimeout(toque.t); toque.t=setTimeout(()=>t.classList.remove("ver"),2600); }
+function aviso(txt){ $("aviso").textContent = txt||""; }
+function mostrar(id){ document.querySelectorAll(".tela").forEach(s=>s.classList.toggle("ativa", s.id===id)); }
+function limparCodigo(t){ return (t||"").toUpperCase().replace(/[^A-Z0-9-]/g,"").replace(/^TURMA-?/,""); }
+function novoCodigo(){ const L="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; const r=crypto.getRandomValues(new Uint8Array(5)); for(const b of r) s+=L[b%L.length]; return s; }
+function inicial(n){ return (n||"?").trim().charAt(0).toUpperCase(); }
+function escapar(t){ const d=document.createElement("div"); d.textContent=t; return d.innerHTML; }
+
+// ------------------------- entrada -------------------------
+(function montarEntrada(){
+  $("nome").value = eu.nome;
+  CORES.forEach(c=>{ const s=document.createElement("span"); s.style.background=c; if(c===eu.cor) s.className="sel";
+    s.onclick=()=>{ eu.cor=c; guarda.por("cor",c); document.querySelectorAll("#cores span").forEach(x=>x.classList.toggle("sel",x===s)); };
+    $("cores").appendChild(s); });
+  $("codigoEntrar").addEventListener("keydown", e=>{ if(e.key==="Enter") $("btEntrar").click(); });
+  $("pin").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); $("btCriar").click(); } });
+
+  // foto do perfil: encolhida pra 128px, fica salva no PC e vai pros amigos
+  const previa = $("previa");
+  function pintarPrevia(){
+    if(eu.foto){ previa.style.background = "url(" + eu.foto + ") center/cover"; previa.textContent = ""; $("btTirarFoto").style.display = ""; }
+    else { previa.style.background = eu.cor; previa.textContent = inicial($("nome").value || eu.nome); $("btTirarFoto").style.display = "none"; }
+  }
+  window.pintarPrevia = pintarPrevia;
+  $("btFoto").onclick = () => $("arqFoto").click();
+  $("arqFoto").onchange = e => {
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image();
+    img.onload = () => {
+      const L = 128, cv = document.createElement("canvas"); cv.width = cv.height = L;
+      const g = cv.getContext("2d"), lado = Math.min(img.width, img.height);
+      g.drawImage(img, (img.width-lado)/2, (img.height-lado)/2, lado, lado, 0, 0, L, L);
+      eu.foto = cv.toDataURL("image/jpeg", .72);
+      guarda.por("foto", eu.foto); pintarPrevia(); desenharPessoas();
+      if(peer) paraTodos({t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => toque("Não consegui abrir essa imagem.");
+    img.src = URL.createObjectURL(f);
+  };
+  $("btTirarFoto").onclick = () => { eu.foto = ""; guarda.por("foto",""); pintarPrevia(); desenharPessoas(); };
+  $("nome").addEventListener("input", pintarPrevia);
+  pintarPrevia();
+
+  // quem ja tem perfil neste PC nao precisa digitar nada de novo
+  function mostrarPerfilSalvo(){
+    const tem = !!eu.nome;
+    $("perfilSalvo").style.display = tem ? "" : "none";
+    $("camposPerfil").style.display = tem ? "none" : "";
+    if(!tem) return;
+    $("nomeSalvo").textContent = eu.nome;
+    const bolinha = $("previaSalva");
+    if(eu.foto){ bolinha.style.background = "url(" + eu.foto + ") center/cover"; bolinha.textContent = ""; }
+    else { bolinha.style.background = eu.cor; bolinha.textContent = inicial(eu.nome); }
+    const ultima = guarda.ler("ultimaSala", "");
+    $("btVoltarSala").style.display = ultima ? "" : "none";
+    $("btVoltarSala").textContent = "Voltar pra sala #TURMA-" + ultima;
+    $("btVoltarSala").onclick = () => { $("codigoEntrar").value = ultima; $("btEntrar").click(); };
+  }
+  // a conta vira um arquivinho, pra ele levar pra outro PC
+  $("btSalvarConta").onclick = () => {
+    const conta = {programa:"Super Party", nome:eu.nome, cor:eu.cor, foto:eu.foto, pin:eu.pin, id:eu.id};
+    const url = URL.createObjectURL(new Blob([JSON.stringify(conta)], {type:"application/json"}));
+    const link = document.createElement("a");
+    link.href = url; link.download = "conta-superparty-" + eu.nome.replace(/[^\w]/g,"") + ".json";
+    link.click(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toque("Conta salva. Guarde esse arquivinho.");
+  };
+  $("btAbrirConta").onclick = () => $("arqConta").click();
+  $("arqConta").onchange = e => {
+    const arq = e.target.files[0]; e.target.value = "";
+    if(!arq) return;
+    const leitor = new FileReader();
+    leitor.onload = () => {
+      try{
+        const conta = JSON.parse(leitor.result);
+        if(!conta || !conta.nome) throw 0;
+        eu.nome = conta.nome; eu.cor = conta.cor || CORES[0]; eu.foto = conta.foto || "";
+        eu.pin = conta.pin || ""; eu.id = conta.id || "";
+        destravado = !eu.pin; guardarConta(); mostrarPerfilSalvo(); pintarPrevia();
+        toque("Conta carregada: " + eu.nome);
+      }catch(err){ toque("Esse arquivo não é uma conta do Super Party."); }
+    };
+    leitor.readAsText(arq);
+  };
+  $("btTrocarPerfil").onclick = () => {
+    $("perfilSalvo").style.display = "none";
+    $("camposPerfil").style.display = "";
+    $("nome").value = ""; $("pinNovo").value = "";
+    eu.nome = ""; eu.pin = ""; eu.foto = ""; destravado = false;
+    guardarConta(); pintarPrevia(); $("nome").focus();
+  };
+  mostrarPerfilSalvo();
+})();
+
+function conferirNome(){
+  // ja tem conta neste PC: so precisa do PIN, se ele tiver posto um
+  if($("perfilSalvo").style.display !== "none" && eu.nome){
+    if(!eu.pin || destravado) return true;
+    const digitado = $("pin").value.trim();
+    $("caixaPin").style.display = "";
+    if(!digitado){ aviso("Digite o seu PIN."); $("pin").focus(); return false; }
+    if(embaralhar(digitado) !== eu.pin){ aviso("PIN errado."); $("pin").value = ""; $("pin").focus(); return false; }
+    destravado = true; $("caixaPin").style.display = "none"; aviso(""); return true;
+  }
+  const n = $("nome").value.trim();
+  if(!n){ aviso("Escreva seu nome primeiro."); $("nome").focus(); return false; }
+  eu.nome = n;
+  if(!eu.id) eu.id = "c" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+  const novoPin = $("pinNovo").value.trim();
+  if(novoPin){ eu.pin = embaralhar(novoPin); destravado = true; }
+  guardarConta();
+  return true;
+}
+
+$("btCriar").onclick = async () => {
+  if(!conferirNome()) return;
+  aviso("Criando a sala...");
+  await ligarMicrofone();
+  abrirPeer(novoCodigo(), true);
+};
+
+$("btEntrar").onclick = async () => {
+  if(!conferirNome()) return;
+  const c = limparCodigo($("codigoEntrar").value);
+  if(c.length < 4){ aviso("Cole o código inteiro, tipo #TURMA-AB12C."); return; }
+  aviso("Entrando...");
+  await ligarMicrofone();
+  abrirPeer(c, false);
+};
+
+function abrirPeer(cod, anfitriao){
+  codigo = cod; souAnfitriao = anfitriao;
+  peer = anfitriao ? new Peer(PREFIXO + cod, REDE) : new Peer(REDE);
+  peer.on("open", () => {
+    if(anfitriao){ entrarNaSala(); sistema("Sala criada. Mande o código pros amigos."); }
+    else {
+      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor}});
+      let entrou = false;
+      con.on("open", ()=>{ entrou = true; });
+      prepararConversa(con);
+      setTimeout(()=>{ if(!entrou && !gente.size){ aviso("Não achei essa sala. Confira o código ou peça pro amigo criar de novo."); fecharTudo(false); } }, 12000);
+    }
+  });
+  peer.on("connection", prepararConversa);
+  peer.on("call", atenderChamada);
+  peer.on("error", err => {
+    if(err.type === "unavailable-id" && anfitriao){ peer.destroy(); abrirPeer(novoCodigo(), true); return; }
+    if(err.type === "peer-unavailable"){
+      if(!$("sala").classList.contains("ativa")){ aviso("Não achei essa sala. Confira o código."); fecharTudo(false); }
+      return;
+    }
+    if(err.type === "network" || err.type === "server-error" || err.type === "socket-error"){
+      if($("sala").classList.contains("ativa")) sistema("Sem contato com o servidor de códigos. Quem já está na sala continua falando.");
+      else aviso("Sem internet ou servidor fora do ar. Tente de novo em instantes.");
+      return;
+    }
+    console.warn(err);
+  });
+  peer.on("disconnected", ()=>{ try{ peer.reconnect(); }catch(e){} });
+}
+
+function entrarNaSala(){
+  aviso("");
+  guarda.por("ultimaSala", codigo);
+  $("codigo").textContent = "#TURMA-" + codigo;
+  mostrar("sala");
+  desenharPessoas();
+}
+
+// ------------------------- conversas (dados) -------------------------
+function prepararConversa(con){
+  const id = con.peer;
+  con.on("open", () => {
+    const p = pessoa(id, con.metadata || {});
+    p.con = con;
+    if(!$("sala").classList.contains("ativa")) entrarNaSala();
+    enviar(con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
+    if(souAnfitriao){
+      const outros = [...gente.keys()].filter(x=>x!==id);
+      enviar(con, {t:"lista", ids: outros});
+    }
+    // quem chega liga pra todo mundo; quem ja estava so atende
+    if(con.metadata && con.metadata.chegando === false) {}
+    if(!souAnfitriao && con.peer === PREFIXO + codigo) ligarVoz(id);
+    if(telaMinha) mandarTela(id);
+    desenharPessoas();
+  });
+  con.on("data", d => receber(id, d));
+  con.on("close", () => sair(id));
+  con.on("error", () => sair(id));
+}
+
+function pessoa(id, meta){
+  if(!gente.has(id)) gente.set(id, {nome: meta.nome||"alguém", cor: meta.cor||CORES[1], foto: meta.foto||"", con:null, chamadaVoz:null, audio:null,
+    chamadasTela:[], telaEl:null, mudo:false, surdo:false, tela:false, vol: guarda.ler("vol."+(meta.nome||""),100), falando:false});
+  return gente.get(id);
+}
+
+function enviar(con, d){ try{ if(con && con.open) con.send(d); }catch(e){} }
+function paraTodos(d){ gente.forEach(p=>enviar(p.con, d)); }
+
+function receber(id, d){
+  const p = gente.get(id); if(!p || !d) return;
+  switch(d.t){
+    case "oi":
+      const novo = !p.jaDisse; p.jaDisse = true;
+      Object.assign(p, {nome:d.nome, cor:d.cor, foto:d.foto||"", mudo:d.mudo, surdo:d.surdo, tela:d.tela});
+      p.vol = guarda.ler("vol."+p.nome, 100);
+      if(novo && cfg.avisos) sistema(p.nome + " entrou na sala.");
+      desenharPessoas(); break;
+    case "lista":
+      d.ids.forEach(outro => {
+        if(outro === peer.id || gente.has(outro)) return;
+        const c = peer.connect(outro, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor}});
+        prepararConversa(c);
+        ligarVoz(outro);
+      }); break;
+    case "estado":
+      Object.assign(p, {mudo:d.mudo, surdo:d.surdo, tela:d.tela});
+      if(!d.tela) tirarTela(id);
+      desenharPessoas(); break;
+    case "chat":
+      p.teclandoAte = 0;
+      mensagem(p.nome, p.cor, String(d.txt).slice(0,500)); break;
+    case "imagem":
+      p.teclandoAte = 0;
+      if(typeof d.dados === "string" && d.dados.startsWith("data:image/") && d.dados.length < 1200000)
+        mensagem(p.nome, p.cor, "", d.dados);
+      break;
+    case "teclando":
+      p.teclandoAte = Date.now() + 3000; break;
+  }
+}
+
+function sair(id){
+  const p = gente.get(id); if(!p) return;
+  gente.delete(id);
+  try{ p.chamadaVoz && p.chamadaVoz.close(); }catch(e){}
+  p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} });
+  if(p.audio){ p.audio.srcObject=null; p.audio.remove(); }
+  tirarTela(id);
+  if(p.jaDisse && cfg.avisos) sistema(p.nome + " saiu da sala.");
+  if(id === PREFIXO + codigo) sistema("Quem criou a sala saiu. Vocês continuam conversando, mas ninguém novo consegue entrar.");
+  desenharPessoas();
+}
+
+function avisarEstado(){ paraTodos({t:"estado", mudo, surdo, tela:!!telaMinha}); desenharPessoas(); }
+
+// ------------------------- voz -------------------------
+async function ligarMicrofone(){
+  try{
+    if(!ctxAudio) ctxAudio = new AudioContext();
+    if(micCru) micCru.getTracks().forEach(t=>t.stop());
+    micCru = await navigator.mediaDevices.getUserMedia({audio:{
+      deviceId: cfg.micId ? {exact:cfg.micId} : undefined,
+      echoCancellation: cfg.eco, noiseSuppression: cfg.ruido, autoGainControl: cfg.ganhoAuto }});
+  }catch(e){
+    try{ micCru = await navigator.mediaDevices.getUserMedia({audio:true}); }
+    catch(e2){ micCru = null; toque("Sem microfone: você entra só ouvindo."); }
+  }
+  const src = micCru ? ctxAudio.createMediaStreamSource(micCru) : null;
+  ganhoMic = ctxAudio.createGain(); ganhoMic.gain.value = cfg.volMic/100;
+  analisadorMic = ctxAudio.createAnalyser(); analisadorMic.fftSize = 512;
+  const destino = ctxAudio.createMediaStreamDestination();
+  destinoDaVoz = destino;
+  if(src){ src.connect(ganhoMic); }
+  ganhoMic.connect(analisadorMic); ganhoMic.connect(destino);
+  const novaFaixa = destino.stream.getAudioTracks()[0];
+  novaFaixa.enabled = !mudo;
+  const velha = micSaida && micSaida.getAudioTracks()[0];
+  micSaida = destino.stream;
+  // troca a faixa nas chamadas que ja estao de pe, sem derrubar ninguem
+  gente.forEach(p=>{
+    const pc = p.chamadaVoz && p.chamadaVoz.peerConnection; if(!pc) return;
+    pc.getSenders().forEach(s=>{ if(s.track && s.track.kind==="audio") s.replaceTrack(novaFaixa); });
+  });
+  if(velha) velha.stop();
+}
+
+function ligarVoz(id){
+  const p = gente.get(id) || pessoa(id,{});
+  if(p.chamadaVoz) return;
+  const ch = peer.call(id, micSaida, {metadata:{tipo:"voz"}});
+  prepararVoz(id, ch);
+}
+
+function atenderChamada(ch){
+  const tipo = ch.metadata && ch.metadata.tipo;
+  if(tipo === "tela"){
+    ch.answer();
+    const p = pessoa(ch.peer,{}); p.chamadasTela.push(ch);
+    ch.on("stream", s => porTela(ch.peer, s));
+    ch.on("close", () => tirarTela(ch.peer));
+    return;
+  }
+  ch.answer(micSaida);
+  prepararVoz(ch.peer, ch);
+}
+
+function prepararVoz(id, ch){
+  const p = pessoa(id,{}); p.chamadaVoz = ch;
+  ch.on("stream", s => {
+    if(!p.audio){ p.audio = new Audio(); p.audio.autoplay = true; document.body.appendChild(p.audio); }
+    p.audio.srcObject = s;
+    aplicarSaida(p.audio); aplicarVolumePessoa(p);
+    p.audio.play().catch(()=>{});
+    try{
+      const a = ctxAudio.createAnalyser(); a.fftSize = 512;
+      ctxAudio.createMediaStreamSource(s).connect(a); p.analisador = a;
+    }catch(e){}
+  });
+  ch.on("close", ()=>{ if(p.chamadaVoz===ch) p.chamadaVoz=null; });
+}
+
+function aplicarVolumePessoa(p){
+  if(!p.audio) return;
+  p.audio.volume = Math.min(1, (p.vol/100) * (cfg.volGeral/100));
+  p.audio.muted = surdo;
+}
+function aplicarSaida(el){ if(cfg.saidaId && el.setSinkId) el.setSinkId(cfg.saidaId).catch(()=>{}); }
+
+// ------------------------- tela -------------------------
+function abrirEscolha(){
+  if(telaMinha){ pararTela(); return; }
+  $("escolha").classList.add("aberto");
+}
+$("btTela").onclick = abrirEscolha;
+$("btStart").onclick = abrirEscolha;
+$("btFecharEscolha").onclick = () => $("escolha").classList.remove("aberto");
+$("escolha").onclick = e => { if(e.target.id === "escolha") $("escolha").classList.remove("aberto"); };
+document.querySelectorAll(".opcao").forEach(b => b.onclick = () => {
+  $("escolha").classList.remove("aberto");
+  comecarTela(b.dataset.tipo);
+});
+
+async function comecarTela(tipoTela){
+  if(telaMinha){ pararTela(); return; }
+  const alt = Number(cfg.resolucao), fps = Number(cfg.quadros);
+  // "Original" (alt = 0) manda a tela do jeito que ela e, sem reduzir
+  const video = alt ? {height:{ideal:alt}, frameRate:{ideal:fps, max:fps}} : {frameRate:{ideal:fps, max:fps}};
+  try{
+    if(tipoTela) video.displaySurface = tipoTela;   // ja abre o Windows na parte certa
+    telaMinha = await navigator.mediaDevices.getDisplayMedia({
+      video,
+      audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}, systemAudio:"include" });
+  }catch(e){ toque("Compartilhamento cancelado."); return; }
+  const v = telaMinha.getVideoTracks()[0];
+  if(v){ v.contentHint = fps >= 60 ? "motion" : "detail"; v.onended = pararTela; }
+  gente.forEach((p,id)=>mandarTela(id));
+  porTela(peer.id, telaMinha, true);
+  $("btTela").classList.add("ligado");
+  avisarEstado();
+  if(!telaMinha.getAudioTracks().length) toque("Tela sem som: marque \"Compartilhar áudio\" na janela de escolha.");
+};
+
+function mandarTela(id){
+  if(!telaMinha) return;
+  const p = gente.get(id); if(!p) return;
+  const ch = peer.call(id, telaMinha, {metadata:{tipo:"tela"}});
+  p.chamadasTela.push(ch);
+  setTimeout(aplicarBanda, 1500);
+  ch.on("close", ()=>{ p.chamadasTela = p.chamadasTela.filter(x=>x!==ch); });
+}
+
+function pararTela(){
+  if(!telaMinha) return;
+  telaMinha.getTracks().forEach(t=>t.stop());
+  telaMinha = null;
+  gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; });
+  tirarTela(peer.id);
+  $("btTela").classList.remove("ligado");
+  avisarEstado();
+}
+
+const telas = new Map(); // id -> elemento
+function porTela(id, stream, minha){
+  let el = telas.get(id);
+  if(!el){
+    el = document.createElement("div"); el.className = "telinha";
+    el.innerHTML = '<video autoplay playsinline></video><div class="rotulo"></div><div class="placar"></div>' +
+      '<div class="barra">' +
+        '<button data-a="mudo" title="Mudo só esta transmissão">🔊</button>' +
+        '<span title="Volume da transmissão (o som do que ele mostra)">📺</span><input type="range" class="volTela" min="0" max="100">' +
+        '<span title="Volume da voz de quem está compartilhando">🎙️</span><input type="range" class="volVoz" min="0" max="100">' +
+        '<button data-a="grande">Aumentar</button><button data-a="cheia">Tela cheia</button>' +
+      '</div>';
+    const vid = el.querySelector("video");
+    const volTela = el.querySelector(".volTela"), volVoz = el.querySelector(".volVoz");
+    volTela.value = cfg.volTransm;
+    volTela.oninput = () => { vid.volume = volTela.value/100; if(vid.volume>0) vid.muted = false; };
+    volVoz.oninput = () => {
+      const dono = gente.get(id); if(!dono) return;
+      dono.vol = +volVoz.value; guarda.por("vol."+dono.nome, dono.vol); aplicarVolumePessoa(dono); desenharPessoas();
+    };
+    el.querySelector('[data-a=mudo]').onclick = e => {
+      e.stopPropagation(); vid.muted = !vid.muted; e.target.textContent = vid.muted ? "🔇" : "🔊";
+      e.target.classList.toggle("ligado", vid.muted);
+    };
+    el.querySelector('[data-a=grande]').onclick = e => { e.stopPropagation(); const g=$("palco").classList.toggle("um-grande"); telas.forEach(t=>t.style.display = (!g||t===el)?"":"none"); e.target.textContent = g?"Diminuir":"Aumentar"; };
+    el.querySelector('[data-a=cheia]').onclick = e => { e.stopPropagation(); vid.requestFullscreen && vid.requestFullscreen(); };
+    telas.set(id, el); $("palco").appendChild(el);
+  }
+  const vid = el.querySelector("video");
+  vid.srcObject = stream; vid.muted = !!minha || surdo; vid.volume = cfg.volTransm/100;
+  aplicarSaida(vid); vid.play().catch(()=>{});
+  const dono = gente.get(id);
+  const nome = minha ? "Sua tela (os outros estão vendo)" : ((dono||{}).nome || "Amigo") + " está compartilhando";
+  el.querySelector(".rotulo").textContent = nome;
+  const volVoz = el.querySelector(".volVoz");
+  if(dono) volVoz.value = dono.vol;
+  // na minha propria tela nao faz sentido mexer em volume: eu nao me escuto
+  el.querySelectorAll('.barra input, .barra [data-a=mudo], .barra span').forEach(x => x.style.display = minha ? "none" : "");
+  atualizarVazio();
+}
+function tirarTela(id){
+  const el = telas.get(id); if(!el) return;
+  const v = el.querySelector("video"); v.srcObject = null; el.remove(); telas.delete(id);
+  if(!telas.size){ $("palco").classList.remove("um-grande"); }
+  telas.forEach(t=>t.style.display="");
+  atualizarVazio();
+}
+function atualizarVazio(){ $("vazio").style.display = telas.size ? "none" : ""; }
+
+// ------------------------- botoes -------------------------
+$("btMudo").onclick = () => {
+  mudo = !mudo;
+  if(micSaida) micSaida.getAudioTracks().forEach(t=>t.enabled=!mudo);
+  $("btMudo").classList.toggle("ligado", mudo); $("btMudo").textContent = mudo ? "🔇" : "🎙️";
+  avisarEstado();
+};
+$("btSurdo").onclick = () => {
+  surdo = !surdo;
+  gente.forEach(aplicarVolumePessoa);
+  telas.forEach((el,id)=>{ if(id!==peer.id) el.querySelector("video").muted = surdo; });
+  $("btSurdo").classList.toggle("ligado", surdo);
+  if(surdo && !mudo) $("btMudo").click(); else avisarEstado();
+};
+$("btSair").onclick = () => fecharTudo(true);
+$("codigo").onclick = () => {
+  const t = $("codigo").textContent;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(()=>toque("Código copiado! Cole no WhatsApp da turma."), ()=>toque(t));
+};
+function mandarChat(){
+  const t = $("texto").value.trim(); if(!t) return;
+  paraTodos({t:"chat", txt:t}); mensagem(eu.nome, eu.cor, t); $("texto").value = "";
+}
+// Enter manda direto, sem depender do "submit" do formulario (que nem sempre dispara)
+$("texto").addEventListener("keydown", e => {
+  if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); mandarChat(); }
+});
+$("escrever").onsubmit = e => { e.preventDefault(); mandarChat(); };
+
+function fecharTudo(avisar){
+  pararTela();
+  gente.forEach((p,id)=>sair(id));
+  if(peer){ try{ peer.destroy(); }catch(e){} peer = null; }
+  $("mensagens").innerHTML = ""; mudo = false; surdo = false;
+  $("btMudo").classList.remove("ligado"); $("btMudo").textContent="🎙️"; $("btSurdo").classList.remove("ligado");
+  mostrar("entrada");
+  if(avisar) aviso("Você saiu da sala.");
+}
+
+// ------------------------- lista de pessoas -------------------------
+function desenharPessoas(){
+  const box = $("pessoas"); box.innerHTML = "";
+  const linha = (id, p, souEu) => {
+    const d = document.createElement("div"); d.className = "pessoa"; d.dataset.id = id;
+    const ic = (p.mudo?"🔇":"") + (p.surdo?"🎧̸":"");
+    const etiqueta = p.tela ? '<span class="aovivo" title="Está compartilhando a tela — clique pra ver"><i></i>AO VIVO</span>' : "";
+    const fundo = p.foto ? `background:url(${p.foto}) center/cover` : `background:${p.cor}`;
+    d.innerHTML = `<div class="bolha" style="${fundo}">${p.foto?"":escapar(inicial(p.nome))}</div>
+      <div class="nome">${escapar(p.nome)}${souEu?' <small style="color:var(--suave)">(você)</small>':''}</div><div class="icones">${etiqueta}${ic}</div>`;
+    const et = d.querySelector(".aovivo");
+    if(et) et.onclick = () => { const t = telas.get(id); if(t) t.scrollIntoView({behavior:"smooth", block:"center"}); };
+    if(!souEu){
+      const r = document.createElement("input"); r.type="range"; r.min=0; r.max=100; r.value=p.vol; r.title="Volume de "+p.nome;
+      r.oninput = () => { p.vol = +r.value; guarda.por("vol."+p.nome, p.vol); aplicarVolumePessoa(p); };
+      d.appendChild(r);
+    }
+    box.appendChild(d);
+  };
+  linha(peer ? peer.id : "eu", {nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha}, true);
+  gente.forEach((p,id)=>{ if(p.jaDisse) linha(id,p,false); });
+}
+
+// ---- porta do microfone: por voz (com sensibilidade) ou apertando a tecla, igual ao Discord ----
+let portaAberta = 0, teclaApertada = false;
+addEventListener("keydown", e => { if(cfg.modo === "apertar" && e.code === cfg.tecla) teclaApertada = true; });
+addEventListener("keyup", e => { if(cfg.modo === "apertar" && e.code === cfg.tecla) teclaApertada = false; });
+addEventListener("blur", () => { teclaApertada = false; });
+function ajustarPorta(){
+  if(!micSaida) return;
+  const faixa = micSaida.getAudioTracks()[0]; if(!faixa) return;
+  if(mudo){ faixa.enabled = false; return; }
+  if(cfg.modo === "apertar"){ faixa.enabled = teclaApertada; return; }
+  if(nivel(analisadorMic) * 100 >= cfg.sensibilidade) portaAberta = Date.now() + 400;  // segura 0,4s pra nao cortar palavra
+  faixa.enabled = Date.now() < portaAberta;
+}
+
+function nivel(analisador){
+  if(!analisador) return 0;
+  const buf = new Uint8Array(analisador.fftSize); analisador.getByteTimeDomainData(buf);
+  let s=0; for(const v of buf){ const x=(v-128)/128; s+=x*x; } return Math.sqrt(s/buf.length);
+}
+setInterval(()=>{
+  if(!$("sala").classList.contains("ativa") && !$("ajustes").classList.contains("aberto")) return;
+  ajustarPorta();
+  const meu = mudo ? 0 : nivel(analisadorMic);
+  $("medMic").style.width = Math.min(100, meu*400) + "%";
+  document.querySelectorAll("#pessoas .pessoa").forEach(el=>{
+    const id = el.dataset.id; const p = gente.get(id);
+    const n = p ? (p.mudo?0:nivel(p.analisador)) : meu;
+    el.classList.toggle("falando", n > 0.03);
+  });
+  // atenuacao: com alguem falando, a transmissao abaixa pra nao atropelar a voz
+  if(cfg.abafar){
+    const alguemFala = [...gente.values()].some(x => !x.mudo && nivel(x.analisador) > 0.03) || (!mudo && meu > 0.03);
+    telas.forEach((el, id) => {
+      if(id === (peer && peer.id)) return;
+      const v = el.querySelector("video"), r = el.querySelector(".volTela");
+      if(v) v.volume = (Number(r ? r.value : cfg.volTransm) / 100) * (alguemFala ? .3 : 1);
+    });
+  }
+  const teclando = [...gente.values()].filter(x => x.teclandoAte > Date.now()).map(x => x.nome);
+  $("teclando").innerHTML = teclando.length
+    ? `<span class="teclas"><i></i><i></i><i></i></span><b>${escapar(teclando.join(", "))}</b> ${teclando.length>1?"estão":"está"} teclando...`
+    : "";
+}, 120);
+
+// ------------------------- chat -------------------------
+function mensagem(nome, cor, txt, imagem){
+  const d = document.createElement("div"); d.className = "msg";
+  d.innerHTML = `<b style="color:${cor}">${escapar(nome)}</b>${escapar(txt||"")}`;
+  if(imagem){
+    const img = new Image(); img.src = imagem;
+    img.onclick = () => window.open(imagem, "_blank");
+    img.onload = () => { $("mensagens").scrollTop = 1e9; };
+    d.appendChild(img);
+  }
+  $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
+}
+
+// ---- mandar imagem pelo chat (encolhida, pra nao entupir a conexao) ----
+function mandarImagem(arquivo){
+  if(!arquivo || !arquivo.type.startsWith("image/")) return;
+  const img = new Image();
+  img.onload = () => {
+    const maior = Math.max(img.width, img.height), escala = Math.min(1, 900/maior);
+    const cv = document.createElement("canvas");
+    cv.width = Math.round(img.width*escala); cv.height = Math.round(img.height*escala);
+    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+    const dados = cv.toDataURL("image/jpeg", .72);
+    URL.revokeObjectURL(img.src);
+    if(dados.length > 1000000){ toque("Essa imagem é pesada demais pra mandar."); return; }
+    paraTodos({t:"imagem", dados});
+    mensagem(eu.nome, eu.cor, "", dados);
+  };
+  img.onerror = () => toque("Não consegui abrir essa imagem.");
+  img.src = URL.createObjectURL(arquivo);
+}
+$("btImagem").onclick = () => $("arqImagem").click();
+$("arqImagem").onchange = e => { mandarImagem(e.target.files[0]); e.target.value = ""; };
+$("texto").addEventListener("paste", e => {
+  const itens = e.clipboardData ? [...e.clipboardData.items] : [];
+  const foto = itens.find(x => x.type.startsWith("image/"));
+  if(foto){ e.preventDefault(); mandarImagem(foto.getAsFile()); }
+});
+// avisa a turma que estou teclando (no maximo um aviso a cada 2 segundos)
+let ultimoAvisoTeclado = 0;
+$("texto").addEventListener("input", () => {
+  const agora = Date.now();
+  if($("texto").value && agora - ultimoAvisoTeclado > 2000){ ultimoAvisoTeclado = agora; paraTodos({t:"teclando"}); }
+});
+function sistema(txt){
+  const d = document.createElement("div"); d.className = "msg sistema"; d.textContent = txt;
+  $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
+}
+
+// ------------------------- ajustes -------------------------
+async function listarAparelhos(){
+  let lista = [];
+  try{ lista = await navigator.mediaDevices.enumerateDevices(); }catch(e){}
+  const encher = (sel, tipo, atual, padrao) => {
+    sel.innerHTML = `<option value="">${padrao}</option>`;
+    lista.filter(d=>d.kind===tipo && d.deviceId!=="default" && d.deviceId!=="communications").forEach((d,i)=>{
+      const o = document.createElement("option"); o.value = d.deviceId; o.textContent = d.label || (tipo==="audioinput"?"Microfone ":"Saída ")+(i+1);
+      if(d.deviceId===atual) o.selected = true; sel.appendChild(o); });
+  };
+  encher($("selMic"), "audioinput", cfg.micId, "Padrão do Windows");
+  encher($("selSaida"), "audiooutput", cfg.saidaId, "Padrão do Windows");
+  if(!HTMLMediaElement.prototype.setSinkId){ $("selSaida").disabled = true; }
+}
+function ligarRange(id, chave, depois){
+  const r = $(id); r.value = cfg[chave]; $(id+"Txt").textContent = cfg[chave]+"%";
+  r.oninput = () => { cfg[chave] = +r.value; guarda.por(chave, cfg[chave]); $(id+"Txt").textContent = r.value+"%"; depois && depois(); };
+}
+ligarRange("volMic","volMic", ()=>{ if(ganhoMic) ganhoMic.gain.value = cfg.volMic/100; });
+ligarRange("volGeral","volGeral", ()=>gente.forEach(aplicarVolumePessoa));
+ligarRange("volTransm","volTransm", ()=>telas.forEach((el,id)=>{ if(id!==(peer&&peer.id)){ el.querySelector("video").volume = cfg.volTransm/100; el.querySelector(".volTela").value = cfg.volTransm; } }));
+$("selResolucao").value = cfg.resolucao; $("selResolucao").onchange = e => { cfg.resolucao = e.target.value; guarda.por("resolucao", cfg.resolucao); avisarTrocaDeQualidade(); };
+$("selQuadros").value = cfg.quadros; $("selQuadros").onchange = e => { cfg.quadros = e.target.value; guarda.por("quadros", cfg.quadros); avisarTrocaDeQualidade(); };
+function avisarTrocaDeQualidade(){ if(telaMinha) toque("Vale na próxima vez que você compartilhar a tela."); }
+$("selModo").value = cfg.modo;
+function mostrarCaixasDoModo(){
+  $("caixaSensibilidade").style.display = cfg.modo === "voz" ? "" : "none";
+  $("caixaTecla").style.display = cfg.modo === "apertar" ? "" : "none";
+  $("btTecla").textContent = nomeDaTecla(cfg.tecla);
+}
+$("selModo").onchange = e => { cfg.modo = e.target.value; guarda.por("modo", cfg.modo); mostrarCaixasDoModo(); };
+$("sensibilidade").value = cfg.sensibilidade; $("sensibilidadeTxt").textContent = cfg.sensibilidade + "%";
+$("sensibilidade").oninput = e => { cfg.sensibilidade = +e.target.value; guarda.por("sensibilidade", cfg.sensibilidade); $("sensibilidadeTxt").textContent = cfg.sensibilidade + "%"; };
+function nomeDaTecla(codigo){ return "Tecla: " + String(codigo).replace("Key","").replace("Digit","").replace("Left"," esquerdo").replace("Right"," direito"); }
+$("btTecla").onclick = () => {
+  $("btTecla").textContent = "Aperte a tecla agora...";
+  const pegar = e => { e.preventDefault(); cfg.tecla = e.code; guarda.por("tecla", cfg.tecla); $("btTecla").textContent = nomeDaTecla(cfg.tecla); removeEventListener("keydown", pegar, true); };
+  addEventListener("keydown", pegar, true);
+};
+$("chkEco").checked = cfg.eco; $("chkEco").onchange = e => { cfg.eco = e.target.checked; guarda.por("eco", cfg.eco); ligarMicrofone(); };
+$("chkRuido").checked = cfg.ruido; $("chkRuido").onchange = e => { cfg.ruido = e.target.checked; guarda.por("ruido", cfg.ruido); ligarMicrofone(); };
+$("chkGanho").checked = cfg.ganhoAuto; $("chkGanho").onchange = e => { cfg.ganhoAuto = e.target.checked; guarda.por("ganhoAuto", cfg.ganhoAuto); ligarMicrofone(); };
+mostrarCaixasDoModo();
+$("chkEfeitos").checked = cfg.efeitos; $("chkEfeitos").onchange = e => { cfg.efeitos = e.target.checked; guarda.por("efeitos", cfg.efeitos); };
+$("selMic").onchange = e => { cfg.micId = e.target.value; guarda.por("micId", cfg.micId); ligarMicrofone(); };
+$("selSaida").onchange = e => { cfg.saidaId = e.target.value; guarda.por("saidaId", cfg.saidaId);
+  gente.forEach(p=>p.audio && aplicarSaida(p.audio)); telas.forEach(el=>aplicarSaida(el.querySelector("video"))); };
+$("btAjustes").onclick = async () => { if(!micCru) await ligarMicrofone(); await listarAparelhos(); $("ajustes").classList.add("aberto"); };
+$("btFecharAjustes").onclick = () => $("ajustes").classList.remove("aberto");
+$("ajustes").onclick = e => { if(e.target.id==="ajustes") $("ajustes").classList.remove("aberto"); };
+
+// ------------------------- fundo de fliperama -------------------------
+(function arcade(){
+  const cv = $("mar"), g = cv.getContext("2d");
+  const CORES = ["#38e8ff","#a45cff","#ff45c8","#5cff9b","#ffd166"];
+  let W, H, pixels = [], t = 0, ultimo = 0, temFoco = true;
+  function medir(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+  addEventListener("resize", medir); medir();
+  // feito pra PC gamer: sem foco na janela (ou seja, voce esta no jogo), o fundo congela
+  addEventListener("focus", () => { temFoco = true; });
+  addEventListener("blur", () => { temFoco = false; });
+  for(let i=0;i<34;i++) pixels.push({x:Math.random(), y:Math.random(), l:3+Math.random()*7,
+    v:.0007+Math.random()*.0018, fase:Math.random()*6, cor:CORES[i%CORES.length]});
+  function quadro(agora){
+    requestAnimationFrame(quadro);
+    if(document.hidden || !temFoco || agora - ultimo < 33) return;   // 30 quadros no maximo, e zero enquanto voce joga
+    ultimo = agora; t += .016;
+    const fundo = g.createLinearGradient(0,0,0,H);
+    fundo.addColorStop(0,"#1b0f36"); fundo.addColorStop(.55,"#0d0722"); fundo.addColorStop(1,"#05030c");
+    g.fillStyle = fundo; g.fillRect(0,0,W,H);
+    if(!cfg.efeitos) return;
+    const hor = H*.62, fuga = W/2;                      // linha do horizonte e ponto de fuga
+    g.globalCompositeOperation = "lighter";
+    // brilho rosa no horizonte
+    const brilho = g.createLinearGradient(0,hor-80,0,hor+12);
+    brilho.addColorStop(0,"rgba(255,69,200,0)"); brilho.addColorStop(1,"rgba(255,69,200,.18)");
+    g.fillStyle = brilho; g.fillRect(0,hor-80,W,92);
+    // grade em perspectiva, tipo pista de jogo antigo
+    g.strokeStyle = "rgba(56,232,255,.20)"; g.lineWidth = 1.4;
+    for(let i=-12;i<=12;i++){ g.beginPath(); g.moveTo(fuga+i*26,hor); g.lineTo(fuga+i*280,H); g.stroke(); }
+    g.strokeStyle = "rgba(164,92,255,.22)";
+    for(let k=0;k<14;k++){
+      const p = ((k + (t*.3)%1)/14), y = hor + Math.pow(p,2.4)*(H-hor);
+      g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke();
+    }
+    // pecinhas de pixel subindo
+    for(const b of pixels){
+      b.y -= b.v; if(b.y < -.03){ b.y = 1.03; b.x = Math.random(); }
+      const bx = b.x*W + Math.sin(t*1.6+b.fase)*8, by = b.y*H;
+      g.fillStyle = b.cor;
+      g.globalAlpha = .16; g.fillRect(bx-b.l*.5, by-b.l*.5, b.l*2, b.l*2);
+      g.globalAlpha = .55; g.fillRect(bx, by, b.l, b.l);
+      g.globalAlpha = 1;
+    }
+    g.globalCompositeOperation = "source-over";
+  }
+  requestAnimationFrame(quadro);
+})();
+
+// ------------------------- abas das configuracoes -------------------------
+document.querySelectorAll(".aba").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".aba").forEach(x => x.classList.toggle("ativa", x === b));
+    document.querySelectorAll("[data-painel]").forEach(s => s.hidden = s.dataset.painel !== b.dataset.aba);
+  };
+});
+
+// ------------------------- painel de sons (igual ao do Discord) -------------------------
+let ganhoSons = null;
+function prepararSons(){
+  if(!ganhoSons) ganhoSons = ctxAudio.createGain();
+  try{ ganhoSons.disconnect(); }catch(e){}
+  ganhoSons.connect(ctxAudio.destination);            // eu ouco
+  if(destinoDaVoz) ganhoSons.connect(destinoDaVoz);   // a turma ouve junto com a minha voz
+  return ganhoSons;
+}
+async function tocarSom(dados){
+  if(!ctxAudio) await ligarMicrofone();
+  try{
+    const bruto = await (await fetch(dados)).arrayBuffer();
+    const som = await ctxAudio.decodeAudioData(bruto);
+    const fonte = ctxAudio.createBufferSource(); fonte.buffer = som;
+    fonte.connect(prepararSons()); fonte.start();
+  }catch(e){ toque("Nao consegui tocar esse som."); }
+}
+function desenharSons(){
+  const caixa = $("listaSons"); caixa.innerHTML = "";
+  if(!cfg.sons.length){ caixa.innerHTML = '<p class="dica">Nenhum som ainda. Aperte "Adicionar um som do PC".</p>'; return; }
+  cfg.sons.forEach((s, i) => {
+    const b = document.createElement("div"); b.className = "som";
+    b.innerHTML = '<span class="tirar" title="Tirar">X</span>&#128266;<b>' + escapar(s.nome) + '</b>';
+    b.onclick = () => tocarSom(s.dados);
+    b.querySelector(".tirar").onclick = e => { e.stopPropagation(); cfg.sons.splice(i,1); guarda.por("sons", cfg.sons); desenharSons(); };
+    caixa.appendChild(b);
+  });
+}
+$("btAddSom").onclick = () => $("arqSom").click();
+$("arqSom").onchange = e => {
+  const arq = e.target.files[0]; e.target.value = "";
+  if(!arq) return;
+  if(arq.size > 400000){ toque("Som muito grande. Use um de ate 3 segundos."); return; }
+  if(cfg.sons.length >= 8){ toque("Ja sao 8 sons. Tire um antes."); return; }
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    cfg.sons.push({nome: arq.name.replace(/\.[^.]+$/, "").slice(0,14), dados: leitor.result});
+    guarda.por("sons", cfg.sons); desenharSons(); toque("Som guardado.");
+  };
+  leitor.readAsDataURL(arq);
+};
+desenharSons();
+
+// ------------------------- teto de banda e medicao da conexao -------------------------
+async function aplicarBanda(){
+  const teto = Number(cfg.banda) * 1000;
+  gente.forEach(p => p.chamadasTela.forEach(ch => {
+    const pc = ch.peerConnection; if(!pc) return;
+    pc.getSenders().filter(s => s.track && s.track.kind === "video").forEach(async s => {
+      const par = s.getParameters();
+      par.encodings = (par.encodings && par.encodings.length) ? par.encodings : [{}];
+      if(teto) par.encodings[0].maxBitrate = teto; else delete par.encodings[0].maxBitrate;
+      try{ await s.setParameters(par); }catch(e){}
+    });
+  }));
+}
+async function medirConexao(){
+  const pcs = [];
+  gente.forEach(p => p.chamadasTela.forEach(ch => { if(ch.peerConnection) pcs.push(ch.peerConnection); }));
+  if(!pcs.length){ $("relatorio").textContent = "Nada saindo agora. Compartilhe a tela e aperte de novo."; return; }
+  $("relatorio").textContent = "Medindo...";
+  const ler = async pc => {
+    const saida = {};
+    (await pc.getStats()).forEach(r => { if(r.type === "outbound-rtp" && r.kind === "video") Object.assign(saida, r); });
+    return saida;
+  };
+  const antes = await Promise.all(pcs.map(ler));
+  await new Promise(r => setTimeout(r, 1000));
+  const agora = await Promise.all(pcs.map(ler));
+  $("relatorio").textContent = agora.map((a, i) => {
+    const b = antes[i] || {};
+    const mbps = ((a.bytesSent - (b.bytesSent || 0)) * 8 / 1e6).toFixed(1);
+    return "amigo " + (i+1) + ": " + (a.frameWidth || "?") + "x" + (a.frameHeight || "?") +
+           " - " + Math.round(a.framesPerSecond || 0) + " quadros/s - " + mbps + " Mbps";
+  }).join("\n");
+}
+$("selBanda").value = cfg.banda; $("selBanda").onchange = e => { cfg.banda = e.target.value; guarda.por("banda", cfg.banda); aplicarBanda(); };
+$("btMedir").onclick = medirConexao;
+$("chkAbafar").checked = cfg.abafar; $("chkAbafar").onchange = e => { cfg.abafar = e.target.checked; guarda.por("abafar", cfg.abafar); };
+$("chkAvisos").checked = cfg.avisos; $("chkAvisos").onchange = e => { cfg.avisos = e.target.checked; guarda.por("avisos", cfg.avisos); };
+
+// ---- placar de internet no canto de cada telinha ----
+const medidasAnteriores = new Map();
+setInterval(async () => {
+  if(!telas.size || document.hidden) return;
+  for(const [id, el] of telas){
+    const placar = el.querySelector(".placar"); if(!placar) continue;
+    const meu = id === (peer && peer.id);
+    const conexoes = [];
+    if(meu) gente.forEach(p => p.chamadasTela.forEach(c => c.peerConnection && conexoes.push(c.peerConnection)));
+    else { const dono = gente.get(id); if(dono) dono.chamadasTela.forEach(c => c.peerConnection && conexoes.push(c.peerConnection)); }
+    let largura = 0, altura = 0, quadros = 0, bytes = 0;
+    for(const pc of conexoes){
+      (await pc.getStats()).forEach(r => {
+        if(r.kind !== "video") return;
+        if(meu && r.type === "outbound-rtp"){
+          largura = r.frameWidth || largura; altura = r.frameHeight || altura;
+          quadros = Math.round(r.framesPerSecond || quadros); bytes += r.bytesSent || 0;
+        }
+        if(!meu && r.type === "inbound-rtp"){
+          largura = r.frameWidth || largura; altura = r.frameHeight || altura;
+          quadros = Math.round(r.framesPerSecond || quadros); bytes += r.bytesReceived || 0;
+        }
+      });
+    }
+    const antes = medidasAnteriores.get(id), agora = Date.now();
+    let mbps = 0;
+    if(antes && agora > antes.quando) mbps = (bytes - antes.bytes) * 8 / ((agora - antes.quando) / 1000) / 1e6;
+    medidasAnteriores.set(id, {bytes, quando: agora});
+    const seta = meu ? "subindo" : "chegando";
+    placar.textContent = (largura ? largura + "x" + altura + " · " : "") +
+      (quadros ? quadros + " fps · " : "") + Math.max(0, mbps).toFixed(1) + " Mbps " + seta;
+  }
+}, 2000);
+
+addEventListener("beforeunload", ()=>{ try{ peer && peer.destroy(); }catch(e){} });
+window.salaTeste = { gente, get peer(){return peer;}, get codigo(){return codigo;} };
+</script>
+</body>
+</html>
