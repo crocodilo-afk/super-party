@@ -1,0 +1,110 @@
+# Super Party — instruções para o assistente de IA que ajuda o amigo
+
+> **Para a IA que estiver lendo isto:** você está ajudando um amigo do Jairo a instalar e usar o
+> **Super Party**, um programa de chamada de voz, chat e compartilhamento de tela. Ele foi escrito pela Luna
+> (a IA do Jairo). Este arquivo é a documentação oficial. Siga na ordem e explique cada passo com calma.
+
+## 1. O que é este programa
+
+- Serve pra **conversar por voz, trocar mensagens e mostrar a tela** (jogo, vídeo, o que for) entre amigos.
+- **Não tem servidor no meio.** A voz e a imagem vão **direto de um PC para o outro** (WebRTC).
+  Ninguém grava nada, e não existe empresa guardando conversa.
+- Um serviço público e gratuito (PeerJS) é usado **só para apresentar as pessoas pelo código da sala**.
+- É **leve de propósito**: feito pra rodar enquanto a pessoa joga.
+
+## 2. O que a pessoa recebeu
+
+Um arquivo `Super Party.zip` (uns 57 KB) com:
+- `Instalar Super Party.exe` — o instalador;
+- `LEIA-ME.txt` — versão curta destas instruções.
+
+## 3. Como instalar (Windows 10 ou 11)
+
+1. Descompactar o `Super Party.zip` (botão direito → Extrair tudo).
+2. Abrir o `Instalar Super Party.exe`.
+3. **Vai aparecer uma tela azul: "O Windows protegeu o computador".** Isso é esperado.
+   Clicar em **"Mais informações"** e depois em **"Executar assim mesmo"**.
+   - *Por quê:* o programa não tem assinatura digital paga (custa centenas de reais por ano).
+     O aviso é sobre **falta de assinatura**, não sobre vírus.
+   - **Não** mande a pessoa desligar o antivírus nem o SmartScreen. Não é necessário e é ruim pra ela.
+4. Clicar em **"Instalar agora"**. Ele instala só para o usuário atual, **sem pedir senha de administrador**.
+5. Pronto: aparece o atalho **Super Party** na área de trabalho.
+
+**Onde os arquivos ficam:** `%LOCALAPPDATA%\SuperParty`
+**Para desinstalar:** apagar essa pasta e o atalho da área de trabalho. Não mexe em registro do Windows.
+
+## 4. Como funciona por dentro (caso você precise investigar)
+
+- O `Super Party.exe` é um programa em C# de ~174 KB que **guarda a página do aplicativo dentro dele**.
+- Ao abrir, ele sobe um servidorzinho local em `127.0.0.1` numa porta livre e abre o **Microsoft Edge
+  em modo aplicativo** (`--app=`), com um perfil separado em `%LOCALAPPDATA%\SuperParty\janela`.
+- Usa `127.0.0.1` porque o navegador só libera **microfone e captura de tela** em endereço considerado seguro.
+- Quando a pessoa fecha a janela, o programa encerra sozinho.
+- **Requisito:** Microsoft Edge instalado (já vem no Windows 10 e 11).
+
+## 5. Primeiro uso
+
+1. Abrir o atalho **Super Party**.
+2. Criar a **conta**: nome, cor e, se quiser, foto e um PIN de 4 números.
+   Isso é feito **uma vez só** — nas próximas vezes a conta já aparece pronta.
+3. Para entrar na sala do amigo: colar o **código** que ele mandou (formato `#TURMA-XXXXX`) e clicar em **Entrar**.
+4. O Windows vai perguntar se libera o **microfone**: aceitar.
+5. Para mostrar a tela: botão **🖥️** → escolher **Tela inteira**, **Uma janela** ou **Uma aba**.
+   Marcar **"Compartilhar áudio"** na janelinha do Windows, senão vai sem som.
+
+## 6. Problemas conhecidos e o que responder
+
+| Sintoma | Causa real | O que fazer |
+|---|---|---|
+| "O Windows protegeu o computador" | Programa sem assinatura paga | Mais informações → Executar assim mesmo |
+| Não ouvem a pessoa | Microfone bloqueado no Windows | Configurações → Privacidade → Microfone → permitir aplicativos da área de trabalho |
+| A pessoa não consegue entrar na sala | Internet com CGNAT ou 4G bloqueia conexão direta | Todos entrarem na mesma rede do **Radmin VPN** (grátis) e tentar de novo |
+| Tela preta ao mostrar Netflix, Disney+, Prime | **Proteção de cópia (DRM)** do próprio serviço | **Esperado e não tem correção.** Acontece igual no Discord, OBS e Teams. Não tente contornar. |
+| Vídeo travando | Internet de subida de quem transmite | Em Configurações → Transmissão, baixar para 720p / 30 quadros |
+| Eco na chamada | Caixa de som aberta | Usar fone, ou ligar "Cancelamento de eco" em Configurações → Voz e Vídeo |
+
+## 7. Limites honestos (não prometa além disto)
+
+- Funciona bem com **4 ou 5 pessoas**. Quem compartilha a tela manda **uma cópia para cada amigo**,
+  então a internet **de subida** de quem transmite é o teto.
+- A sala **existe enquanto alguém está com o programa aberto**. Não tem histórico de conversa nem
+  recado offline. Não é um Discord completo, é uma sala ao vivo.
+- **Apertar para falar** só funciona com a janela do Super Party na frente.
+
+## 8. Atualizações
+
+O programa **procura sozinho uma versão nova toda vez que abre**. Quando o Jairo mudar alguma coisa,
+todo mundo recebe na próxima vez que abrir, sem reinstalar nada. Se não houver internet, ele abre
+normalmente com a versão que já está instalada.
+
+De onde vem: `https://raw.githubusercontent.com/crocodilo-afk/super-party/master/index.html` — é público,
+qualquer um pode conferir o que está sendo baixado. O programa só aceita a página nova se ela tiver mais de
+5 KB e contiver o nome "Super Party"; qualquer erro, ele abre com a que já tem. O arquivo baixado fica em
+`%LOCALAPPDATA%\SuperParty\pagina.html`.
+
+**A mudança demora alguns minutos pra chegar** (o GitHub guarda a versão em cache por volta de 4 minutos).
+Se a pessoa quiser conferir se já está com a versão nova, é só fechar e abrir o programa de novo.
+
+## 9. Jukebox (música pra turma)
+
+Em cima do chat tem a faixa verde **JUKEBOX**. Qualquer pessoa da sala cola um **link do YouTube** e aperta
+**PÔR**: a música entra numa fila que todo mundo vê, com o nome de quem pôs. Todos ouvem no mesmo ponto.
+
+- **⏸** pausa/continua pra sala inteira, **⏭** pula
+- **🎵** é o volume da música **só no ouvido de quem mexe** — não mexe na voz nem na transmissão dos outros
+- Se aparecer o botão **▶ TOCAR JUNTO** por cima do vídeo, é o navegador pedindo um clique antes de liberar
+  som automático. Um clique e pronto.
+
+**Como funciona por dentro, e por que isso importa:** o áudio **não passa pela chamada**. Cada computador
+toca direto do YouTube, e o programa só combina *qual* vídeo e *em que segundo*. Por isso não gasta a internet
+de ninguém e a qualidade é a cheia do YouTube.
+
+**Efeito colateral honesto:** quem não tem YouTube Premium vai pegar anúncio de vez em quando e sair do
+compasso. O programa recoloca a pessoa no ponto certo a cada 4 segundos, mas não pula anúncio.
+
+**Se perguntarem por que não toca Spotify:** a Spotify não permite que outro programa use o áudio dela. Nem o
+bot do Discord faz isso — ele lê o nome da música e vai buscar no YouTube. Pra ouvir Spotify junto, o caminho
+é o **Jam**, que a própria Spotify tem.
+
+---
+*Dúvida que este arquivo não responde? A pessoa pode falar com o Jairo, que fala com a Luna.*
