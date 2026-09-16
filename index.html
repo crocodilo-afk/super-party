@@ -366,6 +366,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
       <option value="720">720p</option>
       <option value="1080">1080p</option>
       <option value="1440">1440p</option>
+      <option value="2160">2160p — 4K</option>
       <option value="0">Original — a sua tela inteira, sem reduzir</option>
     </select>
     <label for="selQuadros">Quadros por segundo</label>
@@ -373,6 +374,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
       <option value="15">15 — bem leve</option>
       <option value="30">30 — normal</option>
       <option value="60">60 — jogo rápido</option>
+      <option value="120">120 — monitor de 120Hz ou mais</option>
     </select>
     <label for="volTransm">Volume das transmissões: <span id="volTransmTxt">100%</span></label>
     <input type="range" id="volTransm" min="0" max="100" value="100">
@@ -406,11 +408,12 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   <section data-painel="avancado" hidden>
     <label for="selBanda">Teto da transmissão (quanto da sua internet ela pode usar)</label>
     <select id="selBanda">
-      <option value="0">Automático</option>
+      <option value="0">Automático — sem teto, sua internet decide</option>
       <option value="2500">2,5 Mbps — internet fraca</option>
       <option value="5000">5 Mbps</option>
       <option value="10000">10 Mbps — recomendado</option>
       <option value="20000">20 Mbps — fibra boa</option>
+      <option value="50000">50 Mbps — fibra forte</option>
     </select>
     <label>Como está a conexão agora</label>
     <pre id="relatorio" class="relatorio">Abra uma transmissão e aperte Medir agora.</pre>
