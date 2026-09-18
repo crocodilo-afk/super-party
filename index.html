@@ -464,6 +464,8 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
     você joga, o programa fica praticamente parado.</p>
     <label><input type="checkbox" id="chkAvisos" checked style="width:auto;margin-right:6px">Avisar quando alguém entrar ou sair</label>
     <label><input type="checkbox" id="chkPortaria" checked style="width:auto;margin-right:6px">Na minha sala, eu aceito quem entra (quem já foi aceito entra direto)</label>
+    <label><input type="checkbox" id="chkSoConvite" checked style="width:auto;margin-right:6px"><b>Minha sala: só entra quem tiver convite</b> (recomendado)</label>
+    <p class="dica">Ligado, ninguém entra só com o código da sala — nem amigo antigo. Cada entrada precisa de um 🎟️ convite novo, que vale 2 minutos e uma vez só.</p>
     <label><input type="checkbox" id="chkDoisFatores" style="width:auto;margin-right:6px">Pedir o código do Google Authenticator pra entrar na minha sala</label>
     <p class="dica">Cada amigo escaneia o QR da sala uma vez no app Google Authenticator do celular. Depois, pra entrar, ele digita os 6 números que o app mostra (mudam a cada 30 segundos). Sem o celular, ninguém entra — nem robô.</p>
     <button type="button" id="btnQrSala">Mostrar o QR da sala</button>
@@ -543,7 +545,7 @@ const cfg = {
   resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"),
   modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
   eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
-  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true), doisFatores: guarda.ler("doisFatores",false),
+  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true), doisFatores: guarda.ler("doisFatores",false), soConvite: guarda.ler("soConvite",true),
   banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[]),
   volMusica: guarda.ler("volMusica",60)
 };
@@ -919,6 +921,10 @@ function portaria(con, seguir){
     }
     return isca(con, nome, "convite vencido, usado ou falso");
   }
+  if(cfg.soConvite){
+    sistema(nome + " tentou entrar sem convite e foi barrado.");
+    enviar(con, {t:"soConvite"}); setTimeout(()=>con.close(), 300); return;
+  }
   if(cfg.doisFatores && !con._verificado){
     if(codigoTravado()) return isca(con, nome, "entrada por código trancada");
     // freio de robo: no maximo 3 pedidos esperando codigo ao mesmo tempo
@@ -975,10 +981,11 @@ function prepararConversa(con){
     if(souAnfitriao && d && d.t === "codigo" && con._recebeCodigo) return con._recebeCodigo(d.codigo);
     if(!souAnfitriao && ehAnfitriao(id) && d && d.t === "codigoOk"){ const c = $("caixaCodigo"); if(c) c.textContent = "Código certo! Agora é só o dono aceitar."; return; }
     if(!souAnfitriao && ehAnfitriao(id) && d && d.t === "querCodigo") return digitarCodigo(con, Math.max(0, Math.min(3, +d.restam || 0)));
-    if(!souAnfitriao && ehAnfitriao(id) && d && (d.t === "recusado" || d.t === "expulso" || d.t === "conviteRuim")){
+    if(!souAnfitriao && ehAnfitriao(id) && d && (d.t === "recusado" || d.t === "expulso" || d.t === "conviteRuim" || d.t === "soConvite")){
       fecharTudo(false);
       aviso(d.t === "expulso" ? "Você foi tirado da sala pelo dono." :
             d.t === "conviteRuim" ? "Esse convite venceu ou já foi usado. Peça um novo pro dono da sala." :
+            d.t === "soConvite" ? "Essa sala só aceita convite. Peça pro dono apertar 🎟️ Convidar e cole o código que ele mandar." :
             "O dono da sala não aceitou sua entrada.");
       return;
     }
@@ -1618,6 +1625,7 @@ async function medirConexao(){
 $("selBanda").value = cfg.banda; $("selBanda").onchange = e => { cfg.banda = e.target.value; guarda.por("banda", cfg.banda); aplicarBanda(); };
 $("btMedir").onclick = medirConexao;
 $("chkAbafar").checked = cfg.abafar; $("chkAbafar").onchange = e => { cfg.abafar = e.target.checked; guarda.por("abafar", cfg.abafar); };
+$("chkSoConvite").checked = cfg.soConvite; $("chkSoConvite").onchange = e => { cfg.soConvite = e.target.checked; guarda.por("soConvite", cfg.soConvite); };
 $("chkDoisFatores").checked = cfg.doisFatores;
 $("chkDoisFatores").onchange = e => { cfg.doisFatores = e.target.checked; guarda.por("doisFatores", cfg.doisFatores); if(cfg.doisFatores){ segredoDaSala(); mostrarQr(); } };
 $("btnQrSala").onclick = () => mostrarQr();
