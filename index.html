@@ -53,7 +53,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 /* ---------- sala ---------- */
 #sala{flex-direction:row;gap:12px;padding:12px}
 #lado{width:270px;display:flex;flex-direction:column;padding:14px;gap:10px}
-#topoSala{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#topoSala{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
 #codigo{font-size:18px;font-weight:700;color:var(--ciano);letter-spacing:1px;cursor:pointer}
 #codigo:hover{text-decoration:underline}
 #pessoas{flex:1;overflow:auto;display:flex;flex-direction:column;gap:6px}
@@ -105,6 +105,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .msg.portaria .sim{background:#5cff9b;color:#06121f}.msg.portaria .nao{background:#ff45c8;color:#fff}
 .pessoa .expulsar{grid-column:3;justify-self:end;background:none;border:0;color:#ff45c8;cursor:pointer;font-size:12px;opacity:.6}
 .pessoa .expulsar:hover{opacity:1}
+#btConvidar{flex-basis:100%;margin-top:6px;padding:4px 10px;border-radius:10px;border:1px solid #5cff9b;background:rgba(92,255,155,.12);color:#5cff9b;cursor:pointer;font-weight:700}
 #caixaQr{position:fixed;inset:0;background:rgba(5,2,20,.8);display:grid;place-items:center;z-index:99}
 #caixaQr .qrCartao{background:#1a1033;border:1px solid #a45cff;border-radius:16px;padding:20px;max-width:320px;text-align:center}
 #caixaQr #qrDesenho{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin:8px 0}
@@ -334,6 +335,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   <aside id="lado" class="cartao">
     <div id="topoSala">
       <div><small style="color:var(--suave)">Código da sala (clique pra copiar)</small><div id="codigo">#</div></div>
+      <button type="button" id="btConvidar" hidden title="Gera um código que vale 5 minutos e uma vez só">🎟️ Convidar</button>
     </div>
     <div id="pessoas"></div>
     <div id="controles">
@@ -679,8 +681,9 @@ $("btCriar").onclick = async () => {
 
 $("btEntrar").onclick = async () => {
   if(!conferirNome()) return;
-  const c = limparCodigo($("codigoEntrar").value);
-  if(c.length < 4){ aviso("Cole o código inteiro, tipo #TURMA-AB12C."); return; }
+  const [c, conv] = limparCodigo($("codigoEntrar").value).split("-");
+  conviteUsar = /^[A-Z0-9]{8}$/.test(conv || "") ? conv : "";
+  if(!c || c.length < 4){ aviso("Cole o código inteiro, tipo #TURMA-AB12C."); return; }
   aviso("Entrando...");
   await ligarMicrofone();
   abrirPeer(c, false);
@@ -692,7 +695,7 @@ function abrirPeer(cod, anfitriao){
   peer.on("open", () => {
     if(anfitriao){ entrarNaSala(); sistema("Sala criada. Mande o código pros amigos."); }
     else {
-      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor, conta:eu.id}});
+      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor, conta:eu.id, convite:conviteUsar}});
       let entrou = false, salaExiste = false;
       con.on("open", ()=>{ entrou = true; salaExiste = true; });
       peer.on("error", e => { if(e.type !== "peer-unavailable") salaExiste = true; });
@@ -737,6 +740,7 @@ function entrarNaSala(){
   aviso("");
   guarda.por("ultimaSala", codigo);
   $("codigo").textContent = "#TURMA-" + codigo;
+  $("btConvidar").hidden = !souAnfitriao;
   mostrar("sala");
   desenharPessoas();
 }
@@ -818,6 +822,25 @@ function digitarCodigo(con, restam){
   $("mensagens").scrollTop = 1e9; campo.focus();
 }
 
+// ---- convite: um codigo que vale 5 minutos e uma vez so ----
+let conviteUsar = "";
+const convites = new Map();          // convite -> hora em que vence (so na memoria: fechou o app, todos morrem)
+function novoConvite(){
+  const L = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(8));
+  let t = ""; for(const b of r) t += L[b % 32];   // 32 cabe certinho em 256: sorteio sem vies
+  const agora = Date.now();
+  convites.forEach((venc, k) => { if(venc <= agora) convites.delete(k); });
+  convites.set(t, agora + 5*60*1000);
+  return t;
+}
+$("btConvidar").onclick = () => {
+  const t = "#TURMA-" + codigo + "-" + novoConvite();
+  const msg = "Entra no Super Party! Cole este código (vale 5 minutos e uma vez só): " + t;
+  (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject())
+    .then(() => toque("Convite copiado! Cole no WhatsApp do amigo. Vale 5 minutos."), () => toque(t));
+  sistema("Convite criado: " + t + " — vence em 5 minutos.");
+};
+
 function portaria(con, seguir){
   const id = con.peer;
   if(!souAnfitriao){
@@ -829,6 +852,16 @@ function portaria(con, seguir){
   }
   const conta = contaDe(con), nome = nomeSeguro(con.metadata && con.metadata.nome);
   if(!conta || recusados.has(conta)){ enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+  const conv = con.metadata && typeof con.metadata.convite === "string" ? con.metadata.convite : "";
+  if(conv){
+    const venc = convites.get(conv); convites.delete(conv);          // uma vez so: apaga na hora
+    if(venc && venc > Date.now()){
+      guarda.por("aprovados", [...new Set([...aprovados(), conta])].slice(-100));
+      sistema(nome + " entrou pelo convite.");
+      return seguir();
+    }
+    enviar(con, {t:"conviteRuim"}); setTimeout(()=>con.close(), 300); return;
+  }
   if(cfg.doisFatores && !con._verificado){
     // freio de robo: no maximo 3 pedidos esperando codigo ao mesmo tempo
     const esperando = peer && peer.connections ? Object.values(peer.connections).flat().filter(c => c.open && c._recebeCodigo).length : 0;
@@ -884,9 +917,11 @@ function prepararConversa(con){
     if(souAnfitriao && d && d.t === "codigo" && con._recebeCodigo) return con._recebeCodigo(d.codigo);
     if(!souAnfitriao && ehAnfitriao(id) && d && d.t === "codigoOk"){ const c = $("caixaCodigo"); if(c) c.textContent = "Código certo! Agora é só o dono aceitar."; return; }
     if(!souAnfitriao && ehAnfitriao(id) && d && d.t === "querCodigo") return digitarCodigo(con, Math.max(0, Math.min(3, +d.restam || 0)));
-    if(!souAnfitriao && ehAnfitriao(id) && d && (d.t === "recusado" || d.t === "expulso")){
+    if(!souAnfitriao && ehAnfitriao(id) && d && (d.t === "recusado" || d.t === "expulso" || d.t === "conviteRuim")){
       fecharTudo(false);
-      aviso(d.t === "expulso" ? "Você foi tirado da sala pelo dono." : "O dono da sala não aceitou sua entrada.");
+      aviso(d.t === "expulso" ? "Você foi tirado da sala pelo dono." :
+            d.t === "conviteRuim" ? "Esse convite venceu ou já foi usado. Peça um novo pro dono da sala." :
+            "O dono da sala não aceitou sua entrada.");
       return;
     }
     receber(id, d);
