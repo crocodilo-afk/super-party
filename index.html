@@ -105,6 +105,11 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .msg.portaria .sim{background:#5cff9b;color:#06121f}.msg.portaria .nao{background:#ff45c8;color:#fff}
 .pessoa .expulsar{grid-column:3;justify-self:end;background:none;border:0;color:#ff45c8;cursor:pointer;font-size:12px;opacity:.6}
 .pessoa .expulsar:hover{opacity:1}
+#caixaQr{position:fixed;inset:0;background:rgba(5,2,20,.8);display:grid;place-items:center;z-index:99}
+#caixaQr .qrCartao{background:#1a1033;border:1px solid #a45cff;border-radius:16px;padding:20px;max-width:320px;text-align:center}
+#caixaQr #qrDesenho{background:#fff;padding:10px;border-radius:10px;display:inline-block;margin:8px 0}
+#caixaQr code{display:block;font-size:15px;letter-spacing:1px;color:#5cff9b;margin:6px 0;word-break:break-all}
+#caixaQr button{margin-top:10px}
 #escrever{display:flex;gap:8px;margin-top:8px;align-items:center}
 /* botao de fliperama pra enviar */
 .botao-fliperama{position:relative;width:54px;height:54px;flex:0 0 auto;border:none;border-radius:50%;cursor:pointer;padding:0;
@@ -455,6 +460,10 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
     você joga, o programa fica praticamente parado.</p>
     <label><input type="checkbox" id="chkAvisos" checked style="width:auto;margin-right:6px">Avisar quando alguém entrar ou sair</label>
     <label><input type="checkbox" id="chkPortaria" checked style="width:auto;margin-right:6px">Na minha sala, eu aceito quem entra (quem já foi aceito entra direto)</label>
+    <label><input type="checkbox" id="chkDoisFatores" style="width:auto;margin-right:6px">Pedir o código do Google Authenticator pra entrar na minha sala</label>
+    <p class="dica">Cada amigo escaneia o QR da sala uma vez no app Google Authenticator do celular. Depois, pra entrar, ele digita os 6 números que o app mostra (mudam a cada 30 segundos). Sem o celular, ninguém entra — nem robô.</p>
+    <button type="button" id="btnQrSala">Mostrar o QR da sala</button>
+    <button type="button" id="btnQrNovo">Trocar o QR (todos escaneiam de novo)</button>
     <label>Seu apelido e sua foto</label>
     <p class="dica">Ficam guardados só no seu PC. Pra trocar, saia da sala e mude na tela de entrada.</p>
     <label>Sobre</label>
@@ -530,7 +539,7 @@ const cfg = {
   resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"),
   modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
   eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
-  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true),
+  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true), doisFatores: guarda.ler("doisFatores",false),
   banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[]),
   volMusica: guarda.ler("volMusica",60)
 };
@@ -740,6 +749,75 @@ function contaDe(con){ const c = con.metadata && con.metadata.conta; return (typ
 function aprovados(){ const a = guarda.ler("aprovados", []); return Array.isArray(a) ? a : []; }
 function esperarAte(teste, ms){ return new Promise(ok => { const t0 = Date.now(); (function v(){ if(teste()) return ok(true); if(Date.now()-t0 > ms) return ok(false); setTimeout(v, 150); })(); }); }
 
+// ---- verificacao em duas etapas: o mesmo calculo do Google Authenticator (RFC 6238) ----
+const B32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+function b32(bytes){ let bits = "", s = ""; for(const x of bytes) bits += x.toString(2).padStart(8,"0"); for(let i = 0; i + 5 <= bits.length; i += 5) s += B32[parseInt(bits.slice(i,i+5),2)]; return s; }
+function deB32(txt){ let bits = ""; for(const c of String(txt).toUpperCase()){ const v = B32.indexOf(c); if(v >= 0) bits += v.toString(2).padStart(5,"0"); }
+  const out = new Uint8Array(Math.floor(bits.length/8)); for(let i = 0; i < out.length; i++) out[i] = parseInt(bits.slice(i*8,i*8+8),2); return out; }
+function segredoDaSala(){ let s = guarda.ler("segredoSala",""); if(!/^[A-Z2-7]{32}$/.test(s)){ s = b32(crypto.getRandomValues(new Uint8Array(20))); guarda.por("segredoSala", s); } return s; }
+async function totp(segredo, passo){
+  const chave = await crypto.subtle.importKey("raw", deB32(segredo), {name:"HMAC", hash:"SHA-1"}, false, ["sign"]);
+  const msg = new DataView(new ArrayBuffer(8)); msg.setUint32(0, Math.floor(passo / 4294967296)); msg.setUint32(4, passo >>> 0);
+  const h = new Uint8Array(await crypto.subtle.sign("HMAC", chave, msg.buffer)); const o = h[h.length-1] & 15;
+  return String((((h[o]&127)<<24) | (h[o+1]<<16) | (h[o+2]<<8) | h[o+3]) % 1000000).padStart(6,"0");
+}
+const codigosUsados = new Map();   // o mesmo codigo nao vale duas vezes
+async function codigoConfere(codigo){
+  const c = String(codigo||"").replace(/\D/g,""); if(c.length !== 6) return false;
+  const agora = Math.floor(Date.now()/30000), seg = segredoDaSala();
+  for(const d of [-1,0,1]){
+    if(await totp(seg, agora+d) === c){
+      if(codigosUsados.has(c) && codigosUsados.get(c) >= agora-2) return false;
+      codigosUsados.set(c, agora); return true;
+    }
+  }
+  return false;
+}
+function mostrarQr(){
+  const seg = segredoDaSala(), sala = "TURMA-" + (guarda.ler("minhaSala","") || codigo || "");
+  const uri = "otpauth://totp/" + encodeURIComponent("Super Party:" + sala) + "?secret=" + seg + "&issuer=" + encodeURIComponent("Super Party");
+  let caixa = $("caixaQr");
+  if(!caixa){ caixa = document.createElement("div"); caixa.id = "caixaQr"; document.body.appendChild(caixa); }
+  caixa.innerHTML = '<div class="qrCartao"><h3>QR da sua sala</h3><p>No celular do amigo: Google Authenticator → <b>+</b> → <b>Ler código QR</b>.</p>' +
+    '<div id="qrDesenho"></div><p class="dica">Sem câmera? Em "Inserir chave de configuração", use:</p><code></code>' +
+    '<p class="dica">Mostre esse QR só pra quem você confia, de preferência pessoalmente ou na chamada — quem tem ele entra.</p><button type="button">Fechar</button></div>';
+  caixa.querySelector("code").textContent = seg.match(/.{1,4}/g).join(" ");
+  caixa.querySelector("button").onclick = () => caixa.remove();
+  const desenhar = () => { try{ new QRCode($("qrDesenho"), {text: uri, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M}); }catch(e){ $("qrDesenho").textContent = "Não consegui desenhar o QR — use a chave abaixo."; } };
+  if(window.QRCode) return desenhar();
+  const tag = document.createElement("script");
+  tag.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+  tag.integrity = "sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==";
+  tag.crossOrigin = "anonymous"; tag.referrerPolicy = "no-referrer";
+  tag.onload = desenhar; tag.onerror = () => { $("qrDesenho").textContent = "Sem internet pro desenho do QR — use a chave abaixo."; };
+  document.head.appendChild(tag);
+}
+
+// o anfitriao pede o codigo; 3 erros = barrado; 90 s sem responder = fora
+function pedirCodigo(con, nome, conta, passou){
+  let erros = 0;
+  const prazo = setTimeout(() => { enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); }, 90000);
+  con._recebeCodigo = async codigo => {
+    if(await codigoConfere(codigo)){ clearTimeout(prazo); con._recebeCodigo = null; enviar(con, {t:"codigoOk"}); return passou(); }
+    erros++;
+    if(erros >= 3){ clearTimeout(prazo); con._recebeCodigo = null; recusados.add(conta); sistema(nome + " errou o código 3 vezes e foi barrado."); enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+    enviar(con, {t:"querCodigo", restam: 3 - erros});
+  };
+  con.on("close", () => clearTimeout(prazo));
+  enviar(con, {t:"querCodigo", restam: 3});
+}
+
+// quem chega: caixinha pra digitar os 6 numeros
+function digitarCodigo(con, restam){
+  let d = $("caixaCodigo");
+  if(!d){ d = document.createElement("div"); d.id = "caixaCodigo"; d.className = "msg sistema portaria"; $("mensagens").appendChild(d); }
+  d.innerHTML = '<b>Verificação:</b> abra o Google Authenticator e digite os 6 números da sala. <input inputmode="numeric" maxlength="7" autocomplete="one-time-code" style="width:110px;margin:6px 6px 0 0"><button class="sim">Entrar</button><small></small>';
+  if(restam < 3) d.querySelector("small").textContent = " Código errado. Restam " + restam + " tentativa(s).";
+  const campo = d.querySelector("input"), ir = () => { enviar(con, {t:"codigo", codigo: campo.value}); d.textContent = "Conferindo o código..."; };
+  d.querySelector("button").onclick = ir; campo.onkeydown = e => { if(e.key === "Enter") ir(); };
+  $("mensagens").scrollTop = 1e9; campo.focus();
+}
+
 function portaria(con, seguir){
   const id = con.peer;
   if(!souAnfitriao){
@@ -751,6 +829,12 @@ function portaria(con, seguir){
   }
   const conta = contaDe(con), nome = nomeSeguro(con.metadata && con.metadata.nome);
   if(!conta || recusados.has(conta)){ enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+  if(cfg.doisFatores && !con._verificado){
+    // freio de robo: no maximo 3 pedidos esperando codigo ao mesmo tempo
+    const esperando = peer && peer.connections ? Object.values(peer.connections).flat().filter(c => c.open && c._recebeCodigo).length : 0;
+    if(esperando >= 3){ enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+    return pedirCodigo(con, nome, conta, () => { con._verificado = true; portaria(con, seguir); });
+  }
   if(!cfg.portaria || aprovados().includes(conta)) return seguir();
   const d = document.createElement("div"); d.className = "msg sistema portaria";
   d.innerHTML = '<b></b> quer entrar na sala. <button class="sim">Aceitar</button> <button class="nao">Recusar</button>';
@@ -797,6 +881,9 @@ function prepararConversa(con){
     desenharPessoas();
   }));
   con.on("data", d => {
+    if(souAnfitriao && d && d.t === "codigo" && con._recebeCodigo) return con._recebeCodigo(d.codigo);
+    if(!souAnfitriao && ehAnfitriao(id) && d && d.t === "codigoOk"){ const c = $("caixaCodigo"); if(c) c.textContent = "Código certo! Agora é só o dono aceitar."; return; }
+    if(!souAnfitriao && ehAnfitriao(id) && d && d.t === "querCodigo") return digitarCodigo(con, Math.max(0, Math.min(3, +d.restam || 0)));
     if(!souAnfitriao && ehAnfitriao(id) && d && (d.t === "recusado" || d.t === "expulso")){
       fecharTudo(false);
       aviso(d.t === "expulso" ? "Você foi tirado da sala pelo dono." : "O dono da sala não aceitou sua entrada.");
@@ -1436,6 +1523,10 @@ async function medirConexao(){
 $("selBanda").value = cfg.banda; $("selBanda").onchange = e => { cfg.banda = e.target.value; guarda.por("banda", cfg.banda); aplicarBanda(); };
 $("btMedir").onclick = medirConexao;
 $("chkAbafar").checked = cfg.abafar; $("chkAbafar").onchange = e => { cfg.abafar = e.target.checked; guarda.por("abafar", cfg.abafar); };
+$("chkDoisFatores").checked = cfg.doisFatores;
+$("chkDoisFatores").onchange = e => { cfg.doisFatores = e.target.checked; guarda.por("doisFatores", cfg.doisFatores); if(cfg.doisFatores){ segredoDaSala(); mostrarQr(); } };
+$("btnQrSala").onclick = () => mostrarQr();
+$("btnQrNovo").onclick = () => { if(confirm("Trocar o QR? O código antigo para de valer e todo mundo tem que escanear o novo.")){ guarda.por("segredoSala", ""); segredoDaSala(); mostrarQr(); } };
 $("chkPortaria").checked = cfg.portaria; $("chkPortaria").onchange = e => { cfg.portaria = e.target.checked; guarda.por("portaria", cfg.portaria); };
 $("chkAvisos").checked = cfg.avisos; $("chkAvisos").onchange = e => { cfg.avisos = e.target.checked; guarda.por("avisos", cfg.avisos); };
 
