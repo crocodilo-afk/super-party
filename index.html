@@ -800,12 +800,19 @@ function mostrarQr(){
 }
 
 // o anfitriao pede o codigo; 3 erros = barrado; 90 s sem responder = fora
+let falhasCodigo = [];
+function codigoTravado(){ const agora = Date.now(); falhasCodigo = falhasCodigo.filter(t => agora - t < 3600000); return falhasCodigo.length >= 10; }
+function anotarFalha(){
+  const antes = codigoTravado(); falhasCodigo.push(Date.now());
+  if(!antes && codigoTravado()) sistema("⚠️ Muita gente errando o código do celular: alguém está tentando adivinhar. Entrada por código trancada por 1 hora — seus amigos entram pelo 🎟️ Convidar.");
+}
+
 function pedirCodigo(con, nome, conta, passou){
   let erros = 0;
   const prazo = setTimeout(() => { con._recebeCodigo = null; isca(con, nome, "não digitou o código"); }, 90000);
   con._recebeCodigo = async codigo => {
     if(await codigoConfere(codigo)){ clearTimeout(prazo); con._recebeCodigo = null; enviar(con, {t:"codigoOk"}); return passou(); }
-    erros++;
+    erros++; anotarFalha();
     if(erros >= 3){ clearTimeout(prazo); con._recebeCodigo = null; recusados.add(conta); return isca(con, nome, "errou o código 3 vezes"); }
     enviar(con, {t:"querCodigo", restam: 3 - erros});
   };
@@ -913,6 +920,7 @@ function portaria(con, seguir){
     return isca(con, nome, "convite vencido, usado ou falso");
   }
   if(cfg.doisFatores && !con._verificado){
+    if(codigoTravado()) return isca(con, nome, "entrada por código trancada");
     // freio de robo: no maximo 3 pedidos esperando codigo ao mesmo tempo
     const esperando = peer && peer.connections ? Object.values(peer.connections).flat().filter(c => c.open && c._recebeCodigo).length : 0;
     if(esperando >= 3){ enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
