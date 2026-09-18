@@ -800,11 +800,11 @@ function mostrarQr(){
 // o anfitriao pede o codigo; 3 erros = barrado; 90 s sem responder = fora
 function pedirCodigo(con, nome, conta, passou){
   let erros = 0;
-  const prazo = setTimeout(() => { enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); }, 90000);
+  const prazo = setTimeout(() => { con._recebeCodigo = null; isca(con, nome, "não digitou o código"); }, 90000);
   con._recebeCodigo = async codigo => {
     if(await codigoConfere(codigo)){ clearTimeout(prazo); con._recebeCodigo = null; enviar(con, {t:"codigoOk"}); return passou(); }
     erros++;
-    if(erros >= 3){ clearTimeout(prazo); con._recebeCodigo = null; recusados.add(conta); sistema(nome + " errou o código 3 vezes e foi barrado."); enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+    if(erros >= 3){ clearTimeout(prazo); con._recebeCodigo = null; recusados.add(conta); return isca(con, nome, "errou o código 3 vezes"); }
     enviar(con, {t:"querCodigo", restam: 3 - erros});
   };
   con.on("close", () => clearTimeout(prazo));
@@ -830,16 +830,43 @@ function novoConvite(){
   let t = ""; for(const b of r) t += L[b % 32];   // 32 cabe certinho em 256: sorteio sem vies
   const agora = Date.now();
   convites.forEach((venc, k) => { if(venc <= agora) convites.delete(k); });
-  convites.set(t, agora + 5*60*1000);
+  convites.set(t, agora + 2*60*1000);
   return t;
 }
 $("btConvidar").onclick = () => {
   const t = "#TURMA-" + codigo + "-" + novoConvite();
-  const msg = "Entra no Super Party! Cole este código (vale 5 minutos e uma vez só): " + t;
+  const msg = "Entra no Super Party! Cole este código (vale 2 minutos e uma vez só): " + t;
   (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject())
-    .then(() => toque("Convite copiado! Cole no WhatsApp do amigo. Vale 5 minutos."), () => toque(t));
-  sistema("Convite criado: " + t + " — vence em 5 minutos.");
+    .then(() => toque("Convite copiado! Cole no WhatsApp do amigo. Vale 2 minutos."), () => toque(t));
+  sistema("Convite criado: " + t + " — vence em 2 minutos.");
 };
+
+// ---- ISCA: quem falha na portaria nao e mandado embora — cai numa sala de mentira ----
+// Ele ve alguem "na sala", mensagens de vez em quando, e fica esperando. Nunca chega perto da
+// chamada de verdade: nao entra em "gente", nao recebe voz, tela, lista nem chat real.
+const ISCA_NOMES = ["Lucas","Mari","Pedro","Bia","Rafa","Duda","Gui","Nanda"];
+const ISCA_FALAS = ["alguém aí?", "vou pegar água, já volto", "voltei", "tá travando aqui", "caiu minha net rapidinho",
+  "espera que vou reiniciar o jogo", "vcs tão me ouvindo?", "meu mic tá ruim hoje", "kkkk", "brb", "partiu mais uma?"];
+let iscasAbertas = 0;
+function isca(con, nome, motivo){
+  if(!con.open || iscasAbertas >= 5){ try{ con.close(); }catch(e){} return; }
+  iscasAbertas++; con._isca = true;
+  sistema("🪤 " + nome + " caiu na isca (" + motivo + "). Ele está numa sala falsa e não ouve vocês.");
+  const falso = ISCA_NOMES[crypto.getRandomValues(new Uint8Array(1))[0] % ISCA_NOMES.length];
+  const cor = CORES[crypto.getRandomValues(new Uint8Array(1))[0] % CORES.length];
+  enviar(con, {t:"codigoOk"});
+  setTimeout(() => enviar(con, {t:"oi", nome:falso, cor, foto:"", mudo:true, surdo:false, tela:false}), 1500 + Math.random()*2500);
+  let vezes = 0, fala;
+  const falar = () => {
+    if(!con.open || vezes++ > 12) return;
+    enviar(con, {t:"teclando"});
+    setTimeout(() => enviar(con, {t:"chat", txt: ISCA_FALAS[Math.floor(Math.random()*ISCA_FALAS.length)]}), 1500 + Math.random()*3000);
+    fala = setTimeout(falar, 40000 + Math.random()*50000);
+  };
+  fala = setTimeout(falar, 20000 + Math.random()*20000);
+  const fim = setTimeout(() => { try{ con.close(); }catch(e){} }, 15*60*1000);   // 15 minutos perdidos, depois cai
+  con.on("close", () => { clearTimeout(fala); clearTimeout(fim); iscasAbertas--; });
+}
 
 function portaria(con, seguir){
   const id = con.peer;
@@ -851,7 +878,7 @@ function portaria(con, seguir){
     return;
   }
   const conta = contaDe(con), nome = nomeSeguro(con.metadata && con.metadata.nome);
-  if(!conta || recusados.has(conta)){ enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+  if(!conta || recusados.has(conta)) return isca(con, nome, "já estava barrado");
   const conv = con.metadata && typeof con.metadata.convite === "string" ? con.metadata.convite : "";
   if(conv){
     const venc = convites.get(conv); convites.delete(conv);          // uma vez so: apaga na hora
@@ -860,7 +887,7 @@ function portaria(con, seguir){
       sistema(nome + " entrou pelo convite.");
       return seguir();
     }
-    enviar(con, {t:"conviteRuim"}); setTimeout(()=>con.close(), 300); return;
+    return isca(con, nome, "convite vencido, usado ou falso");
   }
   if(cfg.doisFatores && !con._verificado){
     // freio de robo: no maximo 3 pedidos esperando codigo ao mesmo tempo
