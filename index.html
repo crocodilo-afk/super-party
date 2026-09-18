@@ -105,6 +105,8 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .msg.portaria .sim{background:#5cff9b;color:#06121f}.msg.portaria .nao{background:#ff45c8;color:#fff}
 .pessoa .expulsar{grid-column:3;justify-self:end;background:none;border:0;color:#ff45c8;cursor:pointer;font-size:12px;opacity:.6}
 .pessoa .expulsar:hover{opacity:1}
+.pessoa .cadeado{grid-column:3;justify-self:end;background:none;border:0;cursor:pointer;font-size:12px;opacity:.7}
+.pessoa .cadeado:hover{opacity:1}
 #btConvidar{flex-basis:100%;margin-top:6px;padding:4px 10px;border-radius:10px;border:1px solid #5cff9b;background:rgba(92,255,155,.12);color:#5cff9b;cursor:pointer;font-weight:700}
 #caixaQr{position:fixed;inset:0;background:rgba(5,2,20,.8);display:grid;place-items:center;z-index:99}
 #caixaQr .qrCartao{background:#1a1033;border:1px solid #a45cff;border-radius:16px;padding:20px;max-width:320px;text-align:center}
@@ -868,6 +870,27 @@ function isca(con, nome, motivo){
   con.on("close", () => { clearTimeout(fala); clearTimeout(fim); iscasAbertas--; });
 }
 
+// ---- CODIGO DE SEGURANCA (igual ao do WhatsApp) ----
+// A ligacao ja e criptografada ponta a ponta pelo navegador (DTLS + SRTP, AES-GCM). Cada lado tem
+// uma "impressao digital" da sua chave. O codigo sai das DUAS impressoes juntas: se alguem estiver
+// no meio do caminho, cada lado ve uma impressao diferente e os codigos NAO batem.
+function impressoes(sdp){ return ((sdp || "").match(/a=fingerprint:\S+ [0-9A-Fa-f:]+/g) || []).map(x => x.split(" ")[1].toUpperCase()); }
+async function codigoSeguranca(id){
+  const x = gente.get(id), pc = x && x.con && x.con.peerConnection;
+  if(!pc || !pc.localDescription || !pc.remoteDescription) return "";
+  const a = impressoes(pc.localDescription.sdp)[0], b = impressoes(pc.remoteDescription.sdp)[0];
+  if(!a || !b) return "";
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode([a, b].sort().join("|"))));
+  let n = ""; for(let i = 0; i < 6; i++) n += String(((h[2*i] << 8) | h[2*i+1]) % 100).padStart(2, "0");
+  return n.match(/.{3}/g).join(" ");
+}
+async function mostrarSeguranca(id){
+  const x = gente.get(id); if(!x) return;
+  const c = await codigoSeguranca(id);
+  if(!c) return sistema("Ainda não dá pra calcular o código de segurança com " + x.nome + ". Tente de novo em alguns segundos.");
+  sistema("🔒 Código de segurança com " + x.nome + ": " + c + " — peça pra ele abrir o cadeado do seu nome e ler o dele em voz alta. Se for IGUAL, ninguém está no meio. Se for diferente, saia da sala.");
+}
+
 function portaria(con, seguir){
   const id = con.peer;
   if(!souAnfitriao){
@@ -1293,6 +1316,8 @@ function desenharPessoas(){
       const r = document.createElement("input"); r.type="range"; r.min=0; r.max=100; r.value=p.vol; r.title="Volume de "+p.nome;
       r.oninput = () => { p.vol = +r.value; guarda.por("vol."+p.nome, p.vol); aplicarVolumePessoa(p); };
       d.appendChild(r);
+      const cad = document.createElement("button"); cad.className = "cadeado"; cad.textContent = "🔒"; cad.title = "Código de segurança com " + p.nome;
+      cad.onclick = () => mostrarSeguranca(id); d.appendChild(cad);
       if(souAnfitriao){
         const x = document.createElement("button"); x.className = "expulsar"; x.textContent = "✖"; x.title = "Expulsar " + p.nome;
         x.onclick = () => expulsar(id); d.appendChild(x);
