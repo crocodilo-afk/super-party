@@ -100,6 +100,11 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 #mensagens{flex:1;overflow:auto;padding:4px 6px;display:flex;flex-direction:column;gap:4px}
 .msg b{margin-right:6px}
 .msg.sistema{color:var(--suave);font-style:italic;font-size:12px}
+.msg.portaria{font-style:normal;font-size:13px;color:var(--texto,#fff);border:1px solid #ffd166;border-radius:10px;padding:8px}
+.msg.portaria button{margin-left:6px;padding:3px 10px;border-radius:8px;border:0;cursor:pointer;font-weight:700}
+.msg.portaria .sim{background:#5cff9b;color:#06121f}.msg.portaria .nao{background:#ff45c8;color:#fff}
+.pessoa .expulsar{grid-column:3;justify-self:end;background:none;border:0;color:#ff45c8;cursor:pointer;font-size:12px;opacity:.6}
+.pessoa .expulsar:hover{opacity:1}
 #escrever{display:flex;gap:8px;margin-top:8px;align-items:center}
 /* botao de fliperama pra enviar */
 .botao-fliperama{position:relative;width:54px;height:54px;flex:0 0 auto;border:none;border-radius:50%;cursor:pointer;padding:0;
@@ -449,6 +454,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
     <p class="dica">Feito pra PC gamer: os efeitos congelam sozinhos quando você sai da janela ou minimiza — enquanto
     você joga, o programa fica praticamente parado.</p>
     <label><input type="checkbox" id="chkAvisos" checked style="width:auto;margin-right:6px">Avisar quando alguém entrar ou sair</label>
+    <label><input type="checkbox" id="chkPortaria" checked style="width:auto;margin-right:6px">Na minha sala, eu aceito quem entra (quem já foi aceito entra direto)</label>
     <label>Seu apelido e sua foto</label>
     <p class="dica">Ficam guardados só no seu PC. Pra trocar, saia da sala e mude na tela de entrada.</p>
     <label>Sobre</label>
@@ -524,7 +530,7 @@ const cfg = {
   resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"),
   modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
   eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
-  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true),
+  efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true),
   banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[]),
   volMusica: guarda.ler("volMusica",60)
 };
@@ -536,6 +542,15 @@ function limparCodigo(t){ return (t||"").toUpperCase().replace(/[^A-Z0-9-]/g,"")
 function novoCodigo(){ const L="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; const r=crypto.getRandomValues(new Uint8Array(5)); for(const b of r) s+=L[b%L.length]; return s; }
 function inicial(n){ return (n||"?").trim().charAt(0).toUpperCase(); }
 function escapar(t){ const d=document.createElement("div"); d.textContent=t; return d.innerHTML; }
+// cor e foto vem dos amigos: so aceita cor #rgb/#rrggbb e foto data:image em base64
+function corSegura(c){ return /^#[0-9a-fA-F]{3,8}$/.test(String(c||"")) ? c : "#38e8ff"; }
+function nomeSeguro(n){ const t = (typeof n === "string" ? n : "").replace(/[\u0000-\u001f\u202a-\u202e\u2066-\u2069]/g, "").trim().slice(0,24); return t || "alguém"; }
+function ehAnfitriao(id){ return id === PREFIXO + codigo; }
+// freio contra enxurrada: cada pessoa manda no maximo N coisas a cada 5 s
+function passou(p, tipo, max){ const k = "_f_"+tipo, agora = Date.now(); p[k] = (p[k]||[]).filter(t => agora - t < 5000); if(p[k].length >= max) return false; p[k].push(agora); return true; }
+function musicaSegura(m){ if(!m || typeof m !== "object") return null; const id = idDoYoutube(m.id); if(!id || id !== m.id) return null;
+  return {id, titulo:String(m.titulo||"").slice(0,120), quem:nomeSeguro(m.quem)}; }
+function fotoSegura(f){ return /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(String(f||"")) ? f : ""; }
 
 // ------------------------- entrada -------------------------
 (function montarEntrada(){
@@ -668,7 +683,7 @@ function abrirPeer(cod, anfitriao){
   peer.on("open", () => {
     if(anfitriao){ entrarNaSala(); sistema("Sala criada. Mande o código pros amigos."); }
     else {
-      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor}});
+      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor, conta:eu.id}});
       let entrou = false, salaExiste = false;
       con.on("open", ()=>{ entrou = true; salaExiste = true; });
       peer.on("error", e => { if(e.type !== "peer-unavailable") salaExiste = true; });
@@ -718,10 +733,56 @@ function entrarNaSala(){
 }
 
 // ------------------------- conversas (dados) -------------------------
+// ---- portaria: o dono da sala aceita quem entra; os outros so aceitam quem o dono liberou ----
+const liberados = new Set();          // ids que o anfitriao anunciou (so vale pra quem nao e anfitriao)
+const recusados = new Set();          // contas barradas nesta sessao
+function contaDe(con){ const c = con.metadata && con.metadata.conta; return (typeof c === "string" && /^c[a-z0-9]{6,20}$/.test(c)) ? c : ""; }
+function aprovados(){ const a = guarda.ler("aprovados", []); return Array.isArray(a) ? a : []; }
+function esperarAte(teste, ms){ return new Promise(ok => { const t0 = Date.now(); (function v(){ if(teste()) return ok(true); if(Date.now()-t0 > ms) return ok(false); setTimeout(v, 150); })(); }); }
+
+function portaria(con, seguir){
+  const id = con.peer;
+  if(!souAnfitriao){
+    // so conversa com o dono da sala ou com quem o dono anunciou
+    if(ehAnfitriao(id)){ seguir(); if(!gente.get(id).jaDisse) sistema("Chamando o dono da sala... espere ele aceitar."); return; }
+    if(con._euLiguei) return seguir();
+    esperarAte(() => liberados.has(id), 4000).then(ok => ok ? seguir() : con.close());
+    return;
+  }
+  const conta = contaDe(con), nome = nomeSeguro(con.metadata && con.metadata.nome);
+  if(!conta || recusados.has(conta)){ enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); return; }
+  if(!cfg.portaria || aprovados().includes(conta)) return seguir();
+  const d = document.createElement("div"); d.className = "msg sistema portaria";
+  d.innerHTML = '<b></b> quer entrar na sala. <button class="sim">Aceitar</button> <button class="nao">Recusar</button>';
+  d.querySelector("b").textContent = nome;
+  $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
+  const fim = txt => { d.textContent = txt; };
+  d.querySelector(".sim").onclick = () => {
+    if(!con.open) return fim(nome + " desistiu de entrar.");
+    guarda.por("aprovados", [...new Set([...aprovados(), conta])].slice(-100));
+    fim(nome + " foi aceito."); seguir();
+  };
+  d.querySelector(".nao").onclick = () => {
+    recusados.add(conta); enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300); fim(nome + " foi recusado.");
+  };
+  con.on("close", () => { if(d.querySelector("button")) fim(nome + " desistiu de entrar."); });
+}
+
+function expulsar(id){
+  const p = gente.get(id); if(!p || !souAnfitriao) return;
+  if(!confirm("Expulsar " + p.nome + " da sala? Ele não consegue voltar enquanto a sala estiver aberta.")) return;
+  if(p.conta){ recusados.add(p.conta); guarda.por("aprovados", aprovados().filter(c => c !== p.conta)); }
+  enviar(p.con, {t:"expulso"});
+  paraTodos({t:"tirar", id});
+  setTimeout(() => { try{ p.con.close(); }catch(e){} sair(id); }, 300);
+  sistema(p.nome + " foi expulso.");
+}
+
 function prepararConversa(con){
   const id = con.peer;
-  con.on("open", () => {
+  con.on("open", () => portaria(con, () => {
     const p = pessoa(id, con.metadata || {});
+    p.conta = contaDe(con);
     p.con = con;
     if(!$("sala").classList.contains("ativa")) entrarNaSala();
     enviar(con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
@@ -731,18 +792,25 @@ function prepararConversa(con){
     }
     // quem chega liga pra todo mundo; quem ja estava so atende
     if(con.metadata && con.metadata.chegando === false) {}
-    if(!souAnfitriao && con.peer === PREFIXO + codigo) ligarVoz(id);
-    if(telaMinha) mandarTela(id);
+    
+    if(souAnfitriao) paraTodos({t:"liberar", id});
     desenharPessoas();
+  }));
+  con.on("data", d => {
+    if(!souAnfitriao && ehAnfitriao(id) && d && (d.t === "recusado" || d.t === "expulso")){
+      fecharTudo(false);
+      aviso(d.t === "expulso" ? "Você foi tirado da sala pelo dono." : "O dono da sala não aceitou sua entrada.");
+      return;
+    }
+    receber(id, d);
   });
-  con.on("data", d => receber(id, d));
   con.on("close", () => sair(id));
   con.on("error", () => sair(id));
 }
 
 function pessoa(id, meta){
-  if(!gente.has(id)) gente.set(id, {nome: meta.nome||"alguém", cor: meta.cor||CORES[1], foto: meta.foto||"", con:null, chamadaVoz:null, audio:null,
-    chamadasTela:[], telaEl:null, mudo:false, surdo:false, tela:false, vol: guarda.ler("vol."+(meta.nome||""),100), falando:false});
+  if(!gente.has(id)) gente.set(id, {nome: nomeSeguro(meta.nome), cor: corSegura(meta.cor), foto: fotoSegura(meta.foto), con:null, chamadaVoz:null, audio:null,
+    chamadasTela:[], telaEl:null, mudo:false, surdo:false, tela:false, vol: guarda.ler("vol."+nomeSeguro(meta.nome),100), falando:false});
   return gente.get(id);
 }
 
@@ -750,30 +818,51 @@ function enviar(con, d){ try{ if(con && con.open) con.send(d); }catch(e){} }
 function paraTodos(d){ gente.forEach(p=>enviar(p.con, d)); }
 
 function receber(id, d){
-  const p = gente.get(id); if(!p || !d) return;
+  const p = gente.get(id); if(!p || !d || typeof d !== "object") return;
+  if(!passou(p, "tudo", 60)) return;   // mais de 60 mensagens em 5 s: ignora
   switch(d.t){
     case "oi":
       const novo = !p.jaDisse; p.jaDisse = true;
-      Object.assign(p, {nome:d.nome, cor:d.cor, foto:d.foto||"", mudo:d.mudo, surdo:d.surdo, tela:d.tela});
+      Object.assign(p, {nome:nomeSeguro(d.nome), cor:corSegura(d.cor), foto:fotoSegura(d.foto), mudo:!!d.mudo, surdo:!!d.surdo, tela:!!d.tela});
       p.vol = guarda.ler("vol."+p.nome, 100);
       if(novo && cfg.avisos) sistema(p.nome + " entrou na sala.");
+      if(novo && telaMinha) mandarTela(id);            // tela so pra quem aparece na lista
+      if(novo && !souAnfitriao && ehAnfitriao(id)){      // fui aceito: repito o "oi" (o primeiro chegou antes do aceite) e ligo a voz
+        enviar(p.con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
+        ligarVoz(id);
+      }
       desenharPessoas(); break;
-    case "lista":
-      d.ids.forEach(outro => {
+    case "lista":                             // so o anfitriao diz quem esta na sala
+      if(!ehAnfitriao(id) || !Array.isArray(d.ids)) break;
+      d.ids.slice(0,12).forEach(outro => {
+        if(typeof outro !== "string" || outro.length > 64) return;
         if(outro === peer.id || gente.has(outro)) return;
-        const c = peer.connect(outro, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor}});
+        liberados.add(outro);
+        const c = peer.connect(outro, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor, conta:eu.id}});
+        c._euLiguei = true;
         prepararConversa(c);
         ligarVoz(outro);
       }); break;
+    case "liberar":                           // o dono aceitou alguem novo
+      if(ehAnfitriao(id) && typeof d.id === "string" && d.id.length < 64) liberados.add(d.id);
+      break;
+    case "tirar":                             // o dono expulsou alguem
+      if(ehAnfitriao(id) && typeof d.id === "string" && gente.has(d.id)){
+        const x = gente.get(d.id); liberados.delete(d.id);
+        try{ x.con && x.con.close(); }catch(e){} sair(d.id);
+      }
+      break;
     case "estado":
-      Object.assign(p, {mudo:d.mudo, surdo:d.surdo, tela:d.tela});
+      Object.assign(p, {mudo:!!d.mudo, surdo:!!d.surdo, tela:!!d.tela});
       if(!d.tela) tirarTela(id);
       desenharPessoas(); break;
     case "chat":
       p.teclandoAte = 0;
+      if(!passou(p, "chat", 8)) break;
       mensagem(p.nome, p.cor, String(d.txt).slice(0,500)); break;
     case "imagem":
       p.teclandoAte = 0;
+      if(!passou(p, "imagem", 2)) break;
       if(typeof d.dados === "string" && d.dados.startsWith("data:image/") && d.dados.length < 1200000)
         mensagem(p.nome, p.cor, "", d.dados);
       break;
@@ -781,8 +870,9 @@ function receber(id, d){
       p.teclandoAte = Date.now() + 3000; break;
     case "musica":
       if(d.acao === "estado"){                 // veio do anfitriao: e a verdade da sala
-        if(souAnfitriao) break;
-        jukeFila = Array.isArray(d.fila) ? d.fila : [];
+        if(souAnfitriao || !ehAnfitriao(id)) break;
+        jukeFila = Array.isArray(d.fila) ? d.fila.slice(0,50).map(musicaSegura).filter(Boolean) : [];
+        d.atual = musicaSegura(d.atual); d.pos = Math.max(0, Number(d.pos) || 0);
         const trocou = (jukeAtual && jukeAtual.id) !== (d.atual && d.atual.id);
         jukeAtual = d.atual || null; jukeTocando = !!d.tocando;
         if(jukeAtual) porNoTocador(jukeAtual.id, d.pos || 0, jukeTocando);
@@ -857,6 +947,11 @@ function ligarVoz(id){
 }
 
 function atenderChamada(ch){
+  const conhecido = () => { const x = gente.get(ch.peer); return !!(x && x.con && x.con.open && x.jaDisse); };   // visivel na lista
+  if(!conhecido()){
+    esperarAte(conhecido, 5000).then(ok => ok ? atenderChamada(ch) : ch.close());
+    return;
+  }
   const tipo = ch.metadata && ch.metadata.tipo;
   if(tipo === "tela"){
     ch.answer();
@@ -1039,8 +1134,9 @@ function desenharPessoas(){
     const d = document.createElement("div"); d.className = "pessoa"; d.dataset.id = id;
     const ic = (p.mudo?"🔇":"") + (p.surdo?"🎧̸":"");
     const etiqueta = p.tela ? '<span class="aovivo" title="Está compartilhando a tela — clique pra ver"><i></i>AO VIVO</span>' : "";
-    const fundo = p.foto ? `background:url(${p.foto}) center/cover` : `background:${p.cor}`;
-    d.innerHTML = `<div class="bolha" style="${fundo}">${p.foto?"":escapar(inicial(p.nome))}</div>
+    const foto = fotoSegura(p.foto);
+    const fundo = foto ? `background:url(${foto}) center/cover` : `background:${corSegura(p.cor)}`;
+    d.innerHTML = `<div class="bolha" style="${fundo}">${foto?"":escapar(inicial(p.nome))}</div>
       <div class="nome">${escapar(p.nome)}${souEu?' <small style="color:var(--suave)">(você)</small>':''}</div><div class="icones">${etiqueta}${ic}</div>`;
     const et = d.querySelector(".aovivo");
     if(et) et.onclick = () => { const t = telas.get(id); if(t) t.scrollIntoView({behavior:"smooth", block:"center"}); };
@@ -1048,6 +1144,10 @@ function desenharPessoas(){
       const r = document.createElement("input"); r.type="range"; r.min=0; r.max=100; r.value=p.vol; r.title="Volume de "+p.nome;
       r.oninput = () => { p.vol = +r.value; guarda.por("vol."+p.nome, p.vol); aplicarVolumePessoa(p); };
       d.appendChild(r);
+      if(souAnfitriao){
+        const x = document.createElement("button"); x.className = "expulsar"; x.textContent = "✖"; x.title = "Expulsar " + p.nome;
+        x.onclick = () => expulsar(id); d.appendChild(x);
+      }
     }
     box.appendChild(d);
   };
@@ -1102,7 +1202,8 @@ setInterval(()=>{
 // ------------------------- chat -------------------------
 function mensagem(nome, cor, txt, imagem){
   const d = document.createElement("div"); d.className = "msg";
-  d.innerHTML = `<b style="color:${cor}">${escapar(nome)}</b>${escapar(txt||"")}`;
+  d.innerHTML = `<b style="color:${corSegura(cor)}">${escapar(nome)}</b>${escapar(txt||"")}`;
+  imagem = fotoSegura(imagem);
   if(imagem){
     const img = new Image(); img.src = imagem;
     img.onclick = () => window.open(imagem, "_blank");
@@ -1335,6 +1436,7 @@ async function medirConexao(){
 $("selBanda").value = cfg.banda; $("selBanda").onchange = e => { cfg.banda = e.target.value; guarda.por("banda", cfg.banda); aplicarBanda(); };
 $("btMedir").onclick = medirConexao;
 $("chkAbafar").checked = cfg.abafar; $("chkAbafar").onchange = e => { cfg.abafar = e.target.checked; guarda.por("abafar", cfg.abafar); };
+$("chkPortaria").checked = cfg.portaria; $("chkPortaria").onchange = e => { cfg.portaria = e.target.checked; guarda.por("portaria", cfg.portaria); };
 $("chkAvisos").checked = cfg.avisos; $("chkAvisos").onchange = e => { cfg.avisos = e.target.checked; guarda.por("avisos", cfg.avisos); };
 
 // ---- placar de internet no canto de cada telinha ----
