@@ -197,6 +197,8 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 #juke-tela{position:relative;width:100%;max-width:340px;aspect-ratio:16/9;background:#000;border-radius:8px;
   overflow:hidden;border:2px solid var(--roxo);align-self:center}
 #juke-tela iframe{width:100%;height:100%;border:0;display:block}
+/* sem musica tocando, o quadro do YouTube some (o tocador continua vivo por baixo, pronto) */
+#juke-tela.vazia{height:0;aspect-ratio:auto;border-width:0;margin:0}
 #btJukeLiberar{position:absolute;inset:0;width:100%;height:100%;background:rgba(10,6,22,.82);color:var(--verde);
   border:none;font-family:inherit;font-size:14px;letter-spacing:1px;cursor:pointer}
 #juke-por{display:flex;gap:8px;align-items:center}
@@ -364,7 +366,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
         <button id="btJukeAbrir" title="Mostrar ou esconder o vídeo">▾</button>
       </div>
       <div id="juke-corpo">
-        <div id="juke-tela"><div id="ytplayer"></div>
+        <div id="juke-tela" class="vazia"><div id="ytplayer"></div>
           <button id="btJukeLiberar" hidden>▶ TOCAR JUNTO</button>
         </div>
         <form id="juke-por">
@@ -858,10 +860,10 @@ function novoConvite(){
 }
 $("btConvidar").onclick = () => {
   const t = "#TURMA-" + codigo + "-" + novoConvite();
-  const msg = "Entra no Super Party! Cole este código (vale 2 minutos e uma vez só): " + t;
-  (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject())
-    .then(() => toque("Convite copiado! Cole no WhatsApp do amigo. Vale 2 minutos."), () => toque(t));
-  sistema("Convite criado: " + t + " — vence em 2 minutos.");
+  // so o codigo, nada mais: o amigo cola direto no campo de entrar (pedido dele em 30/09)
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject())
+    .then(() => toque("Convite copiado. Vale 2 minutos."), () => toque(t));
+  sistema("🎟️ " + t);
 };
 
 // ---- ISCA: quem falha na portaria nao e mandado embora — cai numa sala de mentira ----
@@ -1830,6 +1832,7 @@ function porNoTocador(id, pos, tocando){
 }
 
 function desenharJuke(){
+  $("juke-tela").classList.toggle("vazia", !jukeAtual);
   $("juke-agora").textContent = jukeAtual
     ? (jukeTocando ? "▶ " : "⏸ ") + (jukeAtual.titulo || jukeAtual.id) + " · pôs: " + jukeAtual.quem
     : "nada tocando — cole um link do YouTube";
