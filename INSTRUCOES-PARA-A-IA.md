@@ -53,10 +53,10 @@ com o mesmo instalador dentro (aí é descompactar primeiro).
      O aviso é sobre **falta de assinatura**, não sobre vírus.
    - **Não** mande a pessoa desligar o antivírus nem o SmartScreen. Não é necessário e é ruim pra ela.
 4. Clicar em **"Instalar agora"**. Ele instala só para o usuário atual, **sem pedir senha de administrador**.
-5. Pronto: aparece o atalho **Super Party** na área de trabalho.
+5. Pronto: aparece o atalho **Super Party** na área de trabalho e no **Menu Iniciar**, e ele fica listado em **Configurações → Aplicativos** como qualquer programa.
 
 **Onde os arquivos ficam:** `%LOCALAPPDATA%\SuperParty`
-**Para desinstalar:** apagar essa pasta e o atalho da área de trabalho. Não mexe em registro do Windows.
+**Para desinstalar:** Configurações → Aplicativos → Super Party → **Desinstalar** (feche o Super Party antes). Tira a pasta, os dois atalhos e a entrada da lista. A única coisa que ele grava no registro é essa entrada da lista, em HKCU (só do usuário).
 
 ## 4. Como funciona por dentro (caso você precise investigar)
 
