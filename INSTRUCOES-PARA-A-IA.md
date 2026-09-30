@@ -96,19 +96,19 @@ com o mesmo instalador dentro (aí é descompactar primeiro).
   recado offline. Não é um Discord completo, é uma sala ao vivo.
 - **Apertar para falar** só funciona com a janela do Super Party na frente.
 
-## 8. Atualizações
+## 8. Atualizações (sozinhas, igual ao Discord)
 
-O programa **procura sozinho uma versão nova toda vez que abre**. Quando o Jairo mudar alguma coisa,
-todo mundo recebe na próxima vez que abrir, sem reinstalar nada. Se não houver internet, ele abre
-normalmente com a versão que já está instalada.
+**Não precisa baixar de novo nunca mais** — a partir do instalador de 30/09/2026:
+- **A página** (telas, botões, voz): o programa baixa a versão nova sozinho toda vez que abre. Com ele aberto,
+  quando sai versão nova aparece a faixa **"🎁 Atualização pronta"** → **Reiniciar agora**.
+- **O próprio programa** (`Super Party.exe`): também se troca sozinho pelo GitHub e vale na abertura seguinte.
 
-De onde vem: `https://raw.githubusercontent.com/crocodilo-afk/super-party/master/index.html` — é público,
-qualquer um pode conferir o que está sendo baixado. O programa só aceita a página nova se ela tiver mais de
-5 KB e contiver o nome "Super Party"; qualquer erro, ele abre com a que já tem. O arquivo baixado fica em
-`%LOCALAPPDATA%\SuperParty\pagina.html`.
+Quem instalou **antes de 30/09/2026 de madrugada** precisa instalar **uma última vez** (o programa antigo ainda
+não sabia se trocar sozinho). Instala por cima; conta, foto e ajustes continuam.
 
-**A mudança demora alguns minutos pra chegar** (o GitHub guarda a versão em cache por volta de 4 minutos).
-Se a pessoa quiser conferir se já está com a versão nova, é só fechar e abrir o programa de novo.
+De onde vem: `https://raw.githubusercontent.com/crocodilo-afk/super-party/master/` (`index.html` e `SuperParty.exe`) —
+é público, qualquer um pode conferir. O programa só aceita arquivo com cara de verdadeiro; qualquer erro, abre com o
+que já tem. O GitHub guarda cache de uns 4 minutos, então a novidade chega uns minutos depois de publicada.
 
 ## 9. Jukebox (música pra turma)
 
