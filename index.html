@@ -162,6 +162,13 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   background:linear-gradient(135deg,#38e8ff,#a45cff,#ff45c8);color:#11062a;font-weight:800;font-size:11px;
   letter-spacing:3px;padding:4px 16px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 .opcoes{display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0 6px}
+.rotulo{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--suave);margin:16px 0 8px}
+.sub{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--suave);margin:10px 0 6px;opacity:.8}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{flex:1;min-width:70px;padding:10px 8px;border-radius:8px;border:1px solid rgba(169,158,203,.3);background:rgba(255,255,255,.04);color:var(--texto,#f1eaff);font-weight:700;cursor:pointer}
+.chips button:hover{border-color:var(--ciano)}
+.chips button.sel{background:rgba(56,232,255,.18);border-color:var(--ciano);color:var(--ciano)}
+.aoVivo{background:linear-gradient(90deg,#5cff9b,#38e8ff)!important;color:#11062a!important;font-weight:800}
 .opcao{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:12px;text-align:left;padding:14px 16px;
   border-radius:12px;background:rgba(56,232,255,.1);border:2px solid var(--borda);box-shadow:0 4px 0 rgba(0,0,0,.45)}
 .opcao:hover{background:rgba(56,232,255,.2);border-color:var(--ciano)}
@@ -425,26 +432,21 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   </section>
 
   <section data-painel="transmissao" hidden>
-    <label for="selResolucao">Resolução da transmissão</label>
-    <select id="selResolucao">
-      <option value="720">720p</option>
-      <option value="1080">1080p</option>
-      <option value="1440">1440p</option>
-      <option value="2160">2160p — 4K</option>
-      <option value="0">Original — a sua tela inteira, sem reduzir</option>
-    </select>
-    <label for="selQuadros">Quadros por segundo</label>
-    <select id="selQuadros">
-      <option value="15">15 — bem leve</option>
-      <option value="30">30 — normal</option>
-      <option value="60">60 — jogo rápido</option>
-      <option value="120">120 — monitor de 120Hz ou mais</option>
-    </select>
+    <div class="rotulo">QUALIDADE DA TRANSMISSÃO</div>
+    <div class="sub">RESOLUÇÃO</div>
+    <div class="chips" data-cfg="resolucao">
+      <button type="button" data-v="720">720p</button><button type="button" data-v="1080">1080p</button>
+      <button type="button" data-v="1440">1440p</button><button type="button" data-v="0">Fonte</button>
+    </div>
+    <div class="sub">TAXA DE QUADROS</div>
+    <div class="chips" data-cfg="quadros">
+      <button type="button" data-v="15">15 FPS</button><button type="button" data-v="30">30 FPS</button>
+      <button type="button" data-v="60">60 FPS</button>
+    </div>
     <label for="volTransm">Volume das transmissões: <span id="volTransmTxt">100%</span></label>
     <input type="range" id="volTransm" min="0" max="100" value="100">
     <label><input type="checkbox" id="chkAbafar" style="width:auto;margin-right:6px">Abaixar a transmissão quando alguém falar</label>
-    <p class="dica">No Discord, 1080p, 60 quadros e "Original" só entram com Nitro pago. Aqui é tudo liberado, porque
-    a imagem vai direto do seu PC pro do seu amigo: quem manda no limite é a sua internet de subida.</p>
+    <p class="dica">Igual ao Discord, mas sem Nitro: 1080p, 1440p, Fonte e 60 FPS são liberados. O limite é a sua internet de subida.</p>
   </section>
 
   <section data-painel="sons" hidden>
@@ -496,15 +498,25 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   <div class="linha"><button class="forte" id="btFecharAjustes">Pronto</button></div>
 </div></div>
 <div id="escolha"><div class="cartao gabinete">
-  <h2>O que você quer mostrar?</h2>
-  <div class="opcoes">
-    <button class="opcao" data-tipo="monitor"><span>🖥️</span><b>Tela inteira</b><i>tudo que aparecer, inclusive o jogo</i></button>
-    <button class="opcao" data-tipo="window"><span>🪟</span><b>Uma janela</b><i>só um programa, tipo o player do filme</i></button>
-    <button class="opcao" data-tipo="browser"><span>🌐</span><b>Uma aba</b><i>uma página do navegador</i></button>
+  <h2>Compartilhar tela</h2>
+  <div class="rotulo">O QUE MOSTRAR</div>
+  <div class="chips" data-cfg="fonteTela">
+    <button type="button" data-v="monitor">🖥️ Telas</button>
+    <button type="button" data-v="window">🪟 Aplicativos</button>
   </div>
-  <p class="dica">Depois desta, o Windows abre a janelinha dele pra você confirmar e marcar "compartilhar áudio".
-  Aquela é do próprio Windows e não dá pra pintar com a nossa cara.</p>
-  <div class="linha"><button id="btFecharEscolha">Cancelar</button></div>
+  <div class="rotulo">QUALIDADE DA TRANSMISSÃO</div>
+  <div class="sub">RESOLUÇÃO</div>
+  <div class="chips" data-cfg="resolucao">
+    <button type="button" data-v="720">720p</button><button type="button" data-v="1080">1080p</button>
+    <button type="button" data-v="1440">1440p</button><button type="button" data-v="0">Fonte</button>
+  </div>
+  <div class="sub">TAXA DE QUADROS</div>
+  <div class="chips" data-cfg="quadros">
+    <button type="button" data-v="15">15 FPS</button><button type="button" data-v="30">30 FPS</button>
+    <button type="button" data-v="60">60 FPS</button>
+  </div>
+  <p class="dica">Na próxima janela, o Windows pergunta qual tela ou programa. Marque "Compartilhar áudio" pra ir com som.</p>
+  <div class="linha"><button id="btFecharEscolha">Cancelar</button><button id="btAoVivo" class="aoVivo">Ao vivo</button></div>
 </div></div>
 <div class="toque" id="toque"></div>
 
@@ -542,7 +554,7 @@ let telaMinha = null, mudo = false, surdo = false, destinoDaVoz = null;
 const cfg = {
   micId: guarda.ler("micId",""), saidaId: guarda.ler("saidaId",""),
   volMic: guarda.ler("volMic",100), volGeral: guarda.ler("volGeral",100), volTransm: guarda.ler("volTransm",100),
-  resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"),
+  resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"), fonteTela: guarda.ler("fonteTela","monitor"),
   modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
   eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
   efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true), doisFatores: guarda.ler("doisFatores",false), soConvite: guarda.ler("soConvite",true),
@@ -1096,12 +1108,77 @@ function sair(id){
 function avisarEstado(){ paraTodos({t:"estado", mudo, surdo, tela:!!telaMinha}); desenharPessoas(); }
 
 // ------------------------- voz -------------------------
+// Qualidade (30/09, "a voz esta muito ruim"): o navegador manda Opus a ~32 kbps. O Discord usa 64
+// e sala turbinada ate 384. Pedimos 128 kbps pra voz e 256 kbps ESTEREO pra transmissao (filme e
+// jogo com som cheio), com correcao de perda (FEC) ligada. O pedido vai no SDP dos dois lados.
+function sdpOpus(kbps, estereo){
+  return sdp => {
+    const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/i); if(!m) return sdp;
+    const pt = m[1];
+    const extra = "maxaveragebitrate=" + (kbps*1000) + ";maxplaybackrate=48000;sprop-maxcapturerate=48000;useinbandfec=1;usedtx=0" +
+      (estereo ? ";stereo=1;sprop-stereo=1" : ";stereo=0");
+    const re = new RegExp("a=fmtp:" + pt + " ([^\\r\\n]*)");
+    const tirar = /^(maxaveragebitrate|maxplaybackrate|sprop-maxcapturerate|useinbandfec|usedtx|stereo|sprop-stereo)=/;
+    if(re.test(sdp)) return sdp.replace(re, (_, p) => "a=fmtp:" + pt + " " +
+      p.split(";").map(x => x.trim()).filter(x => x && !tirar.test(x)).concat(extra).join(";"));
+    return sdp.replace(m[0], m[0] + "\r\na=fmtp:" + pt + " " + extra);
+  };
+}
+const SDP_VOZ = sdpOpus(128, false), SDP_TELA = sdpOpus(256, true);
+
+// A porta do microfone (abrir so quando a pessoa fala) roda DENTRO do audio, nao num relogio:
+// o relogio olhava a cada 120 ms (cortava o comeco da palavra) e, com a janela atras do jogo,
+// o Windows desacelerava ele pra 1 vez por segundo. Aqui ela olha o som ANTES (atraso de 30 ms
+// no caminho que sai), entao abre antes da palavra chegar, e fecha devagar, sem estalo.
+const PORTA_CODIGO = `
+class PortaDaVoz extends AudioWorkletProcessor {
+  static get parameterDescriptors(){ return [
+    {name:"limiar", defaultValue:0.03, minValue:0, maxValue:1, automationRate:"k-rate"},
+    {name:"modo", defaultValue:0, minValue:-1, maxValue:1, automationRate:"k-rate"} ]; }
+  constructor(){ super(); this.ganho = 0; this.segura = 0; }
+  process(entradas, saidas, p){
+    const som = entradas[0], olho = entradas[1], out = saidas[0];
+    if(!out || !out[0]) return true;
+    const n = out[0].length, modo = p.modo[0];
+    let aberta;
+    if(modo > 0.5) aberta = true; else if(modo < -0.5) aberta = false;
+    else {
+      const c = (olho && olho[0]) || (som && som[0]);
+      let s = 0; if(c) for(let i = 0; i < c.length; i++) s += c[i]*c[i];
+      const rms = c ? Math.sqrt(s / c.length) : 0;
+      if(rms >= p.limiar[0]) this.segura = sampleRate * 0.45; else this.segura = Math.max(0, this.segura - n);
+      aberta = this.segura > 0;
+    }
+    const alvo = aberta ? 1 : 0, passo = aberta ? 1/(0.004*sampleRate) : 1/(0.06*sampleRate);
+    let g = this.ganho;
+    for(let ch = 0; ch < out.length; ch++){
+      const e = som && (som[ch] || som[0]); g = this.ganho;
+      for(let i = 0; i < n; i++){
+        if(g < alvo) g = Math.min(alvo, g + passo); else if(g > alvo) g = Math.max(alvo, g - passo);
+        out[ch][i] = e ? e[i]*g : 0;
+      }
+    }
+    this.ganho = g;
+    return true;
+  }
+}
+registerProcessor("porta-da-voz", PortaDaVoz);`;
+let portaVoz = null, portaCarregada = null;
+async function criarPorta(){
+  try{
+    if(!portaCarregada) portaCarregada = ctxAudio.audioWorklet.addModule(
+      URL.createObjectURL(new Blob([PORTA_CODIGO], {type:"application/javascript"})));
+    await portaCarregada;
+    return new AudioWorkletNode(ctxAudio, "porta-da-voz", {numberOfInputs:2, numberOfOutputs:1, outputChannelCount:[1]});
+  }catch(e){ portaCarregada = null; return null; }   // sem worklet: cai no jeito antigo (relogio)
+}
+
 async function ligarMicrofone(){
   try{
-    if(!ctxAudio) ctxAudio = new AudioContext();
+    if(!ctxAudio) ctxAudio = new AudioContext({latencyHint:"interactive"});
     if(micCru) micCru.getTracks().forEach(t=>t.stop());
     micCru = await navigator.mediaDevices.getUserMedia({audio:{
-      deviceId: cfg.micId ? {exact:cfg.micId} : undefined,
+      deviceId: cfg.micId ? {exact:cfg.micId} : undefined, channelCount: 1,
       echoCancellation: cfg.eco, noiseSuppression: cfg.ruido, autoGainControl: cfg.ganhoAuto }});
   }catch(e){
     try{ micCru = await navigator.mediaDevices.getUserMedia({audio:true}); }
@@ -1109,11 +1186,24 @@ async function ligarMicrofone(){
   }
   const src = micCru ? ctxAudio.createMediaStreamSource(micCru) : null;
   ganhoMic = ctxAudio.createGain(); ganhoMic.gain.value = cfg.volMic/100;
+  // limitador: com o microfone acima de 100% o som estourava e distorcia
+  const limitador = ctxAudio.createDynamicsCompressor();
+  limitador.threshold.value = -3; limitador.knee.value = 0; limitador.ratio.value = 20;
+  limitador.attack.value = 0.002; limitador.release.value = 0.12;
   analisadorMic = ctxAudio.createAnalyser(); analisadorMic.fftSize = 512;
   const destino = ctxAudio.createMediaStreamDestination();
   destinoDaVoz = destino;
   if(src){ src.connect(ganhoMic); }
-  ganhoMic.connect(analisadorMic); ganhoMic.connect(destino);
+  ganhoMic.connect(limitador); limitador.connect(analisadorMic);
+  if(portaVoz){ try{ portaVoz.disconnect(); }catch(e){} }
+  portaVoz = await criarPorta();
+  if(portaVoz){
+    const atraso = ctxAudio.createDelay(0.1); atraso.delayTime.value = 0.03;
+    limitador.connect(atraso); atraso.connect(portaVoz, 0, 0);   // o som que sai, 30 ms atrasado
+    limitador.connect(portaVoz, 0, 1);                           // o "olho" da porta, sem atraso
+    portaVoz.connect(destino);
+    ajustarPorta();
+  } else limitador.connect(destino);
   const novaFaixa = destino.stream.getAudioTracks()[0];
   novaFaixa.enabled = !mudo;
   const velha = micSaida && micSaida.getAudioTracks()[0];
@@ -1129,7 +1219,7 @@ async function ligarMicrofone(){
 function ligarVoz(id){
   const p = gente.get(id) || pessoa(id,{});
   if(p.chamadaVoz) return;
-  const ch = peer.call(id, micSaida, {metadata:{tipo:"voz"}});
+  const ch = peer.call(id, micSaida, {metadata:{tipo:"voz"}, sdpTransform:SDP_VOZ});
   prepararVoz(id, ch);
 }
 
@@ -1141,13 +1231,13 @@ function atenderChamada(ch){
   }
   const tipo = ch.metadata && ch.metadata.tipo;
   if(tipo === "tela"){
-    ch.answer();
+    ch.answer(undefined, {sdpTransform:SDP_TELA});
     const p = pessoa(ch.peer,{}); p.chamadasTela.push(ch);
     ch.on("stream", s => porTela(ch.peer, s));
     ch.on("close", () => tirarTela(ch.peer));
     return;
   }
-  ch.answer(micSaida);
+  ch.answer(micSaida, {sdpTransform:SDP_VOZ});
   prepararVoz(ch.peer, ch);
 }
 
@@ -1182,10 +1272,10 @@ $("btTela").onclick = abrirEscolha;
 $("btStart").onclick = abrirEscolha;
 $("btFecharEscolha").onclick = () => $("escolha").classList.remove("aberto");
 $("escolha").onclick = e => { if(e.target.id === "escolha") $("escolha").classList.remove("aberto"); };
-document.querySelectorAll(".opcao").forEach(b => b.onclick = () => {
+$("btAoVivo").onclick = () => {
   $("escolha").classList.remove("aberto");
-  comecarTela(b.dataset.tipo);
-});
+  comecarTela(cfg.fonteTela);
+};
 
 async function comecarTela(tipoTela){
   if(telaMinha){ pararTela(); return; }
@@ -1210,7 +1300,7 @@ async function comecarTela(tipoTela){
 function mandarTela(id){
   if(!telaMinha) return;
   const p = gente.get(id); if(!p) return;
-  const ch = peer.call(id, telaMinha, {metadata:{tipo:"tela"}});
+  const ch = peer.call(id, telaMinha, {metadata:{tipo:"tela"}, sdpTransform:SDP_TELA});
   p.chamadasTela.push(ch);
   setTimeout(aplicarBanda, 1500);
   ch.on("close", ()=>{ p.chamadasTela = p.chamadasTela.filter(x=>x!==ch); });
@@ -1352,6 +1442,12 @@ addEventListener("blur", () => { teclaApertada = false; });
 function ajustarPorta(){
   if(!micSaida) return;
   const faixa = micSaida.getAudioTracks()[0]; if(!faixa) return;
+  if(portaVoz){   // a porta de verdade esta no audio; aqui so passamos os ajustes pra ela
+    faixa.enabled = !mudo;
+    portaVoz.parameters.get("limiar").value = cfg.sensibilidade / 100;
+    portaVoz.parameters.get("modo").value = cfg.modo === "apertar" ? (teclaApertada ? 1 : -1) : 0;
+    return;
+  }
   if(mudo){ faixa.enabled = false; return; }
   if(cfg.modo === "apertar"){ faixa.enabled = teclaApertada; return; }
   if(nivel(analisadorMic) * 100 >= cfg.sensibilidade) portaAberta = Date.now() + 400;  // segura 0,4s pra nao cortar palavra
@@ -1459,8 +1555,18 @@ function ligarRange(id, chave, depois){
 ligarRange("volMic","volMic", ()=>{ if(ganhoMic) ganhoMic.gain.value = cfg.volMic/100; });
 ligarRange("volGeral","volGeral", ()=>gente.forEach(aplicarVolumePessoa));
 ligarRange("volTransm","volTransm", ()=>telas.forEach((el,id)=>{ if(id!==(peer&&peer.id)){ el.querySelector("video").volume = cfg.volTransm/100; el.querySelector(".volTela").value = cfg.volTransm; } }));
-$("selResolucao").value = cfg.resolucao; $("selResolucao").onchange = e => { cfg.resolucao = e.target.value; guarda.por("resolucao", cfg.resolucao); avisarTrocaDeQualidade(); };
-$("selQuadros").value = cfg.quadros; $("selQuadros").onchange = e => { cfg.quadros = e.target.value; guarda.por("quadros", cfg.quadros); avisarTrocaDeQualidade(); };
+// botoes de escolha no jeito do Discord; o mesmo ajuste aparece no "Compartilhar tela" e na aba Transmissao
+if(cfg.resolucao === "2160") cfg.resolucao = "0";                    // 4K e 120 saíram da tela (o Discord nao tem);
+if(Number(cfg.quadros) > 60) cfg.quadros = "60";                      // quem tinha escolhido cai no mais proximo
+function pintarChips(){
+  document.querySelectorAll(".chips[data-cfg]").forEach(g => g.querySelectorAll("button").forEach(b =>
+    b.classList.toggle("sel", String(cfg[g.dataset.cfg]) === b.dataset.v)));
+}
+document.querySelectorAll(".chips[data-cfg]").forEach(g => g.querySelectorAll("button").forEach(b => b.onclick = () => {
+  const k = g.dataset.cfg; cfg[k] = b.dataset.v; guarda.por(k, cfg[k]); pintarChips();
+  if(k !== "fonteTela") avisarTrocaDeQualidade();
+}));
+pintarChips();
 function avisarTrocaDeQualidade(){ if(telaMinha) toque("Vale na próxima vez que você compartilhar a tela."); }
 $("selModo").value = cfg.modo;
 function mostrarCaixasDoModo(){
