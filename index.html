@@ -1369,11 +1369,12 @@ $("btAoVivo").onclick = () => {
   comecarTela(cfg.fonteTela);
 };
 
-function opcoesDeCaptura(tipoTela){
+function opcoesDeCaptura(tipoTela, semSom){
   const alt = Number(cfg.resolucao), fps = Number(cfg.quadros);
   // "Fonte" (alt = 0) manda a tela do jeito que ela e, sem reduzir
   const video = alt ? {height:{ideal:alt}, frameRate:{ideal:fps, max:fps}} : {frameRate:{ideal:fps, max:fps}};
   if(tipoTela) video.displaySurface = tipoTela;   // ja abre o Windows na parte certa
+  if(semSom) return { video, audio:false, selfBrowserSurface:"exclude" };
   return { video,
     audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false, suppressLocalAudioPlayback:false},
     systemAudio:"include",
@@ -1381,12 +1382,29 @@ function opcoesDeCaptura(tipoTela){
     selfBrowserSurface:"exclude" };
 }
 
-async function comecarTela(tipoTela){
+async function comecarTela(tipoTela, semSom){
   if(telaMinha){ pararTela(); return; }
   let s;
-  try{ s = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(tipoTela)); }
-  catch(e){ toque("Compartilhamento cancelado."); return; }
+  try{ s = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(tipoTela, semSom)); }
+  catch(e){ falhaAoCompartilhar(e, tipoTela); return; }
   ligarTransmissao(s);
+}
+
+// 30/09: "quando o amigo marca compartilhar o som, a transmissao nem comeca". O Windows as vezes nao
+// deixa pegar o som do PC (fone Bluetooth, placa de som ocupada) e o navegador devolve erro - que antes
+// aparecia so como "cancelado". Agora diz o motivo e oferece ir sem som, com um clique.
+function falhaAoCompartilhar(e, tipoTela){
+  if(e && e.name === "NotAllowedError" && !/system|sistema|audio|áudio/i.test(e.message || "")){ toque("Compartilhamento cancelado."); return; }
+  const d = document.createElement("div"); d.className = "msg sistema";
+  d.innerHTML = "⚠️ A transmissão não começou <small>(" + escapar((e && e.name) || "erro") + ": " + escapar((e && e.message) || "") + ")</small>. " +
+    "Quase sempre é o Windows não deixando pegar o <b>som do PC</b> (fone Bluetooth ou placa de som ocupada). ";
+  const b = document.createElement("button"); b.textContent = "Transmitir sem som"; b.className = "sim";
+  b.onclick = () => { d.remove(); comecarTela(tipoTela, true); };
+  const b2 = document.createElement("button"); b2.textContent = "Tentar de novo com som";
+  b2.onclick = () => { d.remove(); comecarTela(tipoTela, false); };
+  d.appendChild(b); d.appendChild(document.createTextNode(" ")); d.appendChild(b2);
+  $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
+  toque("A transmissão não começou: veja o aviso no chat.");
 }
 
 function ligarTransmissao(s){
@@ -1425,7 +1443,11 @@ async function trocarTela(){
   $("painelAoVivo").classList.remove("aberto");
   let novo;
   try{ novo = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(cfg.fonteTela)); }
-  catch(e){ toque("Troca cancelada: continua mostrando o mesmo."); return; }
+  catch(e){
+    if(e && e.name === "NotAllowedError"){ toque("Troca cancelada: continua mostrando o mesmo."); return; }
+    try{ novo = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(cfg.fonteTela, true)); toque("Trocou, mas sem som: o Windows não deixou pegar o som do PC."); }
+    catch(e2){ toque("Troca cancelada: continua mostrando o mesmo."); return; }
+  }
   if(telaMinha){
     telaMinha.getTracks().forEach(t => { t.onended = null; t.stop(); });
     telaMinha = null;
@@ -2006,7 +2028,7 @@ setInterval(async () => {
 }, 2000);
 
 // ---- versao a vista (30/09, "era bom colocar a versao em algum lugar") ----
-const VERSAO_PAGINA = "30.09.2026-c";
+const VERSAO_PAGINA = "30.09.2026-d";
 async function mostrarVersao(){
   let prog = "antigo";
   try{ const r = await fetch("/versao", {cache:"no-store"}); if(r.ok) prog = (await r.text()).trim(); }catch(e){}
