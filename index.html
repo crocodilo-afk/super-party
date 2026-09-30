@@ -185,6 +185,10 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .toque.ver{opacity:1}
 @media (max-width:760px){#sala{flex-direction:column;overflow:auto}#lado{width:auto}#chat{height:200px}}
 
+#faixaAtualizacao{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:10px;align-items:center;
+  background:linear-gradient(90deg,#5cff9b,#38e8ff);color:#11062a;padding:8px 10px 8px 16px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+#faixaAtualizacao button{border:0;border-radius:7px;padding:7px 12px;font-weight:800;cursor:pointer;background:#11062a;color:#5cff9b}
+#faixaAtualizacao #btDepois{background:transparent;color:#11062a}
 /* ---------------- JUKEBOX ---------------- */
 #jukebox{padding:8px 10px;gap:8px;display:flex;flex-direction:column}
 .juke-topo{display:flex;align-items:center;gap:9px}
@@ -1774,6 +1778,35 @@ setInterval(async () => {
       (quadros ? quadros + " fps · " : "") + Math.max(0, mbps).toFixed(1) + " Mbps " + seta;
   }
 }, 2000);
+
+// ============================ ATUALIZACAO (igual ao Discord) ============================
+// Com o app aberto, compara a pagina que esta rodando com a do GitHub. Mudou: aparece a faixa
+// "Atualizacao pronta". O botao pede pro programa baixar a nova (/atualizar) e recarrega.
+const FONTE_PAGINA = "https://raw.githubusercontent.com/crocodilo-afk/super-party/master/index.html";
+let avisoAtualizacao = false;
+async function procurarAtualizacao(){
+  if(avisoAtualizacao) return;
+  try{
+    const norm = t => t.split(String.fromCharCode(13)).join("").trim();   // tira o fim de linha do Windows (CR)
+    const [aqui, la] = await Promise.all([
+      fetch("/index.html", {cache:"no-store"}).then(r => r.text()),
+      fetch(FONTE_PAGINA + "?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.text() : "")]);
+    if(la.length > 5000 && la.includes("Super Party") && norm(la) !== norm(aqui)) mostrarAtualizacao();
+  }catch(e){}
+}
+function mostrarAtualizacao(){
+  avisoAtualizacao = true;
+  const d = document.createElement("div"); d.id = "faixaAtualizacao";
+  d.innerHTML = '<b>🎁 Atualização pronta</b><button id="btAtualizar">Reiniciar agora</button><button id="btDepois">Depois</button>';
+  document.body.appendChild(d);
+  $("btDepois").onclick = () => d.remove();
+  $("btAtualizar").onclick = async () => {
+    $("btAtualizar").textContent = "Baixando...";
+    try{ const r = await fetch("/atualizar", {cache:"no-store"}); if(r.ok){ location.reload(); return; } }catch(e){}
+    d.querySelector("b").textContent = "Feche e abra o Super Party pra atualizar"; $("btAtualizar").remove();
+  };
+}
+setTimeout(procurarAtualizacao, 20000); setInterval(procurarAtualizacao, 10*60*1000);
 
 // ============================ JUKEBOX (YouTube em sincronia) ============================
 // Nao passa audio pela chamada: cada PC toca direto do YouTube. Por isso nao gasta a sua
