@@ -62,7 +62,20 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .pessoa.falando .bolha{box-shadow:0 0 0 3px var(--verde),0 0 16px var(--verde)}
 .pessoa .nome{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pessoa .icones{font-size:13px;color:var(--suave)}
-.pessoa input[type=range]{grid-column:2/4;height:14px}
+.pessoa{cursor:pointer}
+.pessoa:hover{background:rgba(56,232,255,.08)}
+#cartaoPessoa{position:fixed;z-index:8;width:260px;display:none;padding:14px;border-radius:12px;
+  background:#1b0f36;border:1px solid rgba(164,92,255,.55);box-shadow:0 14px 40px rgba(0,0,0,.55)}
+#cartaoPessoa.aberto{display:block}
+.cp-topo{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.cp-bolha{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:800;flex:0 0 auto}
+.cp-rot{display:flex;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--suave);margin:12px 0 6px}
+.cp-num{color:var(--ciano)}
+#cartaoPessoa .cp-vol{width:100%}
+.cp-bt{display:block;width:100%;text-align:left;margin-top:6px;padding:9px 10px;border-radius:8px;cursor:pointer;
+  border:1px solid rgba(169,158,203,.25);background:rgba(255,255,255,.04);color:inherit;font:inherit}
+.cp-bt:hover{border-color:var(--ciano)}
+.cp-bt.perigo{color:#ff4d6d}
 #controles{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 #controles button{padding:10px 0;font-size:18px}
 #meio{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -141,9 +154,9 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 @keyframes tecla{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-4px);opacity:1}}
 
 /* ---------- ajustes ---------- */
-#ajustes,#escolha{position:fixed;inset:0;z-index:5;background:rgba(1,6,15,.6);display:none;align-items:center;justify-content:center;padding:20px}
-#ajustes.aberto,#escolha.aberto{display:flex}
-#ajustes .cartao,#escolha .cartao{width:min(460px,100%);padding:24px;max-height:100%;overflow:auto}
+#ajustes,#escolha,#painelAoVivo{position:fixed;inset:0;z-index:5;background:rgba(1,6,15,.6);display:none;align-items:center;justify-content:center;padding:20px}
+#ajustes.aberto,#escolha.aberto,#painelAoVivo.aberto{display:flex}
+#ajustes .cartao,#escolha .cartao,#painelAoVivo .cartao{width:min(460px,100%);padding:24px;max-height:100%;overflow:auto}
 #ajustes h2{margin:0 0 4px}
 .abas{display:flex;gap:4px;flex-wrap:wrap;margin:10px 0 14px;border-bottom:1px solid var(--borda);padding-bottom:10px}
 .aba{padding:7px 11px;font-size:12px;font-weight:700;border-radius:9px;background:rgba(10,4,24,.5)}
@@ -168,6 +181,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .chips button{flex:1;min-width:70px;padding:10px 8px;border-radius:8px;border:1px solid rgba(169,158,203,.3);background:rgba(255,255,255,.04);color:var(--texto,#f1eaff);font-weight:700;cursor:pointer}
 .chips button:hover{border-color:var(--ciano)}
 .chips button.sel{background:rgba(56,232,255,.18);border-color:var(--ciano);color:var(--ciano)}
+.parar{background:#ff4d6d!important;color:#fff!important;font-weight:800}
 .aoVivo{background:linear-gradient(90deg,#5cff9b,#38e8ff)!important;color:#11062a!important;font-weight:800}
 .opcao{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:12px;text-align:left;padding:14px 16px;
   border-radius:12px;background:rgba(56,232,255,.1);border:2px solid var(--borda);box-shadow:0 4px 0 rgba(0,0,0,.45)}
@@ -433,7 +447,12 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
       do jogo. O Discord consegue por ser programa instalado de verdade.</p>
     </div>
     <label><input type="checkbox" id="chkEco" checked style="width:auto;margin-right:6px">Cancelamento de eco</label>
-    <label><input type="checkbox" id="chkRuido" checked style="width:auto;margin-right:6px">Redução de ruído de fundo</label>
+    <label for="selRuido">Supressão de ruído</label>
+    <select id="selRuido">
+      <option value="ia">IA (RNNoise) — tira ventilador, teclado e barulho de fundo</option>
+      <option value="padrao">Padrão do navegador</option>
+      <option value="nenhuma">Nenhuma</option>
+    </select>
     <label><input type="checkbox" id="chkGanho" checked style="width:auto;margin-right:6px">Volume automático do microfone</label>
   </section>
 
@@ -495,7 +514,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
       <option value="50000">50 Mbps — fibra forte</option>
     </select>
     <label>Como está a conexão agora</label>
-    <pre id="relatorio" class="relatorio">Abra uma transmissão e aperte Medir agora.</pre>
+    <pre id="relatorio" class="relatorio">Com alguém na chamada, aperte Medir agora: mostra a qualidade real da voz e da tela.</pre>
     <div class="linha"><button id="btMedir">Medir agora</button></div>
     <p class="dica">Aqui aparece o que está saindo de verdade do seu PC: tamanho da imagem, quadros por segundo e
     quanto da sua internet está sendo usada.</p>
@@ -524,6 +543,29 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   <p class="dica">Na próxima janela, o Windows pergunta qual tela ou programa. Marque "Compartilhar áudio" pra ir com som.</p>
   <div class="linha"><button id="btFecharEscolha">Cancelar</button><button id="btAoVivo" class="aoVivo">Ao vivo</button></div>
 </div></div>
+<div id="painelAoVivo"><div class="cartao gabinete">
+  <h2>🔴 Você está ao vivo</h2>
+  <p class="dica" id="aoVivoInfo"></p>
+  <div class="rotulo">MOSTRAR</div>
+  <div class="chips" data-cfg="fonteTela">
+    <button type="button" data-v="monitor">🖥️ Telas</button>
+    <button type="button" data-v="window">🪟 Aplicativos</button>
+  </div>
+  <div class="rotulo">QUALIDADE DA TRANSMISSÃO</div>
+  <div class="sub">RESOLUÇÃO</div>
+  <div class="chips" data-cfg="resolucao">
+    <button type="button" data-v="720">720p</button><button type="button" data-v="1080">1080p</button>
+    <button type="button" data-v="1440">1440p</button><button type="button" data-v="0">Fonte</button>
+  </div>
+  <div class="sub">TAXA DE QUADROS</div>
+  <div class="chips" data-cfg="quadros">
+    <button type="button" data-v="15">15 FPS</button><button type="button" data-v="30">30 FPS</button>
+    <button type="button" data-v="60">60 FPS</button>
+  </div>
+  <div class="linha"><button id="btTrocarTela">Trocar o que mostro</button><button id="btPararTela" class="parar">Parar transmissão</button></div>
+  <div class="linha"><button id="btFecharAoVivo">Fechar</button></div>
+</div></div>
+<div id="cartaoPessoa"></div>
 <div class="toque" id="toque"></div>
 
 <script src="peerjs.min.js"></script>
@@ -560,9 +602,9 @@ let telaMinha = null, mudo = false, surdo = false, destinoDaVoz = null;
 const cfg = {
   micId: guarda.ler("micId",""), saidaId: guarda.ler("saidaId",""),
   volMic: guarda.ler("volMic",100), volGeral: guarda.ler("volGeral",100), volTransm: guarda.ler("volTransm",100),
-  resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","30"), fonteTela: guarda.ler("fonteTela","monitor"),
+  resolucao: guarda.ler("resolucao","1080"), quadros: guarda.ler("quadros","60"), fonteTela: guarda.ler("fonteTela","monitor"),
   modo: guarda.ler("modo","voz"), sensibilidade: guarda.ler("sensibilidade",3), tecla: guarda.ler("tecla","ControlLeft"),
-  eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), ganhoAuto: guarda.ler("ganhoAuto",true),
+  eco: guarda.ler("eco",true), ruido: guarda.ler("ruido",true), filtro: guarda.ler("filtro","ia"), ganhoAuto: guarda.ler("ganhoAuto",true),
   efeitos: guarda.ler("efeitos",true), abafar: guarda.ler("abafar",false), avisos: guarda.ler("avisos",true), portaria: guarda.ler("portaria",true), doisFatores: guarda.ler("doisFatores",false), soConvite: guarda.ler("soConvite",true),
   banda: guarda.ler("banda","0"), sons: guarda.ler("sons",[]),
   volMusica: guarda.ler("volMusica",60)
@@ -1179,13 +1221,28 @@ async function criarPorta(){
   }catch(e){ portaCarregada = null; return null; }   // sem worklet: cai no jeito antigo (relogio)
 }
 
+// Supressao de ruido por IA (30/09, "quero a melhor voz possivel"): RNNoise, o mesmo do Jitsi, aberto e gratis.
+// Roda no PC de quem fala, dentro do audio. Medido: chiado constante 0,029 -> 0,000, voz passa.
+// O arquivo (1,9 MB) vem do proprio programa; se nao tiver, do jsDelivr (espelho do nosso GitHub).
+let filtroCarregado = null;
+async function criarFiltroIA(){
+  const tentar = async url => { await ctxAudio.audioWorklet.addModule(url); return new AudioWorkletNode(ctxAudio, "NoiseSuppressorWorklet"); };
+  try{
+    if(!filtroCarregado) filtroCarregado = tentar("/rnnoise.js").catch(() =>
+      tentar("https://cdn.jsdelivr.net/gh/crocodilo-afk/super-party@master/rnnoise.js"));
+    const primeiro = await filtroCarregado;
+    filtroCarregado = Promise.resolve(null);   // o modulo ja esta carregado: das proximas vezes so cria o no
+    return primeiro || new AudioWorkletNode(ctxAudio, "NoiseSuppressorWorklet");
+  }catch(e){ filtroCarregado = null; return null; }
+}
+
 async function ligarMicrofone(){
   try{
-    if(!ctxAudio) ctxAudio = new AudioContext({latencyHint:"interactive"});
+    if(!ctxAudio) ctxAudio = new AudioContext({latencyHint:"interactive", sampleRate:48000});   // o RNNoise pede 48 kHz
     if(micCru) micCru.getTracks().forEach(t=>t.stop());
     micCru = await navigator.mediaDevices.getUserMedia({audio:{
       deviceId: cfg.micId ? {exact:cfg.micId} : undefined, channelCount: 1,
-      echoCancellation: cfg.eco, noiseSuppression: cfg.ruido, autoGainControl: cfg.ganhoAuto }});
+      echoCancellation: cfg.eco, noiseSuppression: cfg.filtro === "padrao", autoGainControl: cfg.ganhoAuto }});
   }catch(e){
     try{ micCru = await navigator.mediaDevices.getUserMedia({audio:true}); }
     catch(e2){ micCru = null; toque("Sem microfone: você entra só ouvindo."); }
@@ -1194,13 +1251,22 @@ async function ligarMicrofone(){
   ganhoMic = ctxAudio.createGain(); ganhoMic.gain.value = cfg.volMic/100;
   // limitador: com o microfone acima de 100% o som estourava e distorcia
   const limitador = ctxAudio.createDynamicsCompressor();
-  limitador.threshold.value = -3; limitador.knee.value = 0; limitador.ratio.value = 20;
-  limitador.attack.value = 0.002; limitador.release.value = 0.12;
+  limitador.threshold.value = -2; limitador.knee.value = 0; limitador.ratio.value = 20;
+  limitador.attack.value = 0.001; limitador.release.value = 0.1;
   analisadorMic = ctxAudio.createAnalyser(); analisadorMic.fftSize = 512;
   const destino = ctxAudio.createMediaStreamDestination();
   destinoDaVoz = destino;
-  if(src){ src.connect(ganhoMic); }
-  ganhoMic.connect(limitador); limitador.connect(analisadorMic);
+  let filtroIA = null;
+  if(src && cfg.filtro === "ia"){
+    filtroIA = await criarFiltroIA();
+    if(!filtroIA) toque("Filtro de IA não carregou: usando o do navegador.");
+  }
+  if(src){ if(filtroIA){ src.connect(filtroIA); filtroIA.connect(ganhoMic); } else src.connect(ganhoMic); }
+  // voz cheia e alta como a do Discord (30/09, medido): compressor puxa a voz baixa (+13 dB) e segura a alta (+5 dB)
+  const compVoz = ctxAudio.createDynamicsCompressor();
+  compVoz.threshold.value = -28; compVoz.knee.value = 10; compVoz.ratio.value = 4; compVoz.attack.value = 0.004; compVoz.release.value = 0.18;
+  const reforco = ctxAudio.createGain(); reforco.gain.value = 1.4;
+  ganhoMic.connect(compVoz); compVoz.connect(reforco); reforco.connect(limitador); limitador.connect(analisadorMic);
   if(portaVoz){ try{ portaVoz.disconnect(); }catch(e){} }
   portaVoz = await criarPorta();
   if(portaVoz){
@@ -1252,6 +1318,8 @@ function prepararVoz(id, ch){
   ch.on("stream", s => {
     if(!p.audio){ p.audio = new Audio(); p.audio.autoplay = true; document.body.appendChild(p.audio); }
     p.audio.srcObject = s;
+    if(p.ganho){ try{ p.ganho.disconnect(); }catch(e){} p.ganho = null; }   // fluxo novo: amplificador novo
+    p.fluxo = s;
     aplicarSaida(p.audio); aplicarVolumePessoa(p);
     p.audio.play().catch(()=>{});
     try{
@@ -1262,17 +1330,30 @@ function prepararVoz(id, ch){
   ch.on("close", ()=>{ if(p.chamadaVoz===ch) p.chamadaVoz=null; });
 }
 
+// Volume por pessoa ate 200%, como no Discord. Ate 100% o som sai pelo proprio <audio> (caminho que o
+// cancelamento de eco do navegador enxerga); acima disso passa por um amplificador do WebAudio.
 function aplicarVolumePessoa(p){
   if(!p.audio) return;
-  p.audio.volume = Math.min(1, (p.vol/100) * (cfg.volGeral/100));
-  p.audio.muted = surdo;
+  const v = (p.silenciado ? 0 : p.vol/100) * (cfg.volGeral/100);
+  if(v > 1 && ctxAudio && p.fluxo && !p.ganho){
+    try{
+      p.ganho = ctxAudio.createGain();
+      ctxAudio.createMediaStreamSource(p.fluxo).connect(p.ganho);
+      p.ganho.connect(ctxAudio.destination);
+      if(cfg.saidaId && ctxAudio.setSinkId) ctxAudio.setSinkId(cfg.saidaId).catch(()=>{});   // mesmo fone escolhido
+    }catch(e){ p.ganho = null; }
+  }
+  if(p.ganho && v > 1){ p.ganho.gain.value = surdo ? 0 : v; p.audio.muted = true; }
+  else{ if(p.ganho) p.ganho.gain.value = 0; p.audio.volume = Math.min(1, v); p.audio.muted = surdo; }
 }
 function aplicarSaida(el){ if(cfg.saidaId && el.setSinkId) el.setSinkId(cfg.saidaId).catch(()=>{}); }
 
 // ------------------------- tela -------------------------
 function abrirEscolha(){
-  if(telaMinha){ pararTela(); return; }
-  $("escolha").classList.add("aberto");
+  if(telaMinha){ abrirPainelAoVivo(); return; }
+  // 30/09: ele quis ir DIRETO pra escolha do Windows, ja com o certo: tela inteira (a unica que leva o
+  // som no Windows), 1080p e 60 FPS. Mudar continua possivel ao vivo, no Mudar da propria telinha.
+  comecarTela("monitor");
 }
 $("btTela").onclick = abrirEscolha;
 $("btStart").onclick = abrirEscolha;
@@ -1283,25 +1364,82 @@ $("btAoVivo").onclick = () => {
   comecarTela(cfg.fonteTela);
 };
 
+function opcoesDeCaptura(tipoTela){
+  const alt = Number(cfg.resolucao), fps = Number(cfg.quadros);
+  // "Fonte" (alt = 0) manda a tela do jeito que ela e, sem reduzir
+  const video = alt ? {height:{ideal:alt}, frameRate:{ideal:fps, max:fps}} : {frameRate:{ideal:fps, max:fps}};
+  if(tipoTela) video.displaySurface = tipoTela;   // ja abre o Windows na parte certa
+  return { video,
+    audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false, suppressLocalAudioPlayback:false},
+    systemAudio:"include",
+    windowAudio:"system",          // janela de programa: pede o som do PC (navegador novo aceita; o velho ignora)
+    selfBrowserSurface:"exclude" };
+}
+
 async function comecarTela(tipoTela){
   if(telaMinha){ pararTela(); return; }
-  const alt = Number(cfg.resolucao), fps = Number(cfg.quadros);
-  // "Original" (alt = 0) manda a tela do jeito que ela e, sem reduzir
-  const video = alt ? {height:{ideal:alt}, frameRate:{ideal:fps, max:fps}} : {frameRate:{ideal:fps, max:fps}};
-  try{
-    if(tipoTela) video.displaySurface = tipoTela;   // ja abre o Windows na parte certa
-    telaMinha = await navigator.mediaDevices.getDisplayMedia({
-      video,
-      audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}, systemAudio:"include" });
-  }catch(e){ toque("Compartilhamento cancelado."); return; }
-  const v = telaMinha.getVideoTracks()[0];
+  let s;
+  try{ s = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(tipoTela)); }
+  catch(e){ toque("Compartilhamento cancelado."); return; }
+  ligarTransmissao(s);
+}
+
+function ligarTransmissao(s){
+  telaMinha = s;
+  const v = s.getVideoTracks()[0], fps = Number(cfg.quadros);
   if(v){ v.contentHint = fps >= 60 ? "motion" : "detail"; v.onended = pararTela; }
   gente.forEach((p,id)=>mandarTela(id));
-  porTela(peer.id, telaMinha, true);
+  porTela(peer.id, s, true);
   $("btTela").classList.add("ligado");
   avisarEstado();
-  if(!telaMinha.getAudioTracks().length) toque("Tela sem som: marque \"Compartilhar áudio\" na janela de escolha.");
-};
+  if(!s.getAudioTracks().length) avisoSemSom();
+}
+
+// 30/09: o amigo nao ouvia a transmissao. O caminho do som estava certo (testado: chega a 256 kbps);
+// o que faltava era o som na CAPTURA. Agora isso nao passa mais calado.
+function avisoSemSom(){
+  sistema("⚠️ Sua transmissão está SEM SOM. " + (cfg.fonteTela === "window"
+    ? "No Windows, mostrar só uma janela pode não levar o som. Clique em 🖥️ → Trocar o que mostro → escolha Telas e marque “Compartilhar áudio do sistema”."
+    : "Clique em 🖥️ → Trocar o que mostro e, na janela do Windows, marque “Compartilhar áudio do sistema”."));
+  toque("Transmissão sem som: veja o aviso no chat.");
+}
+
+// ---- painel de quem esta ao vivo, igual ao do Discord: ver, mudar qualidade, trocar ou parar ----
+function abrirPainelAoVivo(){
+  if(!telaMinha) return;
+  const v = telaMinha.getVideoTracks()[0], st = v && v.getSettings ? v.getSettings() : {};
+  const som = telaMinha.getAudioTracks().length;
+  const oque = {monitor:"a tela inteira", window:"uma janela", browser:"uma aba"}[st.displaySurface] || "a sua tela";
+  $("aoVivoInfo").innerHTML = "Mostrando: <b>" + oque + "</b><br>" +
+    (st.width ? st.width + "×" + st.height + " · " + Math.round(st.frameRate || 0) + " FPS · " : "") +
+    (som ? "🔊 com som" : "🔇 <b>sem som</b>");
+  pintarChips();
+  $("painelAoVivo").classList.add("aberto");
+}
+async function trocarTela(){
+  $("painelAoVivo").classList.remove("aberto");
+  let novo;
+  try{ novo = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(cfg.fonteTela)); }
+  catch(e){ toque("Troca cancelada: continua mostrando o mesmo."); return; }
+  if(telaMinha){
+    telaMinha.getTracks().forEach(t => { t.onended = null; t.stop(); });
+    telaMinha = null;
+    gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; });
+  }
+  ligarTransmissao(novo);
+}
+function aplicarQualidadeAoVivo(){
+  const v = telaMinha && telaMinha.getVideoTracks()[0]; if(!v) return;
+  const alt = Number(cfg.resolucao), fps = Number(cfg.quadros);
+  v.contentHint = fps >= 60 ? "motion" : "detail";
+  v.applyConstraints(alt ? {height:{ideal:alt}, frameRate:{ideal:fps, max:fps}} : {frameRate:{ideal:fps, max:fps}})
+    .then(() => { toque("Qualidade trocada ao vivo."); if($("painelAoVivo").classList.contains("aberto")) abrirPainelAoVivo(); })
+    .catch(() => toque("Não deu pra trocar ao vivo: vale na próxima transmissão."));
+}
+$("btTrocarTela").onclick = trocarTela;
+$("btPararTela").onclick = () => { $("painelAoVivo").classList.remove("aberto"); pararTela(); };
+$("btFecharAoVivo").onclick = () => $("painelAoVivo").classList.remove("aberto");
+$("painelAoVivo").onclick = e => { if(e.target.id === "painelAoVivo") $("painelAoVivo").classList.remove("aberto"); };
 
 function mandarTela(id){
   if(!telaMinha) return;
@@ -1317,7 +1455,7 @@ function pararTela(){
   telaMinha.getTracks().forEach(t=>t.stop());
   telaMinha = null;
   gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; });
-  tirarTela(peer.id);
+  if(peer) tirarTela(peer.id);
   $("btTela").classList.remove("ligado");
   avisarEstado();
 }
@@ -1332,6 +1470,7 @@ function porTela(id, stream, minha){
         '<button data-a="mudo" title="Mudo só esta transmissão">🔊</button>' +
         '<span title="Volume da transmissão (o som do que ele mostra)">📺</span><input type="range" class="volTela" min="0" max="100">' +
         '<span title="Volume da voz de quem está compartilhando">🎙️</span><input type="range" class="volVoz" min="0" max="100">' +
+        '<button data-a="mudar" title="Mudar a transmissão">⚙️ Mudar</button><button data-a="parar" class="parar" title="Parar a transmissão">⏹ Parar</button>' +
         '<button data-a="grande">Aumentar</button><button data-a="cheia">Tela cheia</button>' +
       '</div>';
     const vid = el.querySelector("video");
@@ -1347,6 +1486,8 @@ function porTela(id, stream, minha){
       e.target.classList.toggle("ligado", vid.muted);
     };
     el.querySelector('[data-a=grande]').onclick = e => { e.stopPropagation(); const g=$("palco").classList.toggle("um-grande"); telas.forEach(t=>t.style.display = (!g||t===el)?"":"none"); e.target.textContent = g?"Diminuir":"Aumentar"; };
+    el.querySelector('[data-a=mudar]').onclick = e => { e.stopPropagation(); abrirPainelAoVivo(); };
+    el.querySelector('[data-a=parar]').onclick = e => { e.stopPropagation(); pararTela(); };
     el.querySelector('[data-a=cheia]').onclick = e => { e.stopPropagation(); vid.requestFullscreen && vid.requestFullscreen(); };
     telas.set(id, el); $("palco").appendChild(el);
   }
@@ -1360,6 +1501,7 @@ function porTela(id, stream, minha){
   if(dono) volVoz.value = dono.vol;
   // na minha propria tela nao faz sentido mexer em volume: eu nao me escuto
   el.querySelectorAll('.barra input, .barra [data-a=mudo], .barra span').forEach(x => x.style.display = minha ? "none" : "");
+  el.querySelectorAll('.barra [data-a=mudar], .barra [data-a=parar]').forEach(x => x.style.display = minha ? "" : "none");
   atualizarVazio();
 }
 function tirarTela(id){
@@ -1411,6 +1553,50 @@ function fecharTudo(avisar){
 }
 
 // ------------------------- lista de pessoas -------------------------
+function fecharCartaoPessoa(){ $("cartaoPessoa").classList.remove("aberto"); }
+function abrirCartaoPessoa(id, p, el){
+  const c = $("cartaoPessoa"), souEu = !p;
+  const quem = souEu ? {nome:eu.nome, cor:eu.cor, foto:eu.foto} : p;
+  const foto = fotoSegura(quem.foto);
+  const fundo = foto ? `background:url(${foto}) center/cover` : `background:${corSegura(quem.cor)}`;
+  let h = `<div class="cp-topo"><div class="cp-bolha" style="${fundo}">${foto ? "" : escapar(inicial(quem.nome))}</div>
+    <b>${escapar(quem.nome)}${souEu ? ' <small style="color:var(--suave)">(você)</small>' : ""}</b></div>`;
+  if(souEu){
+    h += `<button class="cp-bt" data-a="mic">${mudo ? "🎙️ Ligar o microfone" : "🔇 Mutar o microfone"}</button>
+      <button class="cp-bt" data-a="fone">${surdo ? "🎧 Voltar a ouvir" : "🎧 Ensurdecer (não ouvir ninguém)"}</button>
+      <button class="cp-bt" data-a="ajustes">⚙️ Configurações de voz</button>`;
+  }else{
+    h += `<div class="cp-rot">VOLUME DO USUÁRIO <span class="cp-num">${p.vol}%</span></div>
+      <input type="range" class="cp-vol" min="0" max="200" value="${p.vol}">
+      <button class="cp-bt" data-a="silenciar">${p.silenciado ? "🔊 Voltar a ouvir " : "🔇 Silenciar "}${escapar(p.nome)}</button>
+      <button class="cp-bt" data-a="codigo">🔒 Código de segurança</button>` +
+      (souAnfitriao ? `<button class="cp-bt perigo" data-a="expulsar">✖ Expulsar da sala</button>` : "");
+  }
+  c.innerHTML = h;
+  const vol = c.querySelector(".cp-vol");
+  if(vol) vol.oninput = () => {
+    p.vol = +vol.value; guarda.por("vol." + p.nome, p.vol); aplicarVolumePessoa(p);
+    c.querySelector(".cp-num").textContent = p.vol + "%";
+  };
+  c.querySelectorAll(".cp-bt").forEach(b => b.onclick = () => {
+    const a = b.dataset.a;
+    if(a === "mic") $("btMudo").click();
+    if(a === "fone") $("btSurdo").click();
+    if(a === "ajustes") $("btAjustes").click();
+    if(a === "silenciar"){ p.silenciado = !p.silenciado; aplicarVolumePessoa(p); }
+    if(a === "codigo") mostrarSeguranca(id);
+    if(a === "expulsar") expulsar(id);
+    fecharCartaoPessoa();
+  });
+  const r = el.getBoundingClientRect();
+  c.classList.add("aberto");
+  const alt = c.offsetHeight, larg = c.offsetWidth;
+  c.style.left = Math.min(innerWidth - larg - 8, r.right + 8) + "px";
+  c.style.top = Math.max(8, Math.min(innerHeight - alt - 8, r.top)) + "px";
+}
+addEventListener("click", e => { if(!e.target.closest("#cartaoPessoa")) fecharCartaoPessoa(); });
+addEventListener("keydown", e => { if(e.key === "Escape") fecharCartaoPessoa(); });
+
 function desenharPessoas(){
   const box = $("pessoas"); box.innerHTML = "";
   const linha = (id, p, souEu) => {
@@ -1423,17 +1609,9 @@ function desenharPessoas(){
       <div class="nome">${escapar(p.nome)}${souEu?' <small style="color:var(--suave)">(você)</small>':''}</div><div class="icones">${etiqueta}${ic}</div>`;
     const et = d.querySelector(".aovivo");
     if(et) et.onclick = () => { const t = telas.get(id); if(t) t.scrollIntoView({behavior:"smooth", block:"center"}); };
-    if(!souEu){
-      const r = document.createElement("input"); r.type="range"; r.min=0; r.max=100; r.value=p.vol; r.title="Volume de "+p.nome;
-      r.oninput = () => { p.vol = +r.value; guarda.por("vol."+p.nome, p.vol); aplicarVolumePessoa(p); };
-      d.appendChild(r);
-      const cad = document.createElement("button"); cad.className = "cadeado"; cad.textContent = "🔒"; cad.title = "Código de segurança com " + p.nome;
-      cad.onclick = () => mostrarSeguranca(id); d.appendChild(cad);
-      if(souAnfitriao){
-        const x = document.createElement("button"); x.className = "expulsar"; x.textContent = "✖"; x.title = "Expulsar " + p.nome;
-        x.onclick = () => expulsar(id); d.appendChild(x);
-      }
-    }
+    // 30/09: igual ao Discord - a linha fica limpa e clicar no nome abre o cartao da pessoa
+    d.title = souEu ? "Você" : "Clique pra volume, silenciar e mais";
+    d.onclick = e => { if(e.target.closest(".aovivo")) return; e.stopPropagation(); abrirCartaoPessoa(id, souEu ? null : p, d); };
     box.appendChild(d);
   };
   linha(peer ? peer.id : "eu", {nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha}, true);
@@ -1564,6 +1742,8 @@ ligarRange("volTransm","volTransm", ()=>telas.forEach((el,id)=>{ if(id!==(peer&&
 // botoes de escolha no jeito do Discord; o mesmo ajuste aparece no "Compartilhar tela" e na aba Transmissao
 if(cfg.resolucao === "2160") cfg.resolucao = "0";                    // 4K e 120 saíram da tela (o Discord nao tem);
 if(Number(cfg.quadros) > 60) cfg.quadros = "60";                      // quem tinha escolhido cai no mais proximo
+// 30/09: uma vez so, todo mundo passa pro ajuste bom de transmissao (1080p, 60 FPS). Depois cada um muda se quiser.
+if(!guarda.ler("qualiV2", false)){ cfg.resolucao = "1080"; cfg.quadros = "60"; guarda.por("resolucao", "1080"); guarda.por("quadros", "60"); guarda.por("qualiV2", true); }
 function pintarChips(){
   document.querySelectorAll(".chips[data-cfg]").forEach(g => g.querySelectorAll("button").forEach(b =>
     b.classList.toggle("sel", String(cfg[g.dataset.cfg]) === b.dataset.v)));
@@ -1573,7 +1753,7 @@ document.querySelectorAll(".chips[data-cfg]").forEach(g => g.querySelectorAll("b
   if(k !== "fonteTela") avisarTrocaDeQualidade();
 }));
 pintarChips();
-function avisarTrocaDeQualidade(){ if(telaMinha) toque("Vale na próxima vez que você compartilhar a tela."); }
+function avisarTrocaDeQualidade(){ if(telaMinha) aplicarQualidadeAoVivo(); }
 $("selModo").value = cfg.modo;
 function mostrarCaixasDoModo(){
   $("caixaSensibilidade").style.display = cfg.modo === "voz" ? "" : "none";
@@ -1590,7 +1770,7 @@ $("btTecla").onclick = () => {
   addEventListener("keydown", pegar, true);
 };
 $("chkEco").checked = cfg.eco; $("chkEco").onchange = e => { cfg.eco = e.target.checked; guarda.por("eco", cfg.eco); ligarMicrofone(); };
-$("chkRuido").checked = cfg.ruido; $("chkRuido").onchange = e => { cfg.ruido = e.target.checked; guarda.por("ruido", cfg.ruido); ligarMicrofone(); };
+$("selRuido").value = cfg.filtro; $("selRuido").onchange = e => { cfg.filtro = e.target.value; guarda.por("filtro", cfg.filtro); ligarMicrofone(); };
 $("chkGanho").checked = cfg.ganhoAuto; $("chkGanho").onchange = e => { cfg.ganhoAuto = e.target.checked; guarda.por("ganhoAuto", cfg.ganhoAuto); ligarMicrofone(); };
 mostrarCaixasDoModo();
 $("chkEfeitos").checked = cfg.efeitos; $("chkEfeitos").onchange = e => { cfg.efeitos = e.target.checked; guarda.por("efeitos", cfg.efeitos); };
@@ -1714,24 +1894,39 @@ async function aplicarBanda(){
     });
   }));
 }
+// "Medir agora": VOZ de cada pessoa (30/09 - "o som ainda esta ruim": medir em vez de chutar) e a tela que sai.
 async function medirConexao(){
-  const pcs = [];
-  gente.forEach(p => p.chamadasTela.forEach(ch => { if(ch.peerConnection) pcs.push(ch.peerConnection); }));
-  if(!pcs.length){ $("relatorio").textContent = "Nada saindo agora. Compartilhe a tela e aperte de novo."; return; }
-  $("relatorio").textContent = "Medindo...";
-  const ler = async pc => {
-    const saida = {};
-    (await pc.getStats()).forEach(r => { if(r.type === "outbound-rtp" && r.kind === "video") Object.assign(saida, r); });
-    return saida;
-  };
-  const antes = await Promise.all(pcs.map(ler));
-  await new Promise(r => setTimeout(r, 1000));
-  const agora = await Promise.all(pcs.map(ler));
-  $("relatorio").textContent = agora.map((a, i) => {
-    const b = antes[i] || {};
-    const mbps = ((a.bytesSent - (b.bytesSent || 0)) * 8 / 1e6).toFixed(1);
-    return "amigo " + (i+1) + ": " + (a.frameWidth || "?") + "x" + (a.frameHeight || "?") +
-           " - " + Math.round(a.framesPerSecond || 0) + " quadros/s - " + mbps + " Mbps";
+  const itens = [];
+  gente.forEach(p => {
+    if(p.chamadaVoz && p.chamadaVoz.peerConnection) itens.push({tipo:"voz", nome:p.nome || "amigo", pc:p.chamadaVoz.peerConnection});
+    p.chamadasTela.forEach(ch => { if(ch.peerConnection && telaMinha) itens.push({tipo:"tela", nome:p.nome || "amigo", pc:ch.peerConnection}); });
+  });
+  if(!itens.length){ $("relatorio").textContent = "Ninguém na chamada agora. Entre numa sala com alguém e aperte de novo."; return; }
+  $("relatorio").textContent = "Medindo (2 segundos)...";
+  const ler = async pc => { const m = new Map(); (await pc.getStats()).forEach(r => m.set(r.id, r)); return m; };
+  const antes = await Promise.all(itens.map(x => ler(x.pc)));
+  await new Promise(r => setTimeout(r, 2000));
+  const agora = await Promise.all(itens.map(x => ler(x.pc)));
+  const kbps = (a, b, campo) => Math.round(((a[campo] || 0) - ((b && b[campo]) || 0)) * 8 / 2000);
+  $("relatorio").textContent = itens.map((x, k) => {
+    const A = agora[k], B = antes[k];
+    const achar = (tipo, kind) => { for(const r of A.values()) if(r.type === tipo && r.kind === kind) return r; return null; };
+    if(x.tipo === "tela"){
+      const o = achar("outbound-rtp", "video") || {};
+      return "📺 tela → " + x.nome + ": " + (o.frameWidth || "?") + "x" + (o.frameHeight || "?") + " · " +
+        Math.round(o.framesPerSecond || 0) + " FPS · " + (kbps(o, B.get(o.id), "bytesSent") / 1000).toFixed(1) + " Mbps";
+    }
+    const o = achar("outbound-rtp", "audio") || {}, e = achar("inbound-rtp", "audio") || {};
+    const eb = B.get(e.id) || {};
+    const cod = e.codecId && A.get(e.codecId);
+    const pedido = cod && cod.sdpFmtpLine ? (cod.sdpFmtpLine.match(/maxaveragebitrate=(\d+)/) || [])[1] : null;
+    const pac = (e.packetsReceived || 0) - (eb.packetsReceived || 0), perd = (e.packetsLost || 0) - (eb.packetsLost || 0);
+    const perda = pac + perd > 0 ? Math.round(100 * perd / (pac + perd)) : 0;
+    return "🎙️ voz com " + x.nome + ":\n" +
+      "   você manda " + kbps(o, B.get(o.id), "bytesSent") + " kbps" + (o.targetBitrate ? " (alvo " + Math.round(o.targetBitrate / 1000) + ")" : "") +
+      " · recebe " + kbps(e, eb, "bytesReceived") + " kbps\n" +
+      "   perda " + perda + "% · atraso variável " + Math.round((e.jitter || 0) * 1000) + " ms" +
+      " · pedido " + (pedido ? Math.round(pedido / 1000) + " kbps" : "padrão (versão antiga!)");
   }).join("\n");
 }
 $("selBanda").value = cfg.banda; $("selBanda").onchange = e => { cfg.banda = e.target.value; guarda.por("banda", cfg.banda); aplicarBanda(); };
