@@ -88,6 +88,8 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .telinha::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:repeating-linear-gradient(rgba(255,255,255,.05) 0 1px,transparent 1px 3px)}
 .telinha video{width:100%;height:100%;object-fit:contain;display:block}
+.telinha:fullscreen,.telinha.cheia{border-radius:0;border:0;aspect-ratio:auto;width:100vw;height:100vh;box-shadow:none}
+.telinha.cheia{position:fixed;inset:0;z-index:30}
 .telinha .rotulo{position:absolute;left:10px;top:8px;background:rgba(8,3,18,.82);border:1px solid rgba(92,255,155,.55);
   color:#dcffeb;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.4px;
   box-shadow:0 0 12px rgba(92,255,155,.28)}
@@ -1491,7 +1493,8 @@ function porTela(id, stream, minha){
     el.querySelector('[data-a=grande]').onclick = e => { e.stopPropagation(); const g=$("palco").classList.toggle("um-grande"); telas.forEach(t=>t.style.display = (!g||t===el)?"":"none"); e.target.textContent = g?"Diminuir":"Aumentar"; };
     el.querySelector('[data-a=mudar]').onclick = e => { e.stopPropagation(); abrirPainelAoVivo(); };
     el.querySelector('[data-a=parar]').onclick = e => { e.stopPropagation(); pararTela(); };
-    el.querySelector('[data-a=cheia]').onclick = e => { e.stopPropagation(); vid.requestFullscreen && vid.requestFullscreen(); };
+    el.querySelector('[data-a=cheia]').onclick = e => { e.stopPropagation(); alternarTelaCheia(el); };
+    vid.ondblclick = e => { e.stopPropagation(); alternarTelaCheia(el); };   // duplo clique, igual ao Discord
     telas.set(id, el); $("palco").appendChild(el);
   }
   const vid = el.querySelector("video");
@@ -1507,6 +1510,31 @@ function porTela(id, stream, minha){
   el.querySelectorAll('.barra [data-a=mudar], .barra [data-a=parar]').forEach(x => x.style.display = minha ? "" : "none");
   atualizarVazio();
 }
+// Tela cheia (30/09, "nao fica em tela cheia"): antes pedia so do <video> e, se o sistema recusasse,
+// ficava calado. Agora vai a telinha inteira (com os botoes) e, se recusar, ocupa a janela toda assim mesmo.
+function alternarTelaCheia(el){
+  const dentro = document.fullscreenElement === el || el.classList.contains("cheia");
+  if(dentro){
+    el.classList.remove("cheia");
+    if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  }else{
+    const ir = el.requestFullscreen ? el.requestFullscreen({navigationUI:"hide"}) : Promise.reject();
+    ir.catch(() => el.classList.add("cheia"));
+    // o pedido as vezes nem responde (visto no teste): se em 0,8 s nao entrou, ocupa a janela assim mesmo
+    setTimeout(() => { if(document.fullscreenElement !== el) el.classList.add("cheia"); }, 800);
+  }
+}
+function marcarBotaoCheia(){
+  telas.forEach(el => {
+    const b = el.querySelector("[data-a=cheia]");
+    const dentro = document.fullscreenElement === el || el.classList.contains("cheia");
+    if(b) b.textContent = dentro ? "Sair da tela cheia" : "Tela cheia";
+  });
+}
+document.addEventListener("fullscreenchange", marcarBotaoCheia);
+addEventListener("keydown", e => { if(e.key === "Escape") telas.forEach(el => el.classList.remove("cheia")); });
+new MutationObserver(marcarBotaoCheia).observe(document.body, {subtree:true, attributes:true, attributeFilter:["class"]});
+
 function tirarTela(id){
   const el = telas.get(id); if(!el) return;
   const v = el.querySelector("video"); v.srcObject = null; el.remove(); telas.delete(id);
@@ -1978,7 +2006,7 @@ setInterval(async () => {
 }, 2000);
 
 // ---- versao a vista (30/09, "era bom colocar a versao em algum lugar") ----
-const VERSAO_PAGINA = "30.09.2026-b";
+const VERSAO_PAGINA = "30.09.2026-c";
 async function mostrarVersao(){
   let prog = "antigo";
   try{ const r = await fetch("/versao", {cache:"no-store"}); if(r.ok) prog = (await r.text()).trim(); }catch(e){}
