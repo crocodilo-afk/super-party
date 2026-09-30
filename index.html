@@ -181,6 +181,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
 .chips button{flex:1;min-width:70px;padding:10px 8px;border-radius:8px;border:1px solid rgba(169,158,203,.3);background:rgba(255,255,255,.04);color:var(--texto,#f1eaff);font-weight:700;cursor:pointer}
 .chips button:hover{border-color:var(--ciano)}
 .chips button.sel{background:rgba(56,232,255,.18);border-color:var(--ciano);color:var(--ciano)}
+.versao-canto{position:fixed;right:10px;bottom:6px;font-size:11px;color:var(--suave);opacity:.6;pointer-events:none;z-index:1}
 .parar{background:#ff4d6d!important;color:#fff!important;font-weight:800}
 .aoVivo{background:linear-gradient(90deg,#5cff9b,#38e8ff)!important;color:#11062a!important;font-weight:800}
 .opcao{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:12px;text-align:left;padding:14px 16px;
@@ -486,6 +487,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   </section>
 
   <section data-painel="sistema" hidden>
+    <p class="versao dica" style="margin-top:0"></p>
     <label><input type="checkbox" id="chkEfeitos" checked style="width:auto;margin-right:6px">Efeitos de neon no fundo</label>
     <p class="dica">Feito pra PC gamer: os efeitos congelam sozinhos quando você sai da janela ou minimiza — enquanto
     você joga, o programa fica praticamente parado.</p>
@@ -566,6 +568,7 @@ label{display:block;color:var(--suave);font-size:12px;margin:12px 0 5px}
   <div class="linha"><button id="btFecharAoVivo">Fechar</button></div>
 </div></div>
 <div id="cartaoPessoa"></div>
+<div class="versao versao-canto"></div>
 <div class="toque" id="toque"></div>
 
 <script src="peerjs.min.js"></script>
@@ -1973,6 +1976,15 @@ setInterval(async () => {
       (quadros ? quadros + " fps · " : "") + Math.max(0, mbps).toFixed(1) + " Mbps " + seta;
   }
 }, 2000);
+
+// ---- versao a vista (30/09, "era bom colocar a versao em algum lugar") ----
+const VERSAO_PAGINA = "30.09.2026-b";
+async function mostrarVersao(){
+  let prog = "antigo";
+  try{ const r = await fetch("/versao", {cache:"no-store"}); if(r.ok) prog = (await r.text()).trim(); }catch(e){}
+  document.querySelectorAll(".versao").forEach(el => el.textContent = "Super Party v" + VERSAO_PAGINA + " · programa " + prog);
+}
+mostrarVersao();
 
 // ============================ ATUALIZACAO (igual ao Discord) ============================
 // Com o app aberto, compara a pagina que esta rodando com a do GitHub. Mudou: aparece a faixa
