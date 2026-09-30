@@ -1382,11 +1382,68 @@ function opcoesDeCaptura(tipoTela, semSom){
     selfBrowserSurface:"exclude" };
 }
 
+// ---- SOM DO PC direto do Windows, igual ao Discord (30/09) ----
+// O programa pega "todo o som do PC menos o da nossa janela" (sem eco) e manda em PCM 16 bits, 48 kHz, estereo
+// pela rota /somdopc. Aqui ele vira uma faixa de audio e entra na transmissao - sem chave nenhuma pra ligar.
+// Programa antigo (sem essa rota): volta pro jeito do navegador.
+const TOCADOR_PCM = `
+class TocadorPcm extends AudioWorkletProcessor {
+  constructor(){ super(); this.fila = []; this.pos = 0; this.guardado = 0;
+    this.port.onmessage = e => { const a = new Int16Array(e.data); this.fila.push(a); this.guardado += a.length;
+      while(this.guardado > 48000){ const v = this.fila.shift(); this.guardado -= v.length - this.pos; this.pos = 0; } }; }  // mais de 0,5 s atrasado: joga fora
+  process(ent, sai){
+    const L = sai[0][0], R = sai[0][1] || sai[0][0];
+    for(let i = 0; i < L.length; i++){
+      if(!this.fila.length){ L[i] = 0; R[i] = 0; continue; }
+      const a = this.fila[0]; L[i] = a[this.pos] / 32768; R[i] = a[this.pos + 1] / 32768; this.pos += 2; this.guardado -= 2;
+      if(this.pos >= a.length){ this.fila.shift(); this.pos = 0; }
+    }
+    return true;
+  }
+}
+registerProcessor("tocador-pcm", TocadorPcm);`;
+let somDoPcAtual = null, tocadorCarregado = null;
+async function somDoPcDisponivel(){
+  try{
+    const c = new AbortController(); setTimeout(() => c.abort(), 2500);
+    const r = await fetch("/somdopc/teste", {cache:"no-store", signal:c.signal});
+    return r.ok && (await r.text()).trim() === "ok";
+  }catch(e){ return false; }
+}
+async function ligarSomDoPc(){
+  if(!ctxAudio) ctxAudio = new AudioContext({latencyHint:"interactive", sampleRate:48000});
+  if(!tocadorCarregado) tocadorCarregado = ctxAudio.audioWorklet.addModule(URL.createObjectURL(new Blob([TOCADOR_PCM], {type:"application/javascript"})));
+  await tocadorCarregado;
+  const no = new AudioWorkletNode(ctxAudio, "tocador-pcm", {numberOfInputs:0, numberOfOutputs:1, outputChannelCount:[2]});
+  const destino = ctxAudio.createMediaStreamDestination(); destino.channelCount = 2; no.connect(destino);
+  const parar = new AbortController();
+  (async () => {
+    try{
+      const r = await fetch("/somdopc", {cache:"no-store", signal:parar.signal});
+      const leitor = r.body.getReader(); let sobra = new Uint8Array(0);
+      while(true){
+        const {value, done} = await leitor.read(); if(done) break;
+        const junto = new Uint8Array(sobra.length + value.length); junto.set(sobra); junto.set(value, sobra.length);
+        const util = junto.length - (junto.length % 4);                    // so quadros inteiros (2 canais x 16 bits)
+        if(util){ const pedaco = junto.slice(0, util).buffer; no.port.postMessage(pedaco, [pedaco]); }
+        sobra = junto.slice(util);
+      }
+    }catch(e){}
+  })();
+  return { faixa: destino.stream.getAudioTracks()[0], parar: () => { parar.abort(); try{ no.disconnect(); }catch(e){} } };
+}
+function desligarSomDoPc(){ if(somDoPcAtual){ somDoPcAtual.parar(); somDoPcAtual = null; } }
+
 async function comecarTela(tipoTela, semSom){
   if(telaMinha){ pararTela(); return; }
+  const nativo = !semSom && await somDoPcDisponivel();
   let s;
-  try{ s = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(tipoTela, semSom)); }
+  try{ s = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(tipoTela, semSom || nativo)); }
   catch(e){ falhaAoCompartilhar(e, tipoTela); return; }
+  if(nativo){
+    try{ desligarSomDoPc(); somDoPcAtual = await ligarSomDoPc(); s.addTrack(somDoPcAtual.faixa); }
+    catch(e){ toque("Não consegui pegar o som do PC: vai só a imagem."); }
+  }
   ligarTransmissao(s);
 }
 
@@ -1441,8 +1498,9 @@ function abrirPainelAoVivo(){
 }
 async function trocarTela(){
   $("painelAoVivo").classList.remove("aberto");
+  const nativo = await somDoPcDisponivel();
   let novo;
-  try{ novo = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(cfg.fonteTela)); }
+  try{ novo = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(cfg.fonteTela, nativo)); }
   catch(e){
     if(e && e.name === "NotAllowedError"){ toque("Troca cancelada: continua mostrando o mesmo."); return; }
     try{ novo = await navigator.mediaDevices.getDisplayMedia(opcoesDeCaptura(cfg.fonteTela, true)); toque("Trocou, mas sem som: o Windows não deixou pegar o som do PC."); }
@@ -1453,6 +1511,8 @@ async function trocarTela(){
     telaMinha = null;
     gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; });
   }
+  desligarSomDoPc();
+  if(nativo){ try{ somDoPcAtual = await ligarSomDoPc(); novo.addTrack(somDoPcAtual.faixa); }catch(e){} }
   ligarTransmissao(novo);
 }
 function aplicarQualidadeAoVivo(){
@@ -1478,6 +1538,7 @@ function mandarTela(id){
 }
 
 function pararTela(){
+  desligarSomDoPc();
   if(!telaMinha) return;
   telaMinha.getTracks().forEach(t=>t.stop());
   telaMinha = null;
@@ -2028,7 +2089,7 @@ setInterval(async () => {
 }, 2000);
 
 // ---- versao a vista (30/09, "era bom colocar a versao em algum lugar") ----
-const VERSAO_PAGINA = "30.09.2026-d";
+const VERSAO_PAGINA = "30.09.2026-e";
 async function mostrarVersao(){
   let prog = "antigo";
   try{ const r = await fetch("/versao", {cache:"no-store"}); if(r.ok) prog = (await r.text()).trim(); }catch(e){}
@@ -2048,7 +2109,11 @@ async function procurarAtualizacao(){
     const [aqui, la] = await Promise.all([
       fetch("/index.html", {cache:"no-store"}).then(r => r.text()),
       fetch(FONTE_PAGINA + "?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.text() : "")]);
-    if(la.length > 5000 && la.includes("Super Party") && norm(la) !== norm(aqui)) mostrarAtualizacao();
+    if(la.length > 5000 && la.includes("Super Party") && norm(la) !== norm(aqui)){ mostrarAtualizacao(); return; }
+    const [progAqui, progLa] = await Promise.all([
+      fetch("/versao", {cache:"no-store"}).then(r => r.ok ? r.text() : "").catch(() => ""),
+      fetch(FONTE_PAGINA.replace("index.html", "versao.txt") + "?t=" + Date.now(), {cache:"no-store"}).then(r => r.ok ? r.text() : "").catch(() => "")]);
+    if(progAqui.trim() && progLa.trim() && progAqui.trim() !== progLa.trim()) mostrarAtualizacao();
   }catch(e){}
 }
 function mostrarAtualizacao(){
@@ -2059,6 +2124,10 @@ function mostrarAtualizacao(){
   $("btDepois").onclick = () => d.remove();
   $("btAtualizar").onclick = async () => {
     $("btAtualizar").textContent = "Baixando...";
+    try{
+      const r = await fetch("/reiniciar", {cache:"no-store"});
+      if(r.ok){ $("btAtualizar").textContent = "Reabrindo..."; return; }   // o programa fecha e abre sozinho
+    }catch(e){}
     try{ const r = await fetch("/atualizar", {cache:"no-store"}); if(r.ok){ location.reload(); return; } }catch(e){}
     d.querySelector("b").textContent = "Feche e abra o Super Party pra atualizar"; $("btAtualizar").remove();
   };
