@@ -361,6 +361,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
     <button class="redondo" id="btMudo" title="Microfone">🎙️</button>
     <button class="redondo" id="btSurdo" title="Fone (ouvir)">🎧</button>
     <button id="btTela" title="Transmitir a tela">TRANSMITIR</button>
+    <button id="btAoVivo" class="ligado" hidden title="Mudar a qualidade ou trocar o que você mostra">● AO VIVO</button>
     <button class="redondo" id="btFilme" title="Transmitir um filme salvo no PC">🎬</button>
     <button class="redondo" id="btAjustes" title="Configurações e mixer">⚙️</button>
     <button class="perigo" id="btSair">Sair da call</button>
@@ -1477,7 +1478,9 @@ function aplicarSaida(el){ if(cfg.saidaId && el.setSinkId) el.setSinkId(cfg.said
 
 // ------------------------- tela -------------------------
 function abrirEscolha(){
-  if(telaMinha){ abrirPainelAoVivo(); return; }
+  // 15/11: "ta faltando o botao de parar de transmitir". Ao vivo, o botao grande vira PARAR e para na hora
+  // (igual ao Discord). O painel de mudar qualidade/trocar a janela ficou no botao "AO VIVO" ao lado.
+  if(telaMinha){ pararTela(); return; }
   // 30/09: ele quis ir DIRETO pra escolha do Windows, ja com o certo: tela inteira (a unica que leva o
   // som no Windows), 1080p e 60 FPS. Mudar continua possivel ao vivo, no Mudar da propria telinha.
   if(window.squad && window.squad.fontes) return abrirSeletor();   // programa Squad: seletor nosso
@@ -1521,6 +1524,7 @@ $("seletor").onclick = e => { if(e.target.id === "seletor") fecharSeletor(); };
 addEventListener("keydown", e => { if(e.key === "Escape" && $("seletor").classList.contains("aberto")) fecharSeletor(); });
 $("btTela").onclick = abrirEscolha;
 $("btStart").onclick = abrirEscolha;
+$("btAoVivo").onclick = abrirPainelAoVivo;
 $("btFecharEscolha").onclick = () => $("escolha").classList.remove("aberto");
 $("escolha").onclick = e => { if(e.target.id === "escolha") $("escolha").classList.remove("aberto"); };
 $("btEscolherTela").onclick = () => { $("escolha").classList.remove("aberto"); comecarTela("monitor"); };
@@ -1655,7 +1659,7 @@ function ligarTransmissao(s){
   tocarAviso("tela");
   gente.forEach((p,id)=>mandarTela(id));
   porTela(peer.id, s, true);
-  $("btTela").classList.add("ligado"); $("btTela").textContent = "● AO VIVO";
+  $("btTela").classList.add("ligado"); $("btTela").textContent = "⏹ PARAR TRANSMISSÃO"; $("btAoVivo").hidden = false;
   avisarEstado();
   if(!s.getAudioTracks().length) avisoSemSom();
 }
@@ -1731,7 +1735,7 @@ function pararTela(){
   telaMinha = null;
   gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; });
   if(peer) tirarTela(peer.id);
-  $("btTela").classList.remove("ligado"); $("btTela").textContent = "TRANSMITIR";
+  $("btTela").classList.remove("ligado"); $("btTela").textContent = "TRANSMITIR"; $("btAoVivo").hidden = true;
   avisarEstado();
 }
 

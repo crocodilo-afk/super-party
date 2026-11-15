@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.15.1",
+    "versao":  "2026.11.15.2",
     "electron":  "45.1.0",
-    "notas":  "Transmissao igual ao Discord: H.264 pela placa de video, mais banda no automatico e as chaves de aceleracao de hardware.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.15.1.zip",
-    "nucleo_sha256":  "44b52c2eb367b724aba03cc630c6ded501b96cf405a686b825f5a1bcdd85633d",
+    "notas":  "Botao de PARAR TRANSMISSAO e transmitir janela pega so a janela escolhida (sem o que estiver na frente).",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.15.2.zip",
+    "nucleo_sha256":  "43864343003144290499311d2c13311132997508c881db6fa807e7021cc7e30f",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",
