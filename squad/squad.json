@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.15.2",
+    "versao":  "2026.11.15.3",
     "electron":  "45.1.0",
-    "notas":  "Botao de PARAR TRANSMISSAO e transmitir janela pega so a janela escolhida (sem o que estiver na frente).",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.15.2.zip",
-    "nucleo_sha256":  "43864343003144290499311d2c13311132997508c881db6fa807e7021cc7e30f",
+    "notas":  "Som da transmissao sem falhas (colchao de 60 ms), botao de PARAR TRANSMISSAO e janela limpa.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.15.3.zip",
+    "nucleo_sha256":  "548b312bce56c78636a5701ac3eeb26df85c35fd00452dd6bcbe760adf84e2db",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",

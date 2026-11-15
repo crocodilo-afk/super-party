@@ -1576,13 +1576,18 @@ function opcoesDeCaptura(tipoTela, semSom){
 // Programa antigo (sem essa rota): volta pro jeito do navegador.
 const TOCADOR_PCM = `
 class TocadorPcm extends AudioWorkletProcessor {
-  constructor(){ super(); this.fila = []; this.pos = 0; this.guardado = 0;
+  // 15/11: colchao de 60 ms. Antes tocava assim que o som chegava; como ele chega em rajadas, qualquer atraso
+  // virava um buraco no meio do som (medido: 3 buracos em 20 s, ate 107 ms). Agora so comeca (ou volta) a tocar
+  // com 60 ms guardados, e conta as faltas e os descartes pra dar pra medir.
+  constructor(){ super(); this.fila = []; this.pos = 0; this.guardado = 0; this.tocando = false; this.faltas = 0; this.descartes = 0; this.n = 0;
     this.port.onmessage = e => { const a = new Int16Array(e.data); this.fila.push(a); this.guardado += a.length;
-      while(this.guardado > 48000){ const v = this.fila.shift(); this.guardado -= v.length - this.pos; this.pos = 0; } }; }  // mais de 0,5 s atrasado: joga fora
+      while(this.guardado > 48000){ const v = this.fila.shift(); this.guardado -= v.length - this.pos; this.pos = 0; this.descartes++; } }; }  // mais de 0,5 s atrasado: joga fora
   process(ent, sai){
     const L = sai[0][0], R = sai[0][1] || sai[0][0];
+    if(++this.n % 375 === 0) this.port.postMessage({faltas:this.faltas, descartes:this.descartes, guardadoMs:Math.round(this.guardado / 96)});
+    if(!this.tocando){ if(this.guardado >= 5760) this.tocando = true; else { L.fill(0); R.fill(0); return true; } }
     for(let i = 0; i < L.length; i++){
-      if(!this.fila.length){ L[i] = 0; R[i] = 0; continue; }
+      if(!this.fila.length){ L[i] = 0; R[i] = 0; if(this.tocando){ this.tocando = false; this.faltas++; } continue; }
       const a = this.fila[0]; L[i] = a[this.pos] / 32768; R[i] = a[this.pos + 1] / 32768; this.pos += 2; this.guardado -= 2;
       if(this.pos >= a.length){ this.fila.shift(); this.pos = 0; }
     }
@@ -1603,6 +1608,7 @@ async function ligarSomDoPc(){
   if(!tocadorCarregado) tocadorCarregado = ctxAudio.audioWorklet.addModule(URL.createObjectURL(new Blob([TOCADOR_PCM], {type:"application/javascript"})));
   await tocadorCarregado;
   const no = new AudioWorkletNode(ctxAudio, "tocador-pcm", {numberOfInputs:0, numberOfOutputs:1, outputChannelCount:[2]});
+  no.port.onmessage = e => { window.__somPc = e.data; };     // faltas e descartes do som do PC (pra medir)
   const destino = ctxAudio.createMediaStreamDestination(); destino.channelCount = 2; no.connect(destino);
   const parar = new AbortController();
   (async () => {
