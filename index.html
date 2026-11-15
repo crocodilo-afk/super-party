@@ -498,6 +498,14 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
       <button type="button" data-v="auto">Automático</button><button type="button" data-v="AV1">AV1</button>
       <button type="button" data-v="VP9">VP9</button><button type="button" data-v="H264">H.264</button>
     </div>
+    <div id="chavesH264" hidden>
+      <div class="sub">CODEC DE VÍDEO DO PROGRAMA</div>
+      <label><input type="checkbox" id="chkOpenH264">Codec de vídeo H.264 (OpenH264)</label>
+      <p class="dica">Desligar o H.264 também desliga a codificação pela placa de vídeo.</p>
+      <label><input type="checkbox" id="chkAcelH264">Aceleração de hardware H.264</label>
+      <p class="dica">Usa a placa de vídeo pra codificar e decodificar. Se a imagem chegar preta ou travando, desligue.</p>
+      <p class="dica" id="avisoReabrir" hidden><b>Vale quando o Squad abrir de novo.</b> <button type="button" id="btReabrir">Reabrir agora</button></p>
+    </div>
     <p class="dica">O Discord sem Nitro trava em 720p 30. Aqui é tudo liberado; o limite é a sua internet de subida. O som do filme sai em estéreo, no máximo que o Opus aguenta.</p>
     <h3>No seu ouvido</h3>
     <div class="faixa"><span>Volume das transmissões</span><input type="range" id="volTransm" min="0" max="100"><output id="volTransmTxt"></output></div>
@@ -1236,7 +1244,24 @@ function preferirCodec(sdp, nome){
   return linhas.join("\r\n");
 }
 const SDP_VOZ = sdp => sdpOpus(Number(cfg.qualiVoz) || 128, false)(sdp);
-const SDP_TELA = sdp => preferirCodec(sdpOpus(Number(cfg.qualiTela) || 510, true)(sdp), cfg.codec);
+// 15/11: no programa Squad o "Automatico" pede H.264 primeiro, igual ao Discord: e o que a placa de video
+// codifica sozinha (medido: NVIDIA H.264 Encoder). Sem H.264 no PC, o preferirCodec deixa como estava.
+let h264Ligado = true;      // chave "OpenH264" do programa (o que esta valendo nesta abertura)
+const codecDaTela = () => cfg.codec === "auto" ? (window.squad && h264Ligado ? "H264" : "auto") : cfg.codec;
+if(window.squad && window.squad.ajustes) window.squad.ajustes().then(a => {
+  h264Ligado = a.emUso.openH264;
+  const el = id => document.getElementById(id), salvo = a.salvo;
+  const pintar = () => {
+    el("chkOpenH264").checked = salvo.openH264; el("chkAcelH264").checked = salvo.openH264 && salvo.aceleracaoH264;
+    el("chkAcelH264").disabled = !salvo.openH264;
+    el("avisoReabrir").hidden = salvo.openH264 === a.emUso.openH264 && salvo.aceleracaoH264 === a.emUso.aceleracaoH264;
+  };
+  const mudar = chave => async e => { const v = e.target.checked; if(await window.squad.ajustar(chave, v)) salvo[chave] = v; pintar(); };
+  el("chkOpenH264").onchange = mudar("openH264"); el("chkAcelH264").onchange = mudar("aceleracaoH264");
+  el("btReabrir").onclick = () => window.squad.reiniciar();
+  el("chavesH264").hidden = false; pintar();
+}).catch(() => {});
+const SDP_TELA = sdp => preferirCodec(sdpOpus(Number(cfg.qualiTela) || 510, true)(sdp), codecDaTela());
 
 // A porta do microfone (abrir so quando a pessoa fala) roda DENTRO do audio, nao num relogio:
 // o relogio olhava a cada 120 ms (cortava o comeco da palavra) e, com a janela atras do jogo,
@@ -2244,7 +2269,11 @@ $("btMudo").title = "Microfone (Ctrl+Shift+M)"; $("btSurdo").title = "Fone (Ctrl
 
 // ------------------------- teto de banda e medicao da conexao -------------------------
 async function aplicarBanda(){
-  const teto = Number(cfg.banda) * 1000;
+  // 15/11: "Automatico" deixava o navegador travar em ~2,5 Mbps (medido) = filme borrado. Agora o automatico
+  // usa a escada do Discord: quanto maior a resolucao e os quadros, mais banda.
+  const alt = Number(cfg.resolucao) || 2160, fps = Number(cfg.quadros) || 30;
+  const auto = (alt <= 720 ? 4000 : alt <= 1080 ? 6000 : alt <= 1440 ? 10000 : 16000) * (fps > 30 ? 1.5 : 1);
+  const teto = (Number(cfg.banda) || auto) * 1000;
   gente.forEach(p => p.chamadasTela.forEach(ch => {
     const pc = ch.peerConnection; if(!pc) return;
     pc.getSenders().filter(s => s.track && s.track.kind === "video").forEach(async s => {

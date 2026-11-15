@@ -1,0 +1,15 @@
+{
+    "versao":  "2026.11.15.1",
+    "electron":  "45.1.0",
+    "notas":  "Transmissao igual ao Discord: H.264 pela placa de video, mais banda no automatico e as chaves de aceleracao de hardware.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.15.1.zip",
+    "nucleo_sha256":  "44b52c2eb367b724aba03cc630c6ded501b96cf405a686b825f5a1bcdd85633d",
+    "base_partes":  [
+                        "squad/base/Squad-base-45.1.0.zip.001",
+                        "squad/base/Squad-base-45.1.0.zip.002",
+                        "squad/base/Squad-base-45.1.0.zip.003",
+                        "squad/base/Squad-base-45.1.0.zip.004"
+                    ],
+    "base_tamanho":  159579126,
+    "base_sha256":  "04e6f49bf97eef639ad20307f1d6195a2878751a98244ef9861d877525adb2c7"
+}
