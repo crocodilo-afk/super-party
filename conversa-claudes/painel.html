@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conversa dos Claudes</title>
+<style>
+  :root{--fundo:#08080a;--cartao:#141418;--linha:#26262c;--texto:#f5f1ea;--fraco:#a29d95;--laranja:#ff7a1a;--verde:#3ecf74}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fundo);color:var(--texto);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+  header{position:sticky;top:0;background:var(--fundo);border-bottom:1px solid var(--linha);padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  h1{margin:0;font-size:22px;color:var(--laranja);letter-spacing:.5px}
+  #estado{color:var(--fraco);font-size:14px;flex:1}
+  button{background:var(--laranja);color:#120800;border:0;border-radius:8px;padding:8px 14px;font-weight:700;font-size:15px;cursor:pointer}
+  main{max-width:860px;margin:0 auto;padding:16px}
+  .recado{background:var(--cartao);border:1px solid var(--linha);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+  .recado.rafael{border-left:4px solid var(--laranja)}
+  .recado.bola{border-left:4px solid var(--verde)}
+  .recado.decisoes{border-left:4px solid #8a7cff}
+  .arquivo{color:var(--fraco);font-size:13px;margin-bottom:6px}
+  pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+  .pode{display:inline-block;background:#3a1a05;color:var(--laranja);border-radius:6px;padding:1px 8px;font-size:13px;font-weight:700;margin-left:6px}
+</style>
+</head>
+<body>
+<header><h1>Conversa dos Claudes</h1><span id="estado">Carregando...</span><button id="atualizar">Atualizar</button></header>
+<main id="lista"></main>
+<script>
+// Lê os recados da pasta conversa-claudes direto do GitHub (a lista pela API, o texto pelo raw).
+const REPO = "crocodilo-afk/super-party", PASTA = "conversa-claudes";
+const lista = document.getElementById("lista"), estado = document.getElementById("estado");
+function cartao(nome, texto){
+  const d = document.createElement("section");
+  const quem = /decisoes/i.test(nome) ? "decisoes" : /rafael/i.test(nome) ? "rafael" : /bola/i.test(nome) ? "bola" : "";
+  d.className = "recado " + quem;
+  const a = document.createElement("div"); a.className = "arquivo"; a.textContent = nome;
+  if(/Precisa do "pode" do Rafael:\s*sim/i.test(texto)){ const s = document.createElement("span"); s.className = "pode"; s.textContent = "precisa do pode do Rafael"; a.appendChild(s); }
+  const p = document.createElement("pre"); p.textContent = texto;
+  d.append(a, p); return d;
+}
+async function carregar(){
+  estado.textContent = "Carregando...";
+  try{
+    const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + PASTA + "?ref=master", {cache:"no-store"});
+    if(!r.ok) throw new Error("GitHub respondeu " + r.status);
+    const itens = (await r.json()).filter(i => i.type === "file" && /\.md$/i.test(i.name) && !/^LEIA-ME/i.test(i.name));
+    const recados = itens.filter(i => /^\d{4}-\d{2}-\d{2}/.test(i.name)).sort((a, b) => b.name.localeCompare(a.name));
+    const decisoes = itens.find(i => /^DECISOES/i.test(i.name));
+    const ordem = (decisoes ? [decisoes] : []).concat(recados);
+    const textos = await Promise.all(ordem.map(i => fetch(i.download_url + "?t=" + Date.now(), {cache:"no-store"}).then(x => x.text())));
+    lista.replaceChildren(...ordem.map((i, n) => cartao(i.name, textos[n])));
+    estado.textContent = recados.length + " recado(s) · atualizado às " + new Date().toLocaleTimeString("pt-BR");
+  }catch(e){ estado.textContent = "Não consegui ler o GitHub (" + e.message + "). Tente Atualizar."; }
+}
+document.getElementById("atualizar").onclick = carregar;
+carregar(); setInterval(carregar, 120000);
+</script>
+</body>
+</html>
