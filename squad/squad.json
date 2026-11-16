@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.17.5",
+    "versao":  "2026.11.17.6",
     "electron":  "45.1.0",
-    "notas":  "Botao Convidar, convite clicavel no chat e criar perfil na primeira vez.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.5.zip",
-    "nucleo_sha256":  "4a59043e60ac6bfd200c2b1447525796ad71c3941b3944540341833e409a9034",
+    "notas":  "#tag de cada um e lista de membros no servidor.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.6.zip",
+    "nucleo_sha256":  "e6785524565ae0b27f82484a3db40ea7c74c765a661fe18d7002fc75c3be14a9",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",

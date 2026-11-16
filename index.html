@@ -362,6 +362,8 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 .caixaJanelinha .botoesJ{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
 .caixaJanelinha .opcaoJ{display:block;width:100%;text-align:left;margin-top:8px}
 body:has(#casa.ativa) .versao-canto{display:none}
+.tagS{color:var(--apagado);font-size:11px;font-weight:700}
+.canalS .previa.mini{width:24px;height:24px;font-size:11px}
 .convite{font-family:var(--titulo);font-size:26px;letter-spacing:.18em;text-align:center;padding:12px;border:1px dashed var(--laranja);border-radius:12px;margin-top:10px;user-select:all}
 </style>
 </head>
@@ -3381,7 +3383,7 @@ $("btSairConta").onclick = async () => {
 
 // ---------- perfil ----------
 async function carregarPerfil(){
-  const r = await supa("/rest/v1/perfis?id=eq." + sessao.user.id + "&select=id,nome,cor,foto");
+  const r = await supa("/rest/v1/perfis?id=eq." + sessao.user.id + "&select=id,nome,cor,foto,tag");
   if(r && r[0]){ perfil = r[0]; return; }
   // primeira vez: usa o nome e a foto do Google/Discord; senao, o que ja estava neste PC
   const meta = metaLogin || {};
@@ -3401,7 +3403,7 @@ function pintarEu(){
   if(!perfil) return;
   pintarBolinha($("fotoEu"), perfil);
   // o e-mail nao aparece na tela (nem em compartilhamento de tela): so "Online"
-  $("nomeEu").textContent = perfil.nome; $("emailEu").textContent = "Online";
+  $("nomeEu").textContent = perfil.nome; $("emailEu").textContent = (perfil.tag ? "#" + perfil.tag + " · " : "") + "Online";
   // a call usa o mesmo nome, cor e foto da conta
   eu.nome = perfil.nome; eu.cor = perfil.cor; if(perfil.foto) eu.foto = perfil.foto;
   if(!eu.id) eu.id = "c" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
@@ -3479,7 +3481,7 @@ async function abrirServidor(s){
     const lista = await supa("/rest/v1/canais?servidor=eq." + s.id + "&select=id,nome,tipo,posicao,sala&order=posicao,criado_em") || [];
     const ms = await supa("/rest/v1/membros?servidor=eq." + s.id + "&select=usuario") || [];
     const ids = ms.map(m => m.usuario).filter(i => UUID.test(i));
-    const ps = ids.length ? await supa("/rest/v1/perfis?id=in.(" + ids.join(",") + ")&select=id,nome,cor,foto") : [];
+    const ps = ids.length ? await supa("/rest/v1/perfis?id=in.(" + ids.join(",") + ")&select=id,nome,cor,foto,tag") : [];
     if(vez !== vezServidor) return;
     canais = lista; perfisDoServidor = new Map((ps || []).map(p => [p.id, p]));
   }catch(e){ if(vez !== vezServidor) return; toque("Não consegui abrir o servidor."); canais = []; }
@@ -3503,6 +3505,20 @@ function desenharCanais(){
       b.querySelector(".nm").textContent = c.nome;
       b.onclick = () => abrirCanal(c);
       caixa.appendChild(b);
+    }
+  }
+  // 16/11: lista de membros com a #tag, pra saber quem e quem (igual no Discord)
+  const membrosLista = [...perfisDoServidor.values()].filter(p => p && p.id);
+  if(membrosLista.length){
+    const g = document.createElement("div"); g.className = "grupoCanais";
+    g.innerHTML = "<span>MEMBROS — " + membrosLista.length + "</span>"; caixa.appendChild(g);
+    for(const p of membrosLista){
+      const linha = document.createElement("div"); linha.className = "canalS"; linha.style.cursor = "default";
+      linha.innerHTML = '<div class="previa mini"></div><span class="nm"></span><small class="tagS"></small>';
+      pintarBolinha(linha.querySelector(".previa"), p);
+      linha.querySelector(".nm").textContent = nomeSeguro(p.nome) + (servidorAtual && p.id === servidorAtual.dono ? " 👑" : "");
+      linha.querySelector(".tagS").textContent = p.tag ? "#" + p.tag : "";
+      caixa.appendChild(linha);
     }
   }
 }
@@ -3551,6 +3567,7 @@ function mostrarMensagem(m){
   pintarBolinha(d.querySelector(".previa"), quem);
   if(!seguida){
     d.querySelector(".cab b").textContent = nomeSeguro(quem.nome); d.querySelector(".cab b").style.color = corSegura(quem.cor);
+    if(quem.tag){ const t = document.createElement("small"); t.className = "tagS"; t.textContent = "#" + quem.tag; d.querySelector(".cab b").after(t); }
     d.querySelector(".cab small").textContent = hora.toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR")
       ? "hoje às " + hora.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"})
       : hora.toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
@@ -3571,7 +3588,7 @@ function mostrarMensagem(m){
   // gente nova no servidor: busca o perfil dela
   if(!perfisDoServidor.has(m.autor) && UUID.test(m.autor)){
     perfisDoServidor.set(m.autor, quem);
-    supa("/rest/v1/perfis?id=eq." + m.autor + "&select=id,nome,cor,foto").then(r => { if(r && r[0]) perfisDoServidor.set(m.autor, r[0]); }).catch(() => {});
+    supa("/rest/v1/perfis?id=eq." + m.autor + "&select=id,nome,cor,foto,tag").then(r => { if(r && r[0]) perfisDoServidor.set(m.autor, r[0]); }).catch(() => {});
   }
 }
 $("formMensagem").onsubmit = async e => {

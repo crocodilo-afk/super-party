@@ -1,0 +1,16 @@
+# Cutucão: o Supabase grátis dorme depois de 7 dias sem uso. Isto chama o banco 1 vez por dia pra ele ficar acordado.
+# A chave abaixo é a "publishable" (pública de propósito: o app já leva ela, e o banco é protegido por RLS).
+name: cutucao
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+permissions: {}
+jobs:
+  cutucar:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -X POST "https://abxgrnjdfredjbpcelsz.supabase.co/rest/v1/rpc/cutucao" \
+            -H "apikey: sb_publishable_PKdrf0PlvEPhDJUxk6X2fA_UWoUbPc2" \
+            -H "Content-Type: application/json" -d '{}'
