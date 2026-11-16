@@ -509,7 +509,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
     </div>
     <p class="dica">O Discord sem Nitro trava em 720p 30. Aqui é tudo liberado; o limite é a sua internet de subida. O som do filme sai em estéreo, no máximo que o Opus aguenta.</p>
     <h3>No seu ouvido</h3>
-    <div class="faixa"><span>Volume das transmissões</span><input type="range" id="volTransm" min="0" max="100"><output id="volTransmTxt"></output></div>
+    <div class="faixa"><span>Volume das transmissões</span><input type="range" id="volTransm" min="0" max="200"><output id="volTransmTxt"></output></div>
     <label><input type="checkbox" id="chkAbafar">Abaixar o filme quando alguém falar</label>
   </section>
 
@@ -1598,7 +1598,7 @@ registerProcessor("tocador-pcm", TocadorPcm);`;
 let somDoPcAtual = null, tocadorCarregado = null;
 async function somDoPcDisponivel(){
   try{
-    const c = new AbortController(); setTimeout(() => c.abort(), 2500);
+    const c = new AbortController(); setTimeout(() => c.abort(), 7000);   // 16/11: antes 2,5 s (antivirus na 1a vez)
     const r = await fetch("/somdopc/teste", {cache:"no-store", signal:c.signal});
     return r.ok && (await r.text()).trim() === "ok";
   }catch(e){ return false; }
@@ -1639,6 +1639,27 @@ async function comecarTela(tipoTela, semSom){
     catch(e){ toque("Não consegui pegar o som do PC: vai só a imagem."); }
   }
   ligarTransmissao(s);
+  avisosDaCaptura(s, nativo, semSom);
+}
+// 16/11 (teste com o bola): o que o programa decidiu na captura vira aviso claro.
+async function avisosDaCaptura(s, nativo, semSom){
+  if(!window.squad){ if(!semSom) avisoInstalarSquad(); return; }
+  let c = {};
+  try{ if(window.squad.ultimaCaptura) c = await window.squad.ultimaCaptura() || {}; }catch(e){}
+  if(c.telaCheia) sistema("🖥️ A janela escolhida estava em TELA CHEIA. Tela cheia de jogo não deixa pegar só a janela, então estou mostrando a tela inteira onde ela está (igual ao Discord).");
+  if(!nativo && !semSom && s.getAudioTracks().length)
+    sistema("🔊 Som indo pelo modo geral do Windows (este Windows não tem a captura por programa). Funciona, mas pode levar junto as vozes da call: use fone.");
+}
+// Quem abre a pagina pelo Super Party antigo (no navegador) nao tem o som automatico: so o programa Squad tem.
+let jaAvisouSquad = false;
+function avisoInstalarSquad(){
+  if(jaAvisouSquad) return; jaAvisouSquad = true;
+  const d = document.createElement("div"); d.className = "msg sistema";
+  d.innerHTML = "⚠️ Você está no <b>Super Party antigo</b> (no navegador). Nele o som da tela só vai se marcar “Compartilhar áudio do sistema”. " +
+    "No programa <b>Squad</b> o som vai junto sozinho, igual ao Discord. Feche o Super Party de vez e instale: ";
+  const a = document.createElement("a"); a.textContent = "Baixar o Squad"; a.className = "sim";
+  a.href = "https://github.com/crocodilo-afk/super-party/raw/master/squad/InstalarSquad.exe"; a.target = "_blank"; a.rel = "noopener";
+  d.appendChild(a); $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
 }
 
 // 30/09: "quando o amigo marca compartilhar o som, a transmissao nem comeca". O Windows as vezes nao
@@ -1673,6 +1694,11 @@ function ligarTransmissao(s){
 // 30/09: o amigo nao ouvia a transmissao. O caminho do som estava certo (testado: chega a 256 kbps);
 // o que faltava era o som na CAPTURA. Agora isso nao passa mais calado.
 function avisoSemSom(){
+  if(window.squad && window.squad.fontes){
+    sistema("⚠️ Sua transmissão está SEM SOM: o Windows não deixou pegar o som do PC de nenhum dos dois jeitos (por programa nem geral). Confira se tem fone ou caixa ligado e tente parar e transmitir de novo.");
+    toque("Transmissão sem som: veja o aviso no chat."); return;
+  }
+  avisoInstalarSquad();
   sistema("⚠️ Sua transmissão está SEM SOM. " + (cfg.fonteTela === "window"
     ? "No Windows, mostrar só uma janela pode não levar o som. Clique em 🖥️ → Trocar o que mostro → escolha Telas e marque “Compartilhar áudio do sistema”."
     : "Clique em 🖥️ → Trocar o que mostro e, na janela do Windows, marque “Compartilhar áudio do sistema”."));
@@ -1709,6 +1735,7 @@ async function trocarTela(){
   desligarSomDoPc();
   if(nativo){ try{ somDoPcAtual = await ligarSomDoPc(); novo.addTrack(somDoPcAtual.faixa); }catch(e){} }
   ligarTransmissao(novo);
+  avisosDaCaptura(novo, nativo, false);
 }
 function aplicarQualidadeAoVivo(){
   const v = telaMinha && telaMinha.getVideoTracks()[0]; if(!v) return;
@@ -1764,22 +1791,21 @@ function porTela(id, stream, minha){
     el.innerHTML = '<video autoplay playsinline></video><div class="rotulo"></div><div class="placar"></div>' +
       '<div class="barra">' +
         '<button data-a="mudo" title="Mudo só esta transmissão">🔊</button>' +
-        '<span title="Volume da transmissão (o som do que ele mostra)">📺</span><input type="range" class="volTela" min="0" max="100">' +
-        '<span title="Volume da voz de quem está compartilhando">🎙️</span><input type="range" class="volVoz" min="0" max="100">' +
+        '<span title="Volume da transmissão (o som do que ele mostra)">📺</span><input type="range" class="volTela" min="0" max="200">' +
+        '<span title="Volume da voz de quem está compartilhando">🎙️</span><input type="range" class="volVoz" min="0" max="200">' +
         '<button data-a="mudar" title="Mudar a transmissão">⚙️ Mudar</button><button data-a="parar" class="parar" title="Parar a transmissão">⏹ Parar</button>' +
         '<button data-a="grande">Aumentar</button><button data-a="cheia">Tela cheia</button>' +
       '</div>';
     const vidAgora = () => el.querySelector("video");   // o <video> pode ser trocado (filme do PC)
     const volTela = el.querySelector(".volTela"), volVoz = el.querySelector(".volVoz");
     volTela.value = cfg.volTransm;
-    volTela.oninput = () => { const vid = vidAgora(); vid.volume = volTela.value/100; if(vid.volume>0) vid.muted = false; };
+    volTela.oninput = () => { if(+volTela.value > 0) el._mudo = false; marcarMudoTela(el); aplicarVolumeTela(id); };
     volVoz.oninput = () => {
       const dono = gente.get(id); if(!dono) return;
       dono.vol = +volVoz.value; guarda.por("vol."+dono.nome, dono.vol); aplicarVolumePessoa(dono); desenharPessoas();
     };
     el.querySelector('[data-a=mudo]').onclick = e => {
-      e.stopPropagation(); const vid = vidAgora(); vid.muted = !vid.muted; e.target.textContent = vid.muted ? "🔇" : "🔊";
-      e.target.classList.toggle("ligado", vid.muted);
+      e.stopPropagation(); el._mudo = !el._mudo; marcarMudoTela(el); aplicarVolumeTela(id);
     };
     el.querySelector('[data-a=grande]').onclick = e => { e.stopPropagation(); const g=$("palco").classList.toggle("um-grande"); telas.forEach(t=>t.style.display = (!g||t===el)?"":"none"); e.target.textContent = g?"Diminuir":"Aumentar"; };
     el.querySelector('[data-a=mudar]').onclick = e => { e.stopPropagation(); abrirPainelAoVivo(); };
@@ -1792,12 +1818,13 @@ function porTela(id, stream, minha){
   if(minha && filmeEl){
     // filme do PC: na minha telinha fica o proprio player, com os controles e o som pra mim
     if(vid !== filmeEl){ vid.replaceWith(filmeEl); vid = filmeEl; }
-    vid.muted = surdo; vid.volume = cfg.volTransm/100; el.classList.add("arquivo");
+    vid.muted = surdo; vid.volume = Math.min(1, cfg.volTransm/100); el.classList.add("arquivo");
   }else{
     if(vid.controls){ const novo = document.createElement("video"); novo.autoplay = true; novo.playsInline = true; vid.replaceWith(novo); vid = novo; }
     el.classList.remove("arquivo");
-    vid.srcObject = stream; vid.muted = !!minha || surdo; vid.volume = cfg.volTransm/100;
+    vid.srcObject = stream; vid.muted = !!minha || surdo; vid.volume = Math.min(1, cfg.volTransm/100);
   }
+  if(!minha) aplicarVolumeTela(id);
   aplicarSaida(vid); vid.play().catch(()=>{});
   if(!minha) medirTransmissao(id, stream);
   const dono = gente.get(id);
@@ -1835,8 +1862,38 @@ document.addEventListener("fullscreenchange", marcarBotaoCheia);
 addEventListener("keydown", e => { if(e.key === "Escape") telas.forEach(el => el.classList.remove("cheia")); });
 new MutationObserver(marcarBotaoCheia).observe(document.body, {subtree:true, attributes:true, attributeFilter:["class"]});
 
+// 16/11: "o som ta muito baixo". Volume de cada transmissao ate 200%, igual ao Discord: ate 100% sai pelo
+// proprio <video>; acima disso passa por um amplificador do WebAudio (o <video> fica mudo pra nao tocar dobrado).
+// Entram tambem o mudo da telinha, o Surdo e a atenuacao (quando alguem fala).
+function aplicarVolumeTela(id){
+  const el = telas.get(id); if(!el || id === (peer && peer.id)) return;
+  const vid = el.querySelector("video"), r = el.querySelector(".volTela");
+  const v = (Number(r ? r.value : cfg.volTransm) / 100) * (el._abafo || 1);
+  const calado = surdo || !!el._mudo;
+  const fluxo = vid.srcObject;
+  if(v > 1 && fluxo && fluxo.getAudioTracks && fluxo.getAudioTracks().length){
+    try{
+      if(!ctxAudio) ctxAudio = new AudioContext({latencyHint:"interactive", sampleRate:48000});
+      if(!el._ganho || el._ganhoFluxo !== fluxo){
+        if(el._ganho) try{ el._ganho.disconnect(); }catch(e){}
+        el._ganho = ctxAudio.createGain(); el._ganhoFluxo = fluxo;
+        ctxAudio.createMediaStreamSource(fluxo).connect(el._ganho); el._ganho.connect(ctxAudio.destination);
+        if(cfg.saidaId && ctxAudio.setSinkId) ctxAudio.setSinkId(cfg.saidaId).catch(()=>{});
+      }
+      if(ctxAudio.state === "suspended") ctxAudio.resume().catch(()=>{});
+      el._ganho.gain.value = calado ? 0 : v; vid.muted = true; return;
+    }catch(e){}
+  }
+  if(el._ganho) el._ganho.gain.value = 0;
+  vid.volume = Math.min(1, v); vid.muted = calado;
+}
+function marcarMudoTela(el){
+  const b = el.querySelector("[data-a=mudo]"); if(!b) return;
+  b.textContent = el._mudo ? "🔇" : "🔊"; b.classList.toggle("ligado", !!el._mudo);
+}
 function tirarTela(id){
   const el = telas.get(id); if(!el) return;
+  if(el._ganho) try{ el._ganho.disconnect(); }catch(e){}
   const v = el.querySelector("video"); v.srcObject = null; el.remove(); telas.delete(id); somDasTelas.delete(id);
   if(!telas.size){ $("palco").classList.remove("um-grande"); }
   telas.forEach(t=>t.style.display="");
@@ -1854,7 +1911,7 @@ $("btMudo").onclick = () => {
 $("btSurdo").onclick = () => {
   surdo = !surdo; if(!surdo) tocarAviso("desmudo");
   gente.forEach(aplicarVolumePessoa);
-  telas.forEach((el,id)=>{ if(id!==peer.id || filmeEl) el.querySelector("video").muted = surdo; });
+  telas.forEach((el,id)=>{ if(id!==peer.id) aplicarVolumeTela(id); else if(filmeEl) el.querySelector("video").muted = surdo; });
   if(ytPronto){ if(surdo) ytTocador.mute(); else ytTocador.unMute(); }
   $("btSurdo").classList.toggle("ligado", surdo);
   if(surdo && !mudo) $("btMudo").click(); else avisarEstado();
@@ -1995,8 +2052,8 @@ setInterval(()=>{
     const alguemFala = [...gente.values()].some(x => !x.mudo && nivel(x.analisador) > 0.03) || (!mudo && meu > 0.03);
     telas.forEach((el, id) => {
       if(id === (peer && peer.id)) return;
-      const v = el.querySelector("video"), r = el.querySelector(".volTela");
-      if(v) v.volume = (Number(r ? r.value : cfg.volTransm) / 100) * (alguemFala ? .3 : 1);
+      const abafo = alguemFala ? .3 : 1;
+      if(el._abafo !== abafo){ el._abafo = abafo; aplicarVolumeTela(id); }
     });
   }
   const teclando = [...gente.values()].filter(x => x.teclandoAte > Date.now()).map(x => x.nome);
@@ -2076,7 +2133,7 @@ function ligarRange(id, chave, depois){
 }
 ligarRange("volMic","volMic", ()=>{ if(ganhoMic) ganhoMic.gain.value = cfg.volMic/100; });
 ligarRange("volGeral","volGeral", ()=>gente.forEach(aplicarVolumePessoa));
-ligarRange("volTransm","volTransm", ()=>telas.forEach((el,id)=>{ if(id!==(peer&&peer.id)){ el.querySelector("video").volume = cfg.volTransm/100; el.querySelector(".volTela").value = cfg.volTransm; } }));
+ligarRange("volTransm","volTransm", ()=>telas.forEach((el,id)=>{ if(id!==(peer&&peer.id)){ el.querySelector(".volTela").value = cfg.volTransm; aplicarVolumeTela(id); } }));
 // botoes de escolha no jeito do Discord; o mesmo ajuste aparece no "Compartilhar tela" e na aba Transmissao
 if(cfg.resolucao === "2160") cfg.resolucao = "0";                    // 4K e 120 saíram da tela (o Discord nao tem);
 if(Number(cfg.quadros) > 60) cfg.quadros = "60";                      // quem tinha escolhido cai no mais proximo
@@ -2196,7 +2253,7 @@ function desenharMesa(){
   mesa.appendChild(canal("Vozes", cfg.volGeral, 200, v => mexerNoControle("volGeral", v),
     {mestre:true, medir:() => Math.max(0, ...[...gente.values()].map(p => p.mudo ? 0 : nivel(p.analisador))),
      botao:{txt:() => surdo ? "Surdo" : "Ouvindo", ligado:() => surdo, clicar:() => $("btSurdo").click()}}));
-  mesa.appendChild(canal("Transmissão", cfg.volTransm, 100, v => mexerNoControle("volTransm", v),
+  mesa.appendChild(canal("Transmissão", cfg.volTransm, 200, v => mexerNoControle("volTransm", v),
     {mestre:true, medir:() => Math.max(0, ...[...somDasTelas.values()].map(s => nivel(s.analisador)))}));
   mesa.appendChild(canal("Música (DJ)", cfg.volMusica, 100, v => mexerNoControle("volMusica", v), {mestre:true}));
   gente.forEach(p => {

@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.15.3",
+    "versao":  "2026.11.16.1",
     "electron":  "45.1.0",
-    "notas":  "Som da transmissao sem falhas (colchao de 60 ms), botao de PARAR TRANSMISSAO e janela limpa.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.15.3.zip",
-    "nucleo_sha256":  "548b312bce56c78636a5701ac3eeb26df85c35fd00452dd6bcbe760adf84e2db",
+    "notas":  "Som da transmissao sempre junto (plano B pelo som geral do Windows), jogo em tela cheia vira a tela inteira, volume da transmissao ate 200% e aviso pra quem ainda esta no Super Party antigo.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.16.1.zip",
+    "nucleo_sha256":  "3d586bf22c9e5407ac953b294d6646507b6a76b29365fc907af54441fc2c855e",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",
