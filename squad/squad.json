@@ -1,15 +1,15 @@
 {
-    "versao":  "2026.11.17.1",
-    "electron":  "45.1.0",
-    "notas":  "Janela nova com a cara do Squad, abre mais rapido, transmissao mais lisa (segura os quadros e so manda pra quem clica em Assistir), icones novos, sons de entrar e sair mais nitidos, sinal da voz em bolinhas (ping e grafico) e atualizacao mais firme.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.1.zip",
-    "nucleo_sha256":  "30b53ef37af141ea1e7cce9365fe01b5c020777c9849db986e4669337b4fb6c3",
-    "base_partes":  [
-                        "squad/base/Squad-base-45.1.0.zip.001",
-                        "squad/base/Squad-base-45.1.0.zip.002",
-                        "squad/base/Squad-base-45.1.0.zip.003",
-                        "squad/base/Squad-base-45.1.0.zip.004"
-                    ],
-    "base_tamanho":  159579126,
-    "base_sha256":  "04e6f49bf97eef639ad20307f1d6195a2878751a98244ef9861d877525adb2c7"
+    "versao": "2026.11.17.2",
+    "electron": "45.1.0",
+    "notas": "Atualizacao aparece mais rapido (a lista de versoes vem sempre fresca). Mais: janela nova com a cara do Squad, abre mais rapido, transmissao mais lisa, icones novos, sons mais nitidos e sinal da voz em bolinhas.",
+    "nucleo": "squad/nucleo/squad-nucleo-2026.11.17.2.zip",
+    "nucleo_sha256": "0fc690f83b194a616ef09fc3835551a32344aef899f2d6f49ffacec22d65d254",
+    "base_partes": [
+        "squad/base/Squad-base-45.1.0.zip.001",
+        "squad/base/Squad-base-45.1.0.zip.002",
+        "squad/base/Squad-base-45.1.0.zip.003",
+        "squad/base/Squad-base-45.1.0.zip.004"
+    ],
+    "base_tamanho": 159579126,
+    "base_sha256": "04e6f49bf97eef639ad20307f1d6195a2878751a98244ef9861d877525adb2c7"
 }
