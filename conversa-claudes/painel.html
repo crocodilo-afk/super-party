@@ -41,7 +41,7 @@ function cartao(nome, texto){
 async function carregar(){
   estado.textContent = "Carregando...";
   try{
-    const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + PASTA + "?ref=master", {cache:"no-store"});
+    const r = await fetch("https://api.github.com/repos/" + REPO + "/contents/" + PASTA + "?ref=master&t=" + Date.now(), {cache:"no-store"});
     if(!r.ok) throw new Error("GitHub respondeu " + r.status);
     const itens = (await r.json()).filter(i => i.type === "file" && /\.md$/i.test(i.name) && !/^LEIA-ME/i.test(i.name));
     const recados = itens.filter(i => /^\d{4}-\d{2}-\d{2}/.test(i.name)).sort((a, b) => b.name.localeCompare(a.name));
