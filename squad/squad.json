@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.16.1",
+    "versao":  "2026.11.17.1",
     "electron":  "45.1.0",
-    "notas":  "Som da transmissao sempre junto (plano B pelo som geral do Windows), jogo em tela cheia vira a tela inteira, volume da transmissao ate 200% e aviso pra quem ainda esta no Super Party antigo.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.16.1.zip",
-    "nucleo_sha256":  "3d586bf22c9e5407ac953b294d6646507b6a76b29365fc907af54441fc2c855e",
+    "notas":  "Janela nova com a cara do Squad, abre mais rapido, transmissao mais lisa (segura os quadros e so manda pra quem clica em Assistir), icones novos, sons de entrar e sair mais nitidos, sinal da voz em bolinhas (ping e grafico) e atualizacao mais firme.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.1.zip",
+    "nucleo_sha256":  "30b53ef37af141ea1e7cce9365fe01b5c020777c9849db986e4669337b4fb6c3",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",

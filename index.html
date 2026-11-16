@@ -8,7 +8,8 @@
 <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230b0b0d"/><circle cx="32" cy="24" r="8" fill="%23ff7a1a"/><circle cx="17" cy="29" r="6" fill="%23ffb347"/><circle cx="47" cy="29" r="6" fill="%23ffb347"/><path d="M18 52c0-9 6-15 14-15s14 6 14 15z" fill="%23ff7a1a"/><path d="M5 52c0-7 5-12 12-12 3 0 5 1 7 2-4 3-6 6-6 10z" fill="%23ffb347"/><path d="M59 52c0-7-5-12-12-12-3 0-5 1-7 2 4 3 6 6 6 10z" fill="%23ffb347"/></svg>'>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- 17/11: a fonte da internet NAO segura mais a primeira tela (abre com a do Windows e troca quando chegar) -->
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 :root{
   --fundo:#08080a; --painel:#111114; --painel2:#17171b; --painel3:#1f1f25; --linha:#2a2a31;
@@ -18,6 +19,19 @@
   --titulo:'Chakra Petch','Segoe UI',sans-serif; --corpo:'Manrope','Segoe UI',sans-serif;
 }
 *{box-sizing:border-box}
+/* 17/11: no programa, barra de cima nossa (34 px), igual ao Discord */
+#barraJanela{display:none}
+html.app body{padding-top:34px;box-sizing:border-box}
+html.app #barraJanela{display:flex;position:fixed;top:0;left:0;right:0;height:34px;z-index:200;align-items:center;gap:8px;padding:0 150px 0 12px;
+  background:#08080a;-webkit-app-region:drag;user-select:none;font-family:var(--titulo);font-weight:700;font-size:12px;letter-spacing:.2em;color:var(--suave)}
+html.app #barraJanela svg{width:18px;height:18px}
+html.app #barraJanela .ver{font-family:var(--corpo);font-weight:600;letter-spacing:0;color:var(--apagado);margin-left:4px}
+html.app #barraJanela::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,122,26,.55) 18%,rgba(255,179,71,.35) 50%,rgba(255,122,26,.55) 82%,transparent)}
+html.app #barraJanela .estado{margin-left:14px;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:var(--painel2);border:1px solid var(--linha);
+  font-family:var(--corpo);font-weight:700;font-size:11px;letter-spacing:.02em;color:var(--suave)}
+html.app #barraJanela .estado i{width:7px;height:7px;border-radius:50%;background:var(--apagado)}
+html.app #barraJanela .estado.on{color:var(--texto)}html.app #barraJanela .estado.on i{background:var(--verde);box-shadow:0 0 8px var(--verde)}
+html.app #faixaAtualizacao{top:46px}
 html,body{margin:0;height:100%;background:var(--fundo);color:var(--texto);font-family:var(--corpo);font-size:15px;overflow:hidden}
 ::selection{background:var(--laranja);color:#000}
 canvas#mar{position:fixed;inset:0;z-index:0;display:block}
@@ -43,14 +57,14 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 .tela.ativa{display:flex}
 
 /* ================= INTRO ================= */
-#intro{position:fixed;inset:0;z-index:100;background:#060607;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;animation:introSai .6s ease 2.9s forwards}
-#intro .emblema{width:132px;height:132px;animation:emblemaEntra 1.1s cubic-bezier(.2,1.4,.4,1) both}
-#intro .emblema .aro{stroke-dasharray:420;stroke-dashoffset:420;animation:aroDesenha 1s ease .2s forwards}
+#intro{position:fixed;inset:0;z-index:100;background:#060607;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;animation:introSai .3s ease .75s forwards}
+#intro .emblema{width:132px;height:132px;animation:emblemaEntra .45s cubic-bezier(.2,1.4,.4,1) both}
+#intro .emblema .aro{stroke-dasharray:420;stroke-dashoffset:420;animation:aroDesenha .4s ease .05s forwards}
 #intro .palavra{font-family:var(--titulo);font-weight:700;font-size:86px;letter-spacing:.22em;margin:14px 0 0 .22em;line-height:1;
   background:linear-gradient(180deg,#ffd9a8 0%,var(--ambar) 30%,var(--laranja) 62%,var(--laranja2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
-  clip-path:inset(0 100% 0 0);animation:revela .9s cubic-bezier(.7,0,.2,1) .75s forwards;filter:drop-shadow(0 0 24px rgba(255,100,0,.45))}
-#intro .faixa{width:0;height:3px;margin-top:14px;background:linear-gradient(90deg,transparent,var(--laranja),transparent);animation:faixa .8s ease 1.4s forwards}
-#intro small{margin-top:16px;color:var(--suave);font-weight:600;letter-spacing:.32em;text-transform:uppercase;font-size:12px;opacity:0;animation:aparece .6s ease 1.8s forwards}
+  clip-path:inset(0 100% 0 0);animation:revela .4s cubic-bezier(.7,0,.2,1) .2s forwards;filter:drop-shadow(0 0 24px rgba(255,100,0,.45))}
+#intro .faixa{width:0;height:3px;margin-top:14px;background:linear-gradient(90deg,transparent,var(--laranja),transparent);animation:faixa .35s ease .4s forwards}
+#intro small{margin-top:16px;color:var(--suave);font-weight:600;letter-spacing:.32em;text-transform:uppercase;font-size:12px;opacity:0;animation:aparece .3s ease .45s forwards}
 @keyframes emblemaEntra{from{transform:scale(.4) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
 @keyframes aroDesenha{to{stroke-dashoffset:0}}
 @keyframes revela{to{clip-path:inset(0 0 0 0)}}
@@ -107,6 +121,11 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 #vazio .tv{width:150px;opacity:.9;margin-bottom:10px}
 #vazio b{display:block;font-family:var(--titulo);font-size:22px;letter-spacing:.12em;margin-bottom:6px}
 #vazio p{color:var(--suave);margin:0 0 16px;max-width:380px;line-height:1.5}
+.cartaoAoVivo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;aspect-ratio:16/9;border-radius:14px;border:1px dashed var(--laranja);background:radial-gradient(circle at 50% 40%,rgba(255,122,26,.14),#0b0b0e 70%)}
+.cartaoAoVivo b{font-size:20px}
+.cartaoAoVivo .aovivo{font-size:12px}
+#btAssistirTodos{position:absolute;right:14px;top:10px;z-index:3}
+.telinha .infoTela{position:absolute;left:10px;top:44px;background:rgba(0,0,0,.8);padding:6px 10px;border-radius:8px;font-size:12px;line-height:1.5;white-space:pre;font-variant-numeric:tabular-nums;color:#e8e4dc}
 .telinha{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;border:1px solid var(--linha)}
 .telinha video{width:100%;height:100%;object-fit:contain;display:block;background:#000}
 .telinha .rotulo{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.72);padding:5px 10px;border-radius:8px;font-weight:700;font-size:13px;border-left:3px solid var(--laranja)}
@@ -120,6 +139,27 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 
 #barraCall{grid-area:barra;display:flex;align-items:center;justify-content:center;gap:12px;padding:0 16px}
 #barraCall .redondo{width:52px;height:52px;border-radius:50%;padding:0;font-size:21px}
+/* 17/11: icones desenhados */
+.ic{width:1.15em;height:1.15em;vertical-align:-.22em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;pointer-events:none}
+#barraCall .redondo{display:inline-flex;align-items:center;justify-content:center}
+#barraCall .redondo .ic{width:24px;height:24px}
+#btSair{display:inline-flex;align-items:center;gap:8px}#btSair .ic{width:22px;height:22px}
+#btTela .ic,#btStart .ic{margin-right:8px}
+.icones .ic{width:16px;height:16px;color:var(--vermelho)}
+/* 17/11: conexao igual ao Discord (canto de baixo da lista) */
+#conexao{margin-top:auto;padding:10px;border-radius:12px;background:var(--painel2);border:1px solid var(--linha);cursor:pointer;display:flex;align-items:center;gap:10px}
+#conexao:hover{border-color:var(--apagado)}
+#conexao .bolinhas{display:flex;gap:5px;padding:0 4px}
+#conexao .bolinhas i{width:11px;height:11px;border-radius:50%;background:var(--linha);transition:background .3s,box-shadow .3s}
+#conexao .bolinhas i:first-child,#conexao[data-n="3"] .bolinhas i{background:var(--cor-sinal);box-shadow:0 0 10px var(--cor-sinal)}
+#conexao .bolinhas i:first-child{animation:bolinhaPulsa 2s ease-in-out infinite}
+@keyframes bolinhaPulsa{50%{box-shadow:0 0 2px var(--cor-sinal);opacity:.75}}
+#conexao b{display:block;font-size:13px;color:var(--cor-sinal)}#conexao small{color:var(--suave);font-size:12px}
+#conexaoDetalhe{position:fixed;z-index:60;width:330px;background:var(--painel2);border:1px solid var(--linha);border-radius:14px;padding:14px;box-shadow:0 18px 50px rgba(0,0,0,.6);font-size:13px}
+#conexaoDetalhe h4{margin:0 0 8px;font-family:var(--titulo);letter-spacing:.08em}
+#conexaoDetalhe canvas{width:100%;height:70px;background:var(--painel);border-radius:8px;margin:6px 0 10px}
+#conexaoDetalhe .lin{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid var(--linha)}
+#conexaoDetalhe .lin span:last-child{color:var(--suave);text-align:right}
 #btTela{height:52px;border-radius:26px;padding:0 26px;font-family:var(--titulo);font-weight:700;letter-spacing:.1em;font-size:16px;
   background:linear-gradient(180deg,var(--laranja),var(--laranja2));border-color:transparent;color:#120800;box-shadow:0 6px 24px rgba(255,90,0,.35)}
 #btTela.ligado{background:var(--vermelho);color:#fff;box-shadow:0 6px 24px rgba(255,71,87,.35)}
@@ -257,6 +297,8 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 </style>
 </head>
 <body>
+<script>if(window.squad && window.squad.janelaPropria) document.documentElement.classList.add("app");</script>
+<div id="barraJanela"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#emblema"/></svg>SQUAD<span class="ver versao"></span><span class="estado" id="estadoJanela"><i></i>fora da call</span></div>
 <canvas id="mar"></canvas>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -270,6 +312,27 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
       <circle cx="60" cy="45" r="12" fill="url(#gLaranja)"/>
       <path d="M38 92c0-15 10-25 22-25s22 10 22 25z" fill="url(#gLaranja)"/>
     </symbol>
+    <!-- 17/11: icones desenhados (linha 2 px, cantos redondos) no lugar dos emojis -->
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v4M8.5 21.5h7"/></symbol>
+    <symbol id="i-micOff" viewBox="0 0 24 24"><path d="M15 9.5V5.5a3 3 0 0 0-5.6-1.5M9 9v2.5a3 3 0 0 0 4.9 2.3M18.5 11a6.5 6.5 0 0 1-1.2 3.8M5.5 11a6.5 6.5 0 0 0 10.4 5.2M12 17.5v4M8.5 21.5h7M3 3l18 18"/></symbol>
+    <symbol id="i-fone" viewBox="0 0 24 24"><path d="M3.5 15v-3a8.5 8.5 0 0 1 17 0v3"/><rect x="3" y="14" width="4.5" height="7" rx="1.8"/><rect x="16.5" y="14" width="4.5" height="7" rx="1.8"/></symbol>
+    <symbol id="i-foneOff" viewBox="0 0 24 24"><path d="M3.5 15v-3a8.5 8.5 0 0 1 13.6-6.8M20.2 9.3c.2.9.3 1.8.3 2.7v3"/><rect x="3" y="14" width="4.5" height="7" rx="1.8"/><path d="M16.5 16.5V19.2c0 1 .8 1.8 1.8 1.8h.9c1 0 1.8-.8 1.8-1.8V14M3 3l18 18"/></symbol>
+    <symbol id="i-tela" viewBox="0 0 24 24"><rect x="2.5" y="3.5" width="19" height="13" rx="2.2"/><path d="M8 21h8M12 16.5V21"/></symbol>
+    <symbol id="i-filme" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.2"/><path d="M7.5 4v16M16.5 4v16M3 9h4.5M3 15h4.5M16.5 9H21M16.5 15H21"/></symbol>
+    <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1.5 14h5M9.5 8h5M17.5 16h5"/></symbol>
+    <symbol id="i-sair" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M2.6 14.2c5.2-5 13.6-5 18.8 0 .5.5.5 1.2.1 1.7l-1.8 2c-.4.5-1.1.5-1.6.2l-2.3-1.6c-.4-.3-.6-.8-.5-1.3l.3-1.6c-2.3-.8-5-.8-7.3 0l.3 1.6c.1.5-.1 1-.5 1.3l-2.3 1.6c-.5.3-1.2.3-1.6-.2l-1.8-2c-.4-.5-.4-1.2.2-1.7z"/></symbol>
+    <symbol id="i-clipe" viewBox="0 0 24 24"><path d="M20.5 11.5l-8.4 8.4a5.4 5.4 0 0 1-7.6-7.6l8.4-8.4a3.6 3.6 0 0 1 5.1 5.1l-8.4 8.4a1.8 1.8 0 0 1-2.5-2.5l7.8-7.8"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.8v14.4c0 .8.9 1.3 1.6.8l11-7.2c.6-.4.6-1.2 0-1.6l-11-7.2C7.9 3.5 7 4 7 4.8z"/></symbol>
+    <symbol id="i-pausa" viewBox="0 0 24 24"><rect fill="currentColor" x="6" y="4.5" width="4" height="15" rx="1.2"/><rect fill="currentColor" x="14" y="4.5" width="4" height="15" rx="1.2"/></symbol>
+    <symbol id="i-pular" viewBox="0 0 24 24"><path fill="currentColor" d="M5 5.6v12.8c0 .8.9 1.3 1.6.8l9.3-6.4c.6-.4.6-1.2 0-1.6L6.6 4.8C5.9 4.3 5 4.8 5 5.6z"/><path d="M19 5v14"/></symbol>
+    <symbol id="i-musica" viewBox="0 0 24 24"><path d="M9 18V5.5l11-2V16"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+    <symbol id="i-som" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12.5 19V5L7.5 9.5z"/><path d="M16 8.8a4.5 4.5 0 0 1 0 6.4M18.8 6a8.5 8.5 0 0 1 0 12"/></symbol>
+    <symbol id="i-somOff" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12.5 19V5L7.5 9.5z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></symbol>
+    <symbol id="i-convite" viewBox="0 0 24 24"><path d="M3 7.5h18v3a1.8 1.8 0 0 0 0 3.6v3H3v-3a1.8 1.8 0 0 0 0-3.6z"/><path d="M15 7.5v10" stroke-dasharray="1.6 2"/></symbol>
+    <symbol id="i-parar" viewBox="0 0 24 24"><rect fill="currentColor" x="5.5" y="5.5" width="13" height="13" rx="2.5"/></symbol>
+    <symbol id="i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><path d="M4 20V13M10 20V8M16 20v-5M22 20V4"/></symbol>
+    <symbol id="i-sinal" viewBox="0 0 24 24"><rect x="3" y="15" width="3.6" height="6" rx="1"/><rect x="10.2" y="10" width="3.6" height="11" rx="1"/><rect x="17.4" y="4" width="3.6" height="17" rx="1"/></symbol>
   </defs>
 </svg>
 
@@ -335,16 +398,21 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
   <header id="topoSala" class="cartao">
     <div class="logo"><svg viewBox="0 0 120 120"><use href="#emblema"/></svg>SQUAD</div>
     <div id="codigo" title="Clique pra copiar">#</div>
-    <button type="button" id="btConvidar" hidden title="Gera um convite que vale 2 minutos e uma vez só">🎟️ Convidar</button>
+    <button type="button" id="btConvidar" hidden title="Gera um convite que vale 2 minutos e uma vez só"><svg class="ic" aria-hidden="true"><use href="#i-convite"/></svg> Convidar</button>
     <div class="espaco"></div>
   </header>
 
   <aside id="lado" class="cartao">
     <div class="rotuloLado">Na call</div>
     <div id="pessoas"></div>
+    <div id="conexao" hidden title="Clique pra ver os detalhes da conexão">
+      <span class="bolinhas" aria-hidden="true"><i></i><i></i></span>
+      <div><b id="conexaoTitulo">Voz conectada</b><small id="conexaoPing">medindo…</small></div>
+    </div>
   </aside>
 
   <main id="palco" class="cartao">
+    <button id="btAssistirTodos" class="forte" hidden>▶ Assistir todos</button>
     <div id="vazio"><div>
       <svg class="tv" viewBox="0 0 160 110" aria-hidden="true">
         <rect x="8" y="8" width="144" height="84" rx="12" fill="#0d0d10" stroke="url(#gLaranja)" stroke-width="4"/>
@@ -358,13 +426,13 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
   </main>
 
   <div id="barraCall" class="cartao">
-    <button class="redondo" id="btMudo" title="Microfone">🎙️</button>
-    <button class="redondo" id="btSurdo" title="Fone (ouvir)">🎧</button>
-    <button id="btTela" title="Transmitir a tela">TRANSMITIR</button>
+    <button class="redondo" id="btMudo" title="Microfone"><svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg></button>
+    <button class="redondo" id="btSurdo" title="Fone (ouvir)"><svg class="ic" aria-hidden="true"><use href="#i-fone"/></svg></button>
+    <button id="btTela" title="Transmitir a tela"><svg class="ic" aria-hidden="true"><use href="#i-tela"/></svg>TRANSMITIR</button>
     <button id="btAoVivo" class="ligado" hidden title="Mudar a qualidade ou trocar o que você mostra">● AO VIVO</button>
-    <button class="redondo" id="btFilme" title="Transmitir um filme salvo no PC">🎬</button>
-    <button class="redondo" id="btAjustes" title="Configurações e mixer">⚙️</button>
-    <button class="perigo" id="btSair">Sair da call</button>
+    <button class="redondo" id="btFilme" title="Transmitir um filme salvo no PC"><svg class="ic" aria-hidden="true"><use href="#i-filme"/></svg></button>
+    <button class="redondo" id="btAjustes" title="Configurações e mixer"><svg class="ic" aria-hidden="true"><use href="#i-ajustes"/></svg></button>
+    <button class="perigo" id="btSair"><svg class="ic" aria-hidden="true"><use href="#i-sair"/></svg>Sair da call</button>
   </div>
 
   <section id="chat" class="cartao">
@@ -376,16 +444,16 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
       </div>
       <div class="tocador"><div id="ytplayer"></div><button id="btDjLiberar" class="forte" hidden>▶ Tocar junto</button></div>
       <div class="botoes">
-        <button id="btDjPausa" title="Pausar ou continuar pra todos">⏸</button>
-        <button id="btDjPular" title="Pular pra próxima">⏭</button>
-        <span title="Volume da música (só no seu ouvido)">🎵</span>
+        <button id="btDjPausa" title="Pausar ou continuar pra todos"><svg class="ic" aria-hidden="true"><use href="#i-pausa"/></svg></button>
+        <button id="btDjPular" title="Pular pra próxima"><svg class="ic" aria-hidden="true"><use href="#i-pular"/></svg></button>
+        <span title="Volume da música (só no seu ouvido)"><svg class="ic" aria-hidden="true"><use href="#i-musica"/></svg></span>
         <input type="range" id="volMusica" min="0" max="100">
       </div>
     </div>
     <div id="mensagens"></div>
     <div id="teclando"></div>
     <form id="escrever">
-      <button type="button" class="anexo" id="btImagem" title="Anexar imagem">📎</button>
+      <button type="button" class="anexo" id="btImagem" title="Anexar imagem"><svg class="ic" aria-hidden="true"><use href="#i-clipe"/></svg></button>
       <input id="texto" placeholder="Mensagem… ou /tocar nome da música" autocomplete="off">
       <input type="file" id="arqImagem" accept="image/*" style="display:none">
       <button class="forte" id="btEnviar" title="Enviar">ENVIAR</button>
@@ -630,6 +698,7 @@ const PREFIXO = "salaturma-v1-";
 const CORES = ["#ff7a1a","#ffb347","#ffd166","#3ddc84","#4cc9f0","#b692ff","#ff6b9a","#f5f1ea"];
 const REDE = {config:{iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun.cloudflare.com:3478"}]}};
 const $ = id => document.getElementById(id);
+const ic = nome => `<svg class="ic" aria-hidden="true"><use href="#i-${nome}"/></svg>`;   // 17/11: icones desenhados
 
 const guarda = {
   ler(k, pad){ try{ const v = localStorage.getItem("sala."+k); return v===null?pad:JSON.parse(v);}catch(e){return pad;} },
@@ -709,7 +778,7 @@ function fotoSegura(f){ return /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Z
       g.drawImage(img, (img.width-lado)/2, (img.height-lado)/2, lado, lado, 0, 0, L, L);
       eu.foto = cv.toDataURL("image/jpeg", .72);
       guarda.por("foto", eu.foto); pintarPrevia(); desenharPessoas();
-      if(peer) paraTodos({t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
+      if(peer) paraTodos({t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha, escolhe:1});
       URL.revokeObjectURL(img.src);
     };
     img.onerror = () => toque("Não consegui abrir essa imagem.");
@@ -1082,7 +1151,7 @@ function prepararConversa(con){
     p.conta = contaDe(con);
     p.con = con;
     if(!$("sala").classList.contains("ativa")) entrarNaSala();
-    enviar(con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
+    enviar(con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha, escolhe:1});
     if(souAnfitriao){
       const outros = [...gente.keys()].filter(x=>x!==id);
       enviar(con, {t:"lista", ids: outros});
@@ -1126,12 +1195,12 @@ function receber(id, d){
   switch(d.t){
     case "oi":
       const novo = !p.jaDisse; p.jaDisse = true;
-      Object.assign(p, {nome:nomeSeguro(d.nome), cor:corSegura(d.cor), foto:fotoSegura(d.foto), mudo:!!d.mudo, surdo:!!d.surdo, tela:!!d.tela});
+      Object.assign(p, {nome:nomeSeguro(d.nome), cor:corSegura(d.cor), foto:fotoSegura(d.foto), mudo:!!d.mudo, surdo:!!d.surdo, tela:!!d.tela, escolhe:!!d.escolhe});
       p.vol = guarda.ler("vol."+p.nome, 100);
       if(novo && cfg.avisos){ sistema(p.nome + " entrou na call."); tocarAviso("entrar"); }
       if(novo && telaMinha) mandarTela(id);            // tela so pra quem aparece na lista
       if(novo && !souAnfitriao && ehAnfitriao(id)){      // fui aceito: repito o "oi" (o primeiro chegou antes do aceite) e ligo a voz
-        enviar(p.con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha});
+        enviar(p.con, {t:"oi", nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha, escolhe:1});
         ligarVoz(id);
       }
       desenharPessoas(); break;
@@ -1156,9 +1225,14 @@ function receber(id, d){
       }
       break;
     case "estado":
-      Object.assign(p, {mudo:!!d.mudo, surdo:!!d.surdo, tela:!!d.tela});
-      if(!d.tela) tirarTela(id);
+      Object.assign(p, {mudo:!!d.mudo, surdo:!!d.surdo, tela:!!d.tela, escolhe:!!d.escolhe});
+      if(!d.tela){ tirarTela(id); p.vendo = false; }
       desenharPessoas(); break;
+    case "assistir":                          // 16/11: igual ao Discord, a tela so vai pra quem clicou em Assistir
+      p.querVer = !!d.sim;
+      if(p.querVer) mandarTela(id);
+      else { p.chamadasTela.forEach(c => { try{ c.close(); }catch(e){} }); p.chamadasTela = []; setTimeout(aplicarBanda, 500); }
+      break;
     case "chat":
       p.teclandoAte = 0;
       if(!passou(p, "chat", 8)) break;
@@ -1209,7 +1283,7 @@ function sair(id){
   desenharPessoas();
 }
 
-function avisarEstado(){ paraTodos({t:"estado", mudo, surdo, tela:!!telaMinha}); desenharPessoas(); }
+function avisarEstado(){ paraTodos({t:"estado", mudo, surdo, tela:!!telaMinha, escolhe:1}); desenharPessoas(); }
 
 // ------------------------- voz -------------------------
 // Qualidade (30/09, "a voz esta muito ruim"): o navegador manda Opus a ~32 kbps. O Discord usa 64
@@ -1433,8 +1507,9 @@ function atenderChamada(ch){
   if(tipo === "tela"){
     ch.answer(undefined, {sdpTransform:SDP_TELA});
     const p = pessoa(ch.peer,{}); p.chamadasTela.push(ch);
-    ch.on("stream", s => porTela(ch.peer, s));
-    ch.on("close", () => tirarTela(ch.peer));
+    p.vendo = true;
+    ch.on("stream", s => { porTela(ch.peer, s); desenharCartoesAoVivo(); });
+    ch.on("close", () => { tirarTela(ch.peer); const q = gente.get(ch.peer); if(q && !q.chamadasTela.length) q.vendo = false; desenharCartoesAoVivo(); });
     return;
   }
   ch.answer(micSaida, {sdpTransform:SDP_VOZ});
@@ -1525,6 +1600,7 @@ addEventListener("keydown", e => { if(e.key === "Escape" && $("seletor").classLi
 $("btTela").onclick = abrirEscolha;
 $("btStart").onclick = abrirEscolha;
 $("btAoVivo").onclick = abrirPainelAoVivo;
+$("btAssistirTodos").onclick = () => gente.forEach((p, id) => { if(p.jaDisse && p.tela && !p.vendo) assistir(id, true); });
 $("btFecharEscolha").onclick = () => $("escolha").classList.remove("aberto");
 $("escolha").onclick = e => { if(e.target.id === "escolha") $("escolha").classList.remove("aberto"); };
 $("btEscolherTela").onclick = () => { $("escolha").classList.remove("aberto"); comecarTela("monitor"); };
@@ -1686,7 +1762,7 @@ function ligarTransmissao(s){
   tocarAviso("tela");
   gente.forEach((p,id)=>mandarTela(id));
   porTela(peer.id, s, true);
-  $("btTela").classList.add("ligado"); $("btTela").textContent = "⏹ PARAR TRANSMISSÃO"; $("btAoVivo").hidden = false;
+  $("btTela").classList.add("ligado"); $("btTela").innerHTML = ic("parar") + "PARAR TRANSMISSÃO"; $("btAoVivo").hidden = false;
   avisarEstado();
   if(!s.getAudioTracks().length) avisoSemSom();
 }
@@ -1753,10 +1829,12 @@ $("painelAoVivo").onclick = e => { if(e.target.id === "painelAoVivo") $("painelA
 function mandarTela(id){
   if(!telaMinha) return;
   const p = gente.get(id); if(!p) return;
+  if(p.escolhe && !p.querVer) return;
+  if(p.chamadasTela.some(c => c.open || (c.peerConnection && c.peerConnection.connectionState !== "closed"))) return;
   const ch = peer.call(id, telaMinha, {metadata:{tipo:"tela"}, sdpTransform:SDP_TELA});
   p.chamadasTela.push(ch);
   setTimeout(aplicarBanda, 1500);
-  ch.on("close", ()=>{ p.chamadasTela = p.chamadasTela.filter(x=>x!==ch); });
+  ch.on("close", ()=>{ p.chamadasTela = p.chamadasTela.filter(x=>x!==ch); setTimeout(aplicarBanda, 500); });
 }
 
 function pararTela(){
@@ -1766,9 +1844,9 @@ function pararTela(){
   tocarAviso("telaFim");
   telaMinha.getTracks().forEach(t=>t.stop());
   telaMinha = null;
-  gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; });
+  gente.forEach(p=>{ p.chamadasTela.forEach(c=>{ try{c.close();}catch(e){} }); p.chamadasTela=[]; p.querVer = false; });
   if(peer) tirarTela(peer.id);
-  $("btTela").classList.remove("ligado"); $("btTela").textContent = "TRANSMITIR"; $("btAoVivo").hidden = true;
+  $("btTela").classList.remove("ligado"); $("btTela").innerHTML = ic("tela") + "TRANSMITIR"; $("btAoVivo").hidden = true;
   avisarEstado();
 }
 
@@ -1790,12 +1868,13 @@ function porTela(id, stream, minha){
     el = document.createElement("div"); el.className = "telinha";
     el.innerHTML = '<video autoplay playsinline></video><div class="rotulo"></div><div class="placar"></div>' +
       '<div class="barra">' +
-        '<button data-a="mudo" title="Mudo só esta transmissão">🔊</button>' +
-        '<span title="Volume da transmissão (o som do que ele mostra)">📺</span><input type="range" class="volTela" min="0" max="200">' +
-        '<span title="Volume da voz de quem está compartilhando">🎙️</span><input type="range" class="volVoz" min="0" max="200">' +
-        '<button data-a="mudar" title="Mudar a transmissão">⚙️ Mudar</button><button data-a="parar" class="parar" title="Parar a transmissão">⏹ Parar</button>' +
+        '<button data-a="mudo" title="Mudo só esta transmissão">' + ic("som") + '</button>' +
+        '<span title="Volume da transmissão (o som do que ele mostra)">' + ic("tela") + '</span><input type="range" class="volTela" min="0" max="200">' +
+        '<span title="Volume da voz de quem está compartilhando">' + ic("mic") + '</span><input type="range" class="volVoz" min="0" max="200">' +
+        '<button data-a="mudar" title="Mudar a transmissão">' + ic("ajustes") + ' Mudar</button><button data-a="parar" class="parar" title="Parar a transmissão">' + ic("parar") + ' Parar</button>' +
         '<button data-a="grande">Aumentar</button><button data-a="cheia">Tela cheia</button>' +
-      '</div>';
+        '<button data-a="info" title="Qualidade que está chegando">' + ic("info") + '</button><button data-a="sair" title="Parar de assistir">' + ic("fechar") + ' Sair</button>' +
+      '</div><div class="infoTela" hidden></div>';
     const vidAgora = () => el.querySelector("video");   // o <video> pode ser trocado (filme do PC)
     const volTela = el.querySelector(".volTela"), volVoz = el.querySelector(".volVoz");
     volTela.value = cfg.volTransm;
@@ -1811,6 +1890,8 @@ function porTela(id, stream, minha){
     el.querySelector('[data-a=mudar]').onclick = e => { e.stopPropagation(); abrirPainelAoVivo(); };
     el.querySelector('[data-a=parar]').onclick = e => { e.stopPropagation(); pararTela(); };
     el.querySelector('[data-a=cheia]').onclick = e => { e.stopPropagation(); alternarTelaCheia(el); };
+    el.querySelector('[data-a=sair]').onclick = e => { e.stopPropagation(); if(document.fullscreenElement) document.exitFullscreen().catch(()=>{}); assistir(id, false); };
+    el.querySelector('[data-a=info]').onclick = e => { e.stopPropagation(); const i = el.querySelector(".infoTela"); i.hidden = !i.hidden; if(!i.hidden) medirTelinha(id, el); };
     el.addEventListener("dblclick", e => { if(e.target.closest(".barra")) return; e.stopPropagation(); alternarTelaCheia(el); });   // duplo clique, igual ao Discord
     telas.set(id, el); $("palco").appendChild(el);
   }
@@ -1833,7 +1914,7 @@ function porTela(id, stream, minha){
   const volVoz = el.querySelector(".volVoz");
   if(dono) volVoz.value = dono.vol;
   // na minha propria tela nao faz sentido mexer em volume: eu nao me escuto
-  el.querySelectorAll('.barra input, .barra [data-a=mudo], .barra span').forEach(x => x.style.display = minha ? "none" : "");
+  el.querySelectorAll('.barra input, .barra [data-a=mudo], .barra span, .barra [data-a=sair], .barra [data-a=info]').forEach(x => x.style.display = minha ? "none" : "");
   el.querySelectorAll('.barra [data-a=mudar], .barra [data-a=parar]').forEach(x => x.style.display = minha ? "" : "none");
   atualizarVazio();
 }
@@ -1889,7 +1970,32 @@ function aplicarVolumeTela(id){
 }
 function marcarMudoTela(el){
   const b = el.querySelector("[data-a=mudo]"); if(!b) return;
-  b.textContent = el._mudo ? "🔇" : "🔊"; b.classList.toggle("ligado", !!el._mudo);
+  b.innerHTML = ic(el._mudo ? "somOff" : "som"); b.classList.toggle("ligado", !!el._mudo);
+}
+// 📊 da telinha (16/11, "o video esta lagando"): o que chega de verdade, igual ao "Stream info" do Discord
+async function medirTelinha(id, el){
+  const caixa = el.querySelector(".infoTela"); let antes = null;
+  while(!caixa.hidden && telas.get(id) === el){
+    const p = gente.get(id), ch = p && p.chamadasTela.find(c => c.peerConnection);
+    if(ch){
+      const st = await ch.peerConnection.getStats(); let v = null, a = null, par = null; const loc = {};
+      st.forEach(r => { if(r.type === "inbound-rtp" && r.kind === "video") v = r; if(r.type === "inbound-rtp" && r.kind === "audio") a = r;
+        if(r.type === "candidate-pair" && r.nominated && r.state === "succeeded") par = r; if(r.type === "local-candidate") loc[r.id] = r; });
+      if(v){
+        const agora = {t: performance.now(), b: v.bytesReceived, perd: v.packetsLost || 0, rec: v.packetsReceived || 0, cong: v.freezeCount || 0};
+        const mbps = antes ? ((agora.b - antes.b) * 8 / ((agora.t - antes.t) / 1000) / 1e6).toFixed(1) : "…";
+        const perda = antes && (agora.rec - antes.rec + agora.perd - antes.perd) > 0 ? ((agora.perd - antes.perd) * 100 / (agora.rec - antes.rec + agora.perd - antes.perd)).toFixed(1) : "0";
+        const atraso = v.jitterBufferEmittedCount ? Math.round(v.jitterBufferDelay / v.jitterBufferEmittedCount * 1000) : 0;
+        const via = par && loc[par.localCandidateId] ? (loc[par.localCandidateId].candidateType === "relay" ? "ponte" : "direto") : "?";
+        caixa.textContent = (v.frameWidth || "?") + "×" + (v.frameHeight || "?") + " · " + Math.round(v.framesPerSecond || 0) + " FPS · " + mbps + " Mbps\n" +
+          "perda " + perda + "% · travadas " + agora.cong + " · espera " + atraso + " ms\n" +
+          "ida e volta " + (par && par.currentRoundTripTime ? Math.round(par.currentRoundTripTime * 1000) + " ms" : "?") + " · " + via +
+          (a ? " · som " + (a.packetsLost || 0) + " perdidos" : " · sem som");
+        antes = agora;
+      }else caixa.textContent = "Esperando o vídeo chegar...";
+    }else caixa.textContent = "Sem conexão de vídeo.";
+    await new Promise(r => setTimeout(r, 1000));
+  }
 }
 function tirarTela(id){
   const el = telas.get(id); if(!el) return;
@@ -1899,13 +2005,13 @@ function tirarTela(id){
   telas.forEach(t=>t.style.display="");
   atualizarVazio();
 }
-function atualizarVazio(){ $("vazio").style.display = telas.size ? "none" : ""; }
+function atualizarVazio(){ $("vazio").style.display = (telas.size || document.querySelector(".cartaoAoVivo")) ? "none" : ""; }
 
 // ------------------------- botoes -------------------------
 $("btMudo").onclick = () => {
   mudo = !mudo; tocarAviso(mudo ? "mudo" : "desmudo");
   if(micSaida) micSaida.getAudioTracks().forEach(t=>t.enabled=!mudo);
-  $("btMudo").classList.toggle("ligado", mudo); $("btMudo").textContent = mudo ? "🔇" : "🎙️";
+  $("btMudo").classList.toggle("ligado", mudo); $("btMudo").innerHTML = ic(mudo ? "micOff" : "mic");
   avisarEstado();
 };
 $("btSurdo").onclick = () => {
@@ -1913,7 +2019,7 @@ $("btSurdo").onclick = () => {
   gente.forEach(aplicarVolumePessoa);
   telas.forEach((el,id)=>{ if(id!==peer.id) aplicarVolumeTela(id); else if(filmeEl) el.querySelector("video").muted = surdo; });
   if(ytPronto){ if(surdo) ytTocador.mute(); else ytTocador.unMute(); }
-  $("btSurdo").classList.toggle("ligado", surdo);
+  $("btSurdo").classList.toggle("ligado", surdo); $("btSurdo").innerHTML = ic(surdo ? "foneOff" : "fone");
   if(surdo && !mudo) $("btMudo").click(); else avisarEstado();
 };
 $("btSair").onclick = () => fecharTudo(true);
@@ -1941,7 +2047,7 @@ function fecharTudo(avisar){
   gente.forEach((p,id)=>sair(id));
   if(peer){ try{ peer.destroy(); }catch(e){} peer = null; }
   $("mensagens").innerHTML = ""; mudo = false; surdo = false;
-  $("btMudo").classList.remove("ligado"); $("btMudo").textContent="🎙️"; $("btSurdo").classList.remove("ligado");
+  $("btMudo").classList.remove("ligado"); $("btMudo").innerHTML = ic("mic"); $("btSurdo").classList.remove("ligado"); $("btSurdo").innerHTML = ic("fone");
   mostrar("entrada");
   if(avisar) aviso("Você saiu da sala.");
 }
@@ -1991,18 +2097,46 @@ function abrirCartaoPessoa(id, p, el){
 addEventListener("click", e => { if(!e.target.closest("#cartaoPessoa")) fecharCartaoPessoa(); });
 addEventListener("keydown", e => { if(e.key === "Escape") fecharCartaoPessoa(); });
 
+// 16/11 ("quero ver as transmissoes separadas e clicar em qual assistir, ou todas"): igual ao Discord.
+// Cada pessoa ao vivo vira um cartao; o video so comeca a vir quando clica em Assistir (poupa a internet de quem transmite).
+function assistir(id, sim){
+  const p = gente.get(id); if(!p) return;
+  p.vendo = sim; enviar(p.con, {t:"assistir", sim});
+  if(!sim){ p.chamadasTela.forEach(c => { try{ c.close(); }catch(e){} }); p.chamadasTela = []; tirarTela(id); }
+  desenharCartoesAoVivo();
+}
+function desenharCartoesAoVivo(){
+  const palco = $("palco"); if(!palco) return;
+  const ao = [...gente.entries()].filter(([id, p]) => p.jaDisse && p.tela && !telas.has(id));
+  palco.querySelectorAll(".cartaoAoVivo").forEach(c => { if(!ao.some(([id]) => id === c.dataset.id)) c.remove(); });
+  ao.forEach(([id, p]) => {
+    let c = palco.querySelector('.cartaoAoVivo[data-id="' + CSS.escape(id) + '"]');
+    if(!c){
+      c = document.createElement("div"); c.className = "cartaoAoVivo"; c.dataset.id = id;
+      c.innerHTML = '<span class="aovivo"><i></i>AO VIVO</span><b></b><button class="forte">▶ Assistir</button>';
+      c.querySelector("button").onclick = () => { c.querySelector("button").textContent = "Conectando..."; assistir(id, true); };
+      palco.appendChild(c);
+    }
+    c.querySelector("b").textContent = p.nome || "Amigo";
+    if(!p.vendo) c.querySelector("button").textContent = "▶ Assistir";
+  });
+  const todos = $("btAssistirTodos");
+  if(todos) todos.hidden = ao.filter(([, p]) => !p.vendo).length < 2;
+  atualizarVazio();
+}
 function desenharPessoas(){
+  desenharCartoesAoVivo();
   const box = $("pessoas"); box.innerHTML = "";
   const linha = (id, p, souEu) => {
     const d = document.createElement("div"); d.className = "pessoa"; d.dataset.id = id;
-    const ic = (p.mudo?"🔇":"") + (p.surdo?"🎧̸":"");
+    const icn = (p.mudo ? '<span title="Microfone desligado">' + ic("micOff") + '</span>' : "") + (p.surdo ? '<span title="Não está ouvindo">' + ic("foneOff") + '</span>' : "");
     const etiqueta = p.tela ? '<span class="aovivo" title="Está compartilhando a tela — clique pra ver"><i></i>AO VIVO</span>' : "";
     const foto = fotoSegura(p.foto);
     const fundo = foto ? `background:url(${foto}) center/cover` : `background:${corSegura(p.cor)}`;
     d.innerHTML = `<div class="bolha" style="${fundo}">${foto?"":escapar(inicial(p.nome))}</div>
-      <div class="nome">${escapar(p.nome)}${souEu?' <small style="color:var(--suave)">(você)</small>':''}</div><div class="icones">${etiqueta}${ic}</div>`;
+      <div class="nome">${escapar(p.nome)}${souEu?' <small style="color:var(--suave)">(você)</small>':''}</div><div class="icones">${etiqueta}${icn}</div>`;
     const et = d.querySelector(".aovivo");
-    if(et) et.onclick = () => { const t = telas.get(id); if(t) t.scrollIntoView({behavior:"smooth", block:"center"}); };
+    if(et) et.onclick = () => { const t = telas.get(id); if(t) t.scrollIntoView({behavior:"smooth", block:"center"}); else if(!souEu) assistir(id, true); };
     // 30/09: igual ao Discord - a linha fica limpa e clicar no nome abre o cartao da pessoa
     d.title = souEu ? "Você" : "Clique pra volume, silenciar e mais";
     d.onclick = e => { if(e.target.closest(".aovivo")) return; e.stopPropagation(); abrirCartaoPessoa(id, souEu ? null : p, d); };
@@ -2138,6 +2272,7 @@ ligarRange("volTransm","volTransm", ()=>telas.forEach((el,id)=>{ if(id!==(peer&&
 if(cfg.resolucao === "2160") cfg.resolucao = "0";                    // 4K e 120 saíram da tela (o Discord nao tem);
 if(Number(cfg.quadros) > 60) cfg.quadros = "60";                      // quem tinha escolhido cai no mais proximo
 // 30/09: uma vez so, todo mundo passa pro ajuste bom de transmissao (1080p, 60 FPS). Depois cada um muda se quiser.
+if(!guarda.ler("lisoV1", false)){ cfg.fluidez = "fluidez"; guarda.por("fluidez", "fluidez"); guarda.por("lisoV1", true); }
 if(!guarda.ler("qualiV2", false)){ cfg.resolucao = "1080"; cfg.quadros = "60"; guarda.por("resolucao", "1080"); guarda.por("quadros", "60"); guarda.por("qualiV2", true); }
 function pintarChips(){
   document.querySelectorAll(".chips[data-cfg]").forEach(g => g.querySelectorAll("button").forEach(b =>
@@ -2302,17 +2437,30 @@ function tocarAviso(tipo){
   if(surdo || !cfg.avisos) return;
   try{
     if(!ctxAudio) ctxAudio = new AudioContext({latencyHint:"interactive", sampleRate:48000});
-    const notas = {entrar:[660, 990], sair:[880, 520], mudo:[520], desmudo:[780], tela:[520, 780, 1040], telaFim:[1040, 700], msg:[1200]}[tipo];
+    // 17/11 ("som mais nitido de entrar e sair"): notas afinadas (acorde maior), um brilho uma oitava acima,
+    // ataque de 5 ms e queda suave de ~0,4 s, passando por um compressor leve. Sem estalo no comeco nem no fim.
+    const notas = {entrar:[587.33, 880], sair:[880, 587.33], mudo:[493.88], desmudo:[739.99], tela:[523.25, 659.25, 783.99], telaFim:[783.99, 523.25], msg:[1174.66]}[tipo];
     if(!notas) return;
-    const t0 = ctxAudio.currentTime + .02, passo = tipo === "msg" ? .06 : .09;
+    const ctx = ctxAudio, t0 = ctx.currentTime + .03, passo = tipo === "msg" ? .05 : .11;
+    const volume = tipo === "msg" ? .07 : (tipo === "mudo" || tipo === "desmudo") ? .11 : .15;
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3; comp.attack.value = .002; comp.release.value = .15;
+    const filtro = ctx.createBiquadFilter(); filtro.type = "lowpass"; filtro.frequency.value = 6500;
+    filtro.connect(comp); comp.connect(ctx.destination);
     notas.forEach((f, i) => {
-      const o = ctxAudio.createOscillator(), g = ctxAudio.createGain();
-      o.type = "sine"; o.frequency.value = f;
-      const t = t0 + i * passo;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(tipo === "msg" ? .05 : .09, t + .012);
-      g.gain.exponentialRampToValueAtTime(.0001, t + .16);
-      o.connect(g); g.connect(ctxAudio.destination); o.start(t); o.stop(t + .18);
+      const t = t0 + i * passo, dura = tipo === "msg" ? .22 : .42;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(volume, t + .005);
+      g.gain.setTargetAtTime(volume * .55, t + .005, .04);           // cai rapido pro "corpo"
+      g.gain.setTargetAtTime(0, t + .09, dura / 5);                   // e some devagar
+      g.connect(filtro);
+      [[f, "sine", 1], [f * 2, "sine", .22], [f * 3, "triangle", .06]].forEach(([freq, forma, peso]) => {
+        const o = ctx.createOscillator(), og = ctx.createGain();
+        o.type = forma; o.frequency.value = freq; og.gain.value = peso;
+        o.connect(og); og.connect(g); o.start(t); o.stop(t + dura + .25);
+      });
     });
+    setTimeout(() => { try{ filtro.disconnect(); comp.disconnect(); }catch(e){} }, (notas.length * passo + 1) * 1000);
   }catch(e){}
 }
 
@@ -2331,7 +2479,8 @@ $("btMudo").title = "Microfone (Ctrl+Shift+M)"; $("btSurdo").title = "Fone (Ctrl
   const el = $("intro"); if(!el) return;
   const tirar = () => { el.style.transition = "opacity .35s"; el.style.opacity = "0"; setTimeout(() => el.remove(), 380); };
   el.onclick = tirar; addEventListener("keydown", function k(){ removeEventListener("keydown", k); if(document.body.contains(el)) tirar(); });
-  setTimeout(() => { if(document.body.contains(el)) el.remove(); }, 3700);
+  // 17/11: "faz ele abrir rapido" - a vinheta dura ~1 s (era 3,7 s)
+  setTimeout(() => { window.__introSaiu = performance.now(); if(document.body.contains(el)) el.remove(); }, 1100);
 })();
 
 // ------------------------- teto de banda e medicao da conexao -------------------------
@@ -2340,7 +2489,10 @@ async function aplicarBanda(){
   // usa a escada do Discord: quanto maior a resolucao e os quadros, mais banda.
   const alt = Number(cfg.resolucao) || 2160, fps = Number(cfg.quadros) || 30;
   const auto = (alt <= 720 ? 4000 : alt <= 1080 ? 6000 : alt <= 1440 ? 10000 : 16000) * (fps > 30 ? 1.5 : 1);
-  const teto = (Number(cfg.banda) || auto) * 1000;
+  let teto = (Number(cfg.banda) || auto) * 1000;
+  // 16/11: cada pessoa assistindo recebe uma copia (de PC pra PC); com 2 ou mais, divide o teto pra sobrar pra voz
+  let vendo = 0; gente.forEach(p => { if(p.chamadasTela.some(c => c.peerConnection)) vendo++; });
+  if(vendo > 1 && !Number(cfg.banda)) teto = Math.max(3000000, Math.round(teto * 1.4 / vendo));
   gente.forEach(p => p.chamadasTela.forEach(ch => {
     const pc = ch.peerConnection; if(!pc) return;
     pc.getSenders().filter(s => s.track && s.track.kind === "video").forEach(async s => {
@@ -2398,6 +2550,89 @@ $("btnQrSala").onclick = () => mostrarQr();
 $("btnQrNovo").onclick = () => { if(confirm("Trocar o QR? O código antigo para de valer e todo mundo tem que escanear o novo.")){ guarda.por("segredoSala", ""); segredoDaSala(); mostrarQr(); } };
 $("chkPortaria").checked = cfg.portaria; $("chkPortaria").onchange = e => { cfg.portaria = e.target.checked; guarda.por("portaria", cfg.portaria); };
 $("chkAvisos").checked = cfg.avisos; $("chkAvisos").onchange = e => { cfg.avisos = e.target.checked; guarda.por("avisos", cfg.avisos); };
+
+// ---- 17/11: conexao igual ao Discord ("Voz conectada" + barrinhas; clique = ping de cada um e grafico) ----
+const historicoPing = [];          // pior ping a cada 2 s (ultimos 60 = 2 minutos)
+let medidasVoz = [];               // [{nome, ping, perda, variacao, caminho}]
+async function medirVozAgora(){
+  const lista = [];
+  for(const [, p] of gente){
+    const pc = p.chamadaVoz && p.chamadaVoz.peerConnection; if(!pc || !p.jaDisse) continue;
+    let ping = null, recebidos = 0, perdidos = 0, variacao = 0, caminho = "direto", par = null;
+    const st = await pc.getStats(); const mapa = new Map(); st.forEach(r => mapa.set(r.id, r));
+    st.forEach(r => {
+      if(r.type === "transport" && r.selectedCandidatePairId) par = mapa.get(r.selectedCandidatePairId);
+      if(r.type === "inbound-rtp" && r.kind === "audio"){ recebidos = r.packetsReceived || 0; perdidos = r.packetsLost || 0; variacao = r.jitter || 0; }
+    });
+    if(!par) st.forEach(r => { if(r.type === "candidate-pair" && r.state === "succeeded" && r.nominated) par = r; });
+    if(par){
+      if(typeof par.currentRoundTripTime === "number") ping = Math.round(par.currentRoundTripTime * 1000);
+      const l = mapa.get(par.localCandidateId), rm = mapa.get(par.remoteCandidateId);
+      if((l && l.candidateType === "relay") || (rm && rm.candidateType === "relay")) caminho = "pela ponte";
+    }
+    const ant = p._conAnt || {recebidos:0, perdidos:0}; p._conAnt = {recebidos, perdidos};
+    const dr = recebidos - ant.recebidos, dp = Math.max(0, perdidos - ant.perdidos);
+    lista.push({nome: p.nome || "Amigo", ping, perda: dr + dp > 0 ? Math.round(100 * dp / (dr + dp)) : 0, variacao: Math.round(variacao * 1000), caminho});
+  }
+  return lista;
+}
+function notaDaConexao(m){
+  if(m.ping === null) return 3;
+  if(m.ping > 250 || m.perda >= 8) return 1;
+  if(m.ping > 120 || m.perda >= 3 || m.variacao > 40) return 2;
+  return 3;
+}
+const CORES_SINAL = {1:"var(--vermelho)", 2:"var(--ambar)", 3:"var(--verde)"};
+async function atualizarConexao(){
+  const box = $("conexao"); if(!box) return;
+  const naSala = $("sala").classList.contains("ativa");
+  const est = $("estadoJanela");
+  if(est){ const n = [...gente.values()].filter(p => p.jaDisse).length;
+    est.classList.toggle("on", naSala); est.lastChild.textContent = !naSala ? "fora da call" : n ? "na call com " + n + (n > 1 ? " amigos" : " amigo") : "na call, esperando a turma"; }
+  box.hidden = !naSala; if(!naSala || document.hidden) return;
+  try{ medidasVoz = await medirVozAgora(); }catch(e){ return; }
+  const pings = medidasVoz.map(m => m.ping).filter(x => x !== null);
+  const pior = pings.length ? Math.max(...pings) : null;
+  const nota = medidasVoz.length ? Math.min(...medidasVoz.map(notaDaConexao)) : 3;
+  historicoPing.push(pior); if(historicoPing.length > 60) historicoPing.shift();
+  box.dataset.n = nota; box.style.setProperty("--cor-sinal", CORES_SINAL[nota]);
+  $("conexaoTitulo").textContent = nota === 3 ? "Voz conectada" : nota === 2 ? "Conexão instável" : "Conexão ruim";
+  $("conexaoPing").textContent = !medidasVoz.length ? "Esperando a turma" : pior === null ? "medindo…" : (pior < 1 ? "menos de 1" : pior) + " ms de ping";
+  if($("conexaoDetalhe")) desenharDetalheConexao();
+}
+function desenharDetalheConexao(){
+  const d = $("conexaoDetalhe"); if(!d) return;
+  const linhas = medidasVoz.length ? medidasVoz.map(m =>
+    `<div class="lin"><span><b style="color:${CORES_SINAL[notaDaConexao(m)]}">●</b> ${escapar(m.nome)}</span>` +
+    `<span>${m.ping === null ? "?" : m.ping < 1 ? "<1" : m.ping} ms · perda ${m.perda}% · variação ${m.variacao} ms · ${m.caminho}</span></div>`).join("")
+    : '<div class="lin"><span>Ninguém na call ainda.</span></div>';
+  d.querySelector(".pessoasCon").innerHTML = linhas;
+  const cv = d.querySelector("canvas"), g = cv.getContext("2d");
+  const W = cv.width = cv.clientWidth * devicePixelRatio, H = cv.height = cv.clientHeight * devicePixelRatio;
+  g.clearRect(0, 0, W, H);
+  const vals = historicoPing.filter(v => v !== null), topo = Math.max(150, ...vals) * 1.15;
+  g.strokeStyle = "rgba(255,255,255,.08)"; g.lineWidth = 1;
+  [50, 100, 200].forEach(v => { if(v < topo){ const y = H - v / topo * H; g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); } });
+  g.strokeStyle = getComputedStyle($("conexao")).getPropertyValue("--cor-sinal").includes("vermelho") ? "#ff4757" : "#3ddc84";
+  g.lineWidth = 2 * devicePixelRatio; g.beginPath();
+  historicoPing.forEach((v, i) => { if(v === null) return; const x = i / 59 * W, y = H - v / topo * H; i && historicoPing[i - 1] !== null ? g.lineTo(x, y) : g.moveTo(x, y); });
+  g.stroke();
+}
+$("conexao").onclick = e => {
+  e.stopPropagation();
+  if($("conexaoDetalhe")){ $("conexaoDetalhe").remove(); return; }
+  const d = document.createElement("div"); d.id = "conexaoDetalhe";
+  d.innerHTML = '<h4>CONEXÃO DE VOZ</h4><small style="color:var(--suave)">Ping dos últimos 2 minutos (quanto mais baixo, melhor)</small>' +
+    '<canvas></canvas><div class="pessoasCon"></div>' +
+    '<small style="display:block;margin-top:8px;color:var(--apagado)">Duas bolinhas verdes: tudo liso (até 120 ms). Uma amarela: instável (até 250 ms). Uma vermelha: ruim ou perdendo som.</small>';
+  document.body.appendChild(d);
+  const r = $("conexao").getBoundingClientRect();
+  d.style.left = Math.max(8, r.left) + "px"; d.style.bottom = Math.max(8, innerHeight - r.top + 8) + "px";
+  d.onclick = ev => ev.stopPropagation();
+  desenharDetalheConexao();
+};
+addEventListener("click", () => { const d = $("conexaoDetalhe"); if(d) d.remove(); });
+setInterval(atualizarConexao, 2000);
 
 // ---- placar de internet no canto de cada telinha ----
 const medidasAnteriores = new Map();
@@ -2572,7 +2807,7 @@ function desenharJuke(){
   $("dj").classList.toggle("pausado", !jukeTocando);
   $("djTitulo").textContent = jukeAtual ? (jukeAtual.titulo || jukeAtual.id) : "—";
   $("djQuem").textContent = jukeAtual ? "pedida por " + jukeAtual.quem + (jukeFila.length ? " · +" + jukeFila.length + " na fila" : "") : "";
-  $("btDjPausa").textContent = jukeTocando ? "⏸" : "▶";
+  $("btDjPausa").innerHTML = ic(jukeTocando ? "pausa" : "play");
 }
 
 // mensagem do DJ no chat
