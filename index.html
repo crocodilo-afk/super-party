@@ -509,7 +509,7 @@ body:has(#casa.ativa) .versao-canto{display:none}
     <button class="bolaServ" id="btSalaAntiga2" title="Sala antiga por código" style="font-size:15px;color:var(--suave)">#</button>
   </nav>
   <aside id="colCanais">
-    <header id="topoServidor"><b id="nomeServidor">YapSquad</b><button id="btMenuServidor" title="Convite e ajustes do servidor" hidden>⚙</button></header>
+    <header id="topoServidor"><b id="nomeServidor">YapSquad</b><button id="btConvidarServ" class="forte" title="Convidar amigos pro servidor" hidden>👥 Convidar</button><button id="btMenuServidor" title="Convite e ajustes do servidor" hidden>⚙</button></header>
     <div id="listaCanais"></div>
     <footer id="barraEu">
       <div class="previa mini" id="fotoEu"></div>
@@ -3394,12 +3394,14 @@ async function carregarPerfil(){
   }
   const novo = await supa("/rest/v1/perfis", {metodo: "POST", prefer: "return=representation",
     corpo: {id: sessao.user.id, nome, cor: corSegura(eu.cor), foto}});
-  perfil = novo[0];
+  perfil = novo[0]; perfilNovo = true;
 }
+let perfilNovo = false;
 function pintarEu(){
   if(!perfil) return;
   pintarBolinha($("fotoEu"), perfil);
-  $("nomeEu").textContent = perfil.nome; $("emailEu").textContent = sessao ? sessao.user.email : "";
+  // o e-mail nao aparece na tela (nem em compartilhamento de tela): so "Online"
+  $("nomeEu").textContent = perfil.nome; $("emailEu").textContent = "Online";
   // a call usa o mesmo nome, cor e foto da conta
   eu.nome = perfil.nome; eu.cor = perfil.cor; if(perfil.foto) eu.foto = perfil.foto;
   if(!eu.id) eu.id = "c" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
@@ -3408,7 +3410,9 @@ function pintarEu(){
 $("btEditarPerfil").onclick = async () => {
   if(!perfil) return;
   let st;
-  const r = await janelinha("Seu perfil",
+  const primeira = perfilNovo; perfilNovo = false;
+  const r = await janelinha(primeira ? "Crie o seu perfil" : "Seu perfil",
+    (primeira ? '<p class="dica">É assim que seus amigos vão te ver. Seu e-mail fica escondido.</p>' : '') +
     '<label for="jNome">Seu nome</label><input id="jNome" maxlength="24">' + HTML_FOTO,
     [{t: "Cancelar", v: null}, {t: "Salvar", v: "s", forte: true}],
     raiz => { raiz.querySelector("#jNome").value = perfil.nome; st = campoFoto(raiz, perfil.foto); });
@@ -3435,6 +3439,7 @@ async function abrirCasa(){
   }
   pintarEu();
   await carregarServidores();
+  if(perfilNovo) $("btEditarPerfil").onclick();   // primeira vez: abre "Crie o seu perfil" (nome e foto)
 }
 async function carregarServidores(abrirId){
   try{ servidores = await supa("/rest/v1/servidores?select=id,nome,foto,dono,convite&order=criado_em") || []; }
@@ -3458,7 +3463,7 @@ function desenharServidores(){
 function boasVindas(){
   servidorAtual = null; canais = []; canalAtual = null; tempoReal.desligar(); pararBusca();
   desenharServidores();
-  $("nomeServidor").textContent = "YapSquad"; $("btMenuServidor").hidden = true; $("listaCanais").innerHTML = "";
+  $("nomeServidor").textContent = "YapSquad"; $("btMenuServidor").hidden = true; $("btConvidarServ").hidden = true; $("listaCanais").innerHTML = "";
   $("topoCanal").textContent = ""; $("formMensagem").hidden = true;
   $("conteudoCanal").innerHTML = '<div class="vazioCanal"><b>Bem-vindo ao YapSquad!</b>' +
     '<p>Crie o servidor da sua turma, ou entre no de um amigo com o convite.</p>' +
@@ -3468,7 +3473,7 @@ function boasVindas(){
 async function abrirServidor(s){
   const vez = ++vezServidor;
   servidorAtual = s; guarda.por("ultimoServidor", s.id); desenharServidores();
-  $("nomeServidor").textContent = s.nome; $("btMenuServidor").hidden = false;
+  $("nomeServidor").textContent = s.nome; $("btMenuServidor").hidden = false; $("btConvidarServ").hidden = false;
   $("listaCanais").innerHTML = ""; $("conteudoCanal").innerHTML = ""; $("topoCanal").textContent = "";
   try{
     const lista = await supa("/rest/v1/canais?servidor=eq." + s.id + "&select=id,nome,tipo,posicao,sala&order=posicao,criado_em") || [];
@@ -3551,6 +3556,15 @@ function mostrarMensagem(m){
       : hora.toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
   }
   d.querySelector(".txt").textContent = m.texto;
+  // 16/11: convite no chat vira um botao "Entrar no servidor", igual no Discord
+  const achouConv = /convite:?\s*([0-9A-F]{8})(?![0-9A-F])/i.exec(m.texto || "");
+  if(achouConv){
+    const codC = achouConv[1].toUpperCase(), jaTem = servidores.find(s => s.convite === codC);
+    const bc = document.createElement("button"); bc.className = "forte"; bc.style.marginTop = "6px";
+    bc.textContent = jaTem ? "Abrir o servidor " + jaTem.nome : "🎟️ Entrar no servidor";
+    bc.onclick = () => jaTem ? abrirServidor(jaTem) : entrarPeloCodigo(codC);
+    d.querySelector(".corpoMsg").appendChild(bc);
+  }
   const caixa = $("conteudoCanal"), noFim = caixa.scrollHeight - caixa.scrollTop - caixa.clientHeight < 120;
   caixa.appendChild(d);
   if(noFim || m.autor === (sessao && sessao.user.id)) caixa.scrollTop = 1e9;
@@ -3640,6 +3654,9 @@ async function entrarComConvite(){
   if(!r) return;
   const cod = ($("jConvite").value.toUpperCase().match(/[0-9A-F]{8}(?![0-9A-F])/g) || []).pop();
   if(!cod){ toque("Esse convite não parece certo. São 8 letras e números."); return; }
+  entrarPeloCodigo(cod);
+}
+async function entrarPeloCodigo(cod){
   try{
     const id = await supa("/rest/v1/rpc/entrar_no_servidor", {metodo: "POST", corpo: {codigo: cod}});
     if(!id){ toque("Não achei servidor com esse convite."); return; }
@@ -3667,6 +3684,23 @@ async function criarCanal(tipo){
   }catch(e){ toque(/Limite/.test(e.message) ? e.message : "Não consegui criar o canal."); }
 }
 
+// 16/11: botao "Convidar" sempre a vista no topo do servidor
+$("btConvidarServ").onclick = async () => {
+  const s = servidorAtual; if(!s) return;
+  const r = await janelinha("Convidar amigos pra " + s.nome,
+    '<p class="dica">1) Copie o convite e mande pro seu amigo (WhatsApp, Discord...).<br>' +
+    '2) Ele abre o YapSquad, clica no <b>⇥</b> da esquerda e cola o convite.</p><div class="convite"></div>' +
+    '<button class="opcaoJ forte" data-v="copiar">📋 Copiar convite</button>' +
+    (canalAtual && canalAtual.tipo === "texto" ? '<button class="opcaoJ" data-v="chat">💬 Mandar o convite neste canal</button>' : ''),
+    [{t: "Fechar", v: null}],
+    raiz => { raiz.querySelector(".convite").textContent = s.convite; });
+  const textoConv = "Entra no meu servidor do YapSquad! Convite: " + s.convite;
+  if(r === "copiar"){
+    try{ await navigator.clipboard.writeText(textoConv); toque("Convite copiado! Agora é só colar pro seu amigo."); }
+    catch(e){ toque("Convite: " + s.convite); }
+  }
+  if(r === "chat"){ $("txtMensagem").value = textoConv; $("formMensagem").requestSubmit(); }
+};
 $("btMenuServidor").onclick = async () => {
   const s = servidorAtual; if(!s) return;
   const dono = souDono();
