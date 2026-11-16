@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Squad - o app que antes se chamava Super Party (o atualizador do programa procura esse nome: nao tirar) -->
-<title>Squad</title>
-<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230b0b0d"/><circle cx="32" cy="24" r="8" fill="%23ff7a1a"/><circle cx="17" cy="29" r="6" fill="%23ffb347"/><circle cx="47" cy="29" r="6" fill="%23ffb347"/><path d="M18 52c0-9 6-15 14-15s14 6 14 15z" fill="%23ff7a1a"/><path d="M5 52c0-7 5-12 12-12 3 0 5 1 7 2-4 3-6 6-6 10z" fill="%23ffb347"/><path d="M59 52c0-7-5-12-12-12-3 0-5 1-7 2 4 3 6 6 6 10z" fill="%23ffb347"/></svg>'>
+<!-- YapSquad - o app que antes se chamava Squad, e antes ainda Super Party (o atualizador do programa procura esse nome: nao tirar) -->
+<title>YapSquad</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><clipPath id="c"><polygon points="60,10 102,34 102,86 60,110 18,86 18,34"/></clipPath><polygon points="60,10 102,34 102,86 60,110 18,86 18,34" fill="%23121216" stroke="%23ff7a1a" stroke-width="12" stroke-linejoin="round"/><g clip-path="url(%23c)" fill="%23ff8a2a"><circle cx="34" cy="60" r="8.5"/><path d="M17 112 V97 C17 86 24 78 34 78 C44 78 51 86 51 97 V112 Z"/><circle cx="86" cy="60" r="8.5"/><path d="M103 112 V97 C103 86 96 78 86 78 C76 78 69 86 69 97 V112 Z"/><g stroke="%23121216" stroke-width="5" paint-order="stroke"><circle cx="60" cy="47" r="11.5"/><path d="M38 112 V93 C38 79 48 68 60 68 C72 68 82 79 82 93 V112 Z"/></g></g></svg>'>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- 17/11: a fonte da internet NAO segura mais a primeira tela (abre com a do Windows e troca quando chegar) -->
@@ -298,19 +298,28 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 </head>
 <body>
 <script>if(window.squad && window.squad.janelaPropria) document.documentElement.classList.add("app");</script>
-<div id="barraJanela"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#emblema"/></svg>SQUAD<span class="ver versao"></span><span class="estado" id="estadoJanela"><i></i>fora da call</span></div>
+<div id="barraJanela"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#emblema"/></svg>YAPSQUAD<span class="ver versao"></span><span class="estado" id="estadoJanela"><i></i>fora da call</span></div>
 <canvas id="mar"></canvas>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <linearGradient id="gLaranja" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a1a"/><stop offset="1" stop-color="#ff4d00"/></linearGradient>
     <symbol id="emblema" viewBox="0 0 120 120">
-      <path class="aro" d="M60 6 L106 32 L106 88 L60 114 L14 88 L14 32 Z" fill="#0d0d10" stroke="url(#gLaranja)" stroke-width="5" stroke-linejoin="round"/>
-      <circle cx="35" cy="52" r="9" fill="#ffb347"/><circle cx="85" cy="52" r="9" fill="#ffb347"/>
-      <path d="M19 88c0-12 7-20 16-20 5 0 9 2 12 5-6 4-9 9-9 15z" fill="#ffb347"/>
-      <path d="M101 88c0-12-7-20-16-20-5 0-9 2-12 5 6 4 9 9 9 15z" fill="#ffb347"/>
-      <circle cx="60" cy="45" r="12" fill="url(#gLaranja)"/>
-      <path d="M38 92c0-15 10-25 22-25s22 10 22 25z" fill="url(#gLaranja)"/>
+      <!-- YapSquad (16/11): a turma (os bonequinhos) num hexagono escuro de borda laranja - opcao B, aprovada pelo dono -->
+      <defs>
+        <linearGradient id="gEmb" gradientUnits="userSpaceOnUse" x1="0" y1="8" x2="0" y2="112"><stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#ff7a1a"/><stop offset="1" stop-color="#f04e00"/></linearGradient>
+        <clipPath id="cEmb"><polygon points="60,10 102,34 102,86 60,110 18,86 18,34"/></clipPath>
+      </defs>
+      <polygon class="aro" points="60,10 102,34 102,86 60,110 18,86 18,34" fill="#121216" stroke="url(#gEmb)" stroke-width="10" stroke-linejoin="round"/>
+      <g clip-path="url(#cEmb)">
+        <g fill="url(#gEmb)">
+          <circle cx="34" cy="60" r="8.5"/><path d="M17 112 V97 C17 86 24 78 34 78 C44 78 51 86 51 97 V112 Z"/>
+          <circle cx="86" cy="60" r="8.5"/><path d="M103 112 V97 C103 86 96 78 86 78 C76 78 69 86 69 97 V112 Z"/>
+        </g>
+        <g fill="url(#gEmb)" stroke="#121216" stroke-width="5" paint-order="stroke">
+          <circle cx="60" cy="47" r="11.5"/><path d="M38 112 V93 C38 79 48 68 60 68 C72 68 82 79 82 93 V112 Z"/>
+        </g>
+      </g>
     </symbol>
     <!-- 17/11: icones desenhados (linha 2 px, cantos redondos) no lugar dos emojis -->
     <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5v4M8.5 21.5h7"/></symbol>
@@ -339,7 +348,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 <!-- ============ INTRO ============ -->
 <div id="intro" title="Clique pra pular">
   <svg class="emblema" viewBox="0 0 120 120"><use href="#emblema"/></svg>
-  <div class="palavra">SQUAD</div>
+  <div class="palavra">YAPSQUAD</div>
   <div class="faixa"></div>
   <small>a sua turma · call · filme junto</small>
 </div>
@@ -349,14 +358,14 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
   <div class="cartao">
     <div class="marca">
       <svg viewBox="0 0 120 120"><use href="#emblema"/></svg>
-      <div><b>SQUAD</b><small>call, filme e música com a sua turma</small></div>
+      <div><b>YAPSQUAD</b><small>call, filme e música com a sua turma</small></div>
     </div>
     <div id="perfilSalvo" style="display:none">
       <div class="fotoLinha">
         <div class="previa" id="previaSalva"></div>
         <div style="flex:1;min-width:0">
           <b id="nomeSalvo" style="font-size:18px;display:block;overflow:hidden;text-overflow:ellipsis"></b>
-          <small style="color:var(--suave)">sua conta do Squad</small>
+          <small style="color:var(--suave)">sua conta do YapSquad</small>
         </div>
         <button id="btTrocarPerfil">Trocar</button>
       </div>
@@ -396,7 +405,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 <!-- ============ SALA ============ -->
 <section id="sala" class="tela">
   <header id="topoSala" class="cartao">
-    <div class="logo"><svg viewBox="0 0 120 120"><use href="#emblema"/></svg>SQUAD</div>
+    <div class="logo"><svg viewBox="0 0 120 120"><use href="#emblema"/></svg>YAPSQUAD</div>
     <div id="codigo" title="Clique pra copiar">#</div>
     <button type="button" id="btConvidar" hidden title="Gera um convite que vale 2 minutos e uma vez só"><svg class="ic" aria-hidden="true"><use href="#i-convite"/></svg> Convidar</button>
     <div class="espaco"></div>
@@ -494,7 +503,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
     <div id="caixaTecla" style="display:none">
       <label>Tecla de falar</label>
       <button id="btTecla" style="width:100%">Clique aqui e aperte a tecla</button>
-      <p class="dica">A tecla só vale com a janela do Squad na frente.</p>
+      <p class="dica">A tecla só vale com a janela do YapSquad na frente.</p>
     </div>
     <h3>Limpeza da voz</h3>
     <label for="selRuido">Supressão de ruído</label>
@@ -573,7 +582,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
       <p class="dica">Desligar o H.264 também desliga a codificação pela placa de vídeo.</p>
       <label><input type="checkbox" id="chkAcelH264">Aceleração de hardware H.264</label>
       <p class="dica">Usa a placa de vídeo pra codificar e decodificar. Se a imagem chegar preta ou travando, desligue.</p>
-      <p class="dica" id="avisoReabrir" hidden><b>Vale quando o Squad abrir de novo.</b> <button type="button" id="btReabrir">Reabrir agora</button></p>
+      <p class="dica" id="avisoReabrir" hidden><b>Vale quando o YapSquad abrir de novo.</b> <button type="button" id="btReabrir">Reabrir agora</button></p>
     </div>
     <p class="dica">O Discord sem Nitro trava em 720p 30. Aqui é tudo liberado; o limite é a sua internet de subida. O som do filme sai em estéreo, no máximo que o Opus aguenta.</p>
     <h3>No seu ouvido</h3>
@@ -610,7 +619,7 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
     <label><input type="checkbox" id="chkAvisos">Avisar quando alguém entrar ou sair</label>
     <label><input type="checkbox" id="chkEfeitos">Brasas animadas no fundo (congelam enquanto você joga)</label>
     <h3>Sobre</h3>
-    <p class="dica">Squad — a imagem e a voz vão direto de PC pra PC, criptografadas, sem servidor no meio. Nada é gravado.</p>
+    <p class="dica">YapSquad — a imagem e a voz vão direto de PC pra PC, criptografadas, sem servidor no meio. Nada é gravado.</p>
     <p class="versao dica"></p>
   </section>
 
@@ -738,7 +747,7 @@ const cfg = {
 function toque(txt){ const t=$("toque"); t.textContent=txt; t.classList.add("ver"); clearTimeout(toque.t); toque.t=setTimeout(()=>t.classList.remove("ver"),2600); }
 function aviso(txt){ $("aviso").textContent = txt||""; }
 function mostrar(id){ document.querySelectorAll(".tela").forEach(s=>s.classList.toggle("ativa", s.id===id)); }
-function limparCodigo(t){ return (t||"").toUpperCase().replace(/[^A-Z0-9-]/g,"").replace(/^(TURMA|SQUAD)-?/,""); }
+function limparCodigo(t){ return (t||"").toUpperCase().replace(/[^A-Z0-9-]/g,"").replace(/^(TURMA|YAPSQUAD|SQUAD)-?/,""); }
 function novoCodigo(){ const L="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let s=""; const r=crypto.getRandomValues(new Uint8Array(5)); for(const b of r) s+=L[b%L.length]; return s; }
 function inicial(n){ return (n||"?").trim().charAt(0).toUpperCase(); }
 function escapar(t){ const d=document.createElement("div"); d.textContent=t; return d.innerHTML; }
@@ -805,10 +814,10 @@ function fotoSegura(f){ return /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Z
   }
   // a conta vira um arquivinho, pra ele levar pra outro PC
   $("btSalvarConta").onclick = () => {
-    const conta = {programa:"Squad", nome:eu.nome, cor:eu.cor, foto:eu.foto, pin:eu.pin, id:eu.id};
+    const conta = {programa:"YapSquad", nome:eu.nome, cor:eu.cor, foto:eu.foto, pin:eu.pin, id:eu.id};
     const url = URL.createObjectURL(new Blob([JSON.stringify(conta)], {type:"application/json"}));
     const link = document.createElement("a");
-    link.href = url; link.download = "conta-squad-" + eu.nome.replace(/[^\w]/g,"") + ".json";
+    link.href = url; link.download = "conta-yapsquad-" + eu.nome.replace(/[^\w]/g,"") + ".json";
     link.click(); setTimeout(() => URL.revokeObjectURL(url), 4000);
     toque("Conta salva. Guarde esse arquivinho.");
   };
@@ -825,7 +834,7 @@ function fotoSegura(f){ return /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Z
         eu.pin = conta.pin || ""; eu.id = conta.id || "";
         destravado = !eu.pin; guardarConta(); mostrarPerfilSalvo(); pintarPrevia();
         toque("Conta carregada: " + eu.nome);
-      }catch(err){ toque("Esse arquivo não é uma conta do Squad."); }
+      }catch(err){ toque("Esse arquivo não é uma conta do YapSquad."); }
     };
     leitor.readAsText(arq);
   };
@@ -968,7 +977,7 @@ async function codigoConfere(codigo){
 }
 function mostrarQr(){
   const seg = segredoDaSala(), sala = "TURMA-" + (guarda.ler("minhaSala","") || codigo || "");
-  const uri = "otpauth://totp/" + encodeURIComponent("Squad:" + sala) + "?secret=" + seg + "&issuer=" + encodeURIComponent("Squad");
+  const uri = "otpauth://totp/" + encodeURIComponent("YapSquad:" + sala) + "?secret=" + seg + "&issuer=" + encodeURIComponent("YapSquad");
   let caixa = $("caixaQr");
   if(!caixa){ caixa = document.createElement("div"); caixa.id = "caixaQr"; document.body.appendChild(caixa); }
   caixa.innerHTML = '<div class="qrCartao"><h3>QR da sua sala</h3><p>No celular do amigo: Google Authenticator → <b>+</b> → <b>Ler código QR</b>.</p>' +
@@ -1732,8 +1741,8 @@ function avisoInstalarSquad(){
   if(jaAvisouSquad) return; jaAvisouSquad = true;
   const d = document.createElement("div"); d.className = "msg sistema";
   d.innerHTML = "⚠️ Você está no <b>Super Party antigo</b> (no navegador). Nele o som da tela só vai se marcar “Compartilhar áudio do sistema”. " +
-    "No programa <b>Squad</b> o som vai junto sozinho, igual ao Discord. Feche o Super Party de vez e instale: ";
-  const a = document.createElement("a"); a.textContent = "Baixar o Squad"; a.className = "sim";
+    "No programa <b>YapSquad</b> o som vai junto sozinho, igual ao Discord. Feche o Super Party de vez e instale: ";
+  const a = document.createElement("a"); a.textContent = "Baixar o YapSquad"; a.className = "sim";
   a.href = "https://github.com/crocodilo-afk/super-party/raw/master/squad/InstalarSquad.exe"; a.target = "_blank"; a.rel = "noopener";
   d.appendChild(a); $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
 }
@@ -2674,7 +2683,7 @@ async function mostrarVersao(){
   if(window.squad && window.squad.versao) return;   // no programa Squad quem mostra e o proprio programa
   let prog = "antigo";
   try{ const r = await fetch("/versao", {cache:"no-store"}); if(r.ok) prog = (await r.text()).trim(); }catch(e){}
-  document.querySelectorAll(".versao").forEach(el => el.textContent = "Squad v" + VERSAO_PAGINA + " · programa " + prog);
+  document.querySelectorAll(".versao").forEach(el => el.textContent = "YapSquad v" + VERSAO_PAGINA + " · programa " + prog);
 }
 mostrarVersao();
 
@@ -2710,7 +2719,7 @@ function mostrarAtualizacao(){
       if(r.ok){ $("btAtualizar").textContent = "Reabrindo..."; return; }   // o programa fecha e abre sozinho
     }catch(e){}
     try{ const r = await fetch("/atualizar", {cache:"no-store"}); if(r.ok){ location.reload(); return; } }catch(e){}
-    d.querySelector("b").textContent = "Feche e abra o Squad pra atualizar"; $("btAtualizar").remove();
+    d.querySelector("b").textContent = "Feche e abra o YapSquad pra atualizar"; $("btAtualizar").remove();
   };
 }
 // Squad (programa): quem decide e o proprio programa, comparando o NUMERO da versao no GitHub e
@@ -2722,7 +2731,7 @@ if(window.squad && window.squad.onAtualizacao){
     const d = document.createElement("div"); d.id = "faixaAtualizacao";
     const pronta = info.tipo === "pronta";
     d.innerHTML = '<b></b><button id="btAtualizar" class="forte"></button><button id="btDepois">Depois</button>';
-    d.querySelector("b").textContent = "🎁 Squad " + info.versao + (pronta ? " baixado" : " saiu (precisa instalar)");
+    d.querySelector("b").textContent = "🎁 YapSquad " + info.versao + (pronta ? " baixado" : " saiu (precisa instalar)");
     $("btAtualizar").textContent = pronta ? "Reiniciar agora" : "Baixar instalador";
     document.body.appendChild(d);
     $("btDepois").onclick = () => { d.remove(); if(pronta) toque("Tudo bem: a versão nova entra sozinha na próxima vez que você abrir."); };
@@ -2733,14 +2742,14 @@ if(window.squad && window.squad.onAtualizacao){
       } else window.squad.instalador();
     };
   });
-  window.squad.versao().then(v => document.querySelectorAll(".versao").forEach(el => el.textContent = "Squad " + v));
+  window.squad.versao().then(v => document.querySelectorAll(".versao").forEach(el => el.textContent = "YapSquad " + v));
 }else{
   setTimeout(procurarAtualizacao, 20000); setInterval(procurarAtualizacao, 10*60*1000);
   // quem ainda abre pelo Super Party antigo (navegador) ve o convite pro programa novo
   setTimeout(() => {
     if(guarda.ler("viuConviteSquad", false)) return;
     const d = document.createElement("div"); d.id = "faixaAtualizacao";
-    d.innerHTML = '<b>🧡 O Super Party virou Squad: programa novo, com seletor de tela igual ao Discord</b><button id="btBaixarSquad" class="forte">Baixar</button><button id="btDepoisSquad">Depois</button>';
+    d.innerHTML = '<b>🧡 O Super Party virou YapSquad: programa novo, com seletor de tela igual ao Discord</b><button id="btBaixarSquad" class="forte">Baixar</button><button id="btDepoisSquad">Depois</button>';
     document.body.appendChild(d);
     $("btBaixarSquad").onclick = () => { window.open("https://github.com/crocodilo-afk/super-party/raw/master/squad/InstalarSquad.exe", "_blank"); guarda.por("viuConviteSquad", true); d.remove(); };
     $("btDepoisSquad").onclick = () => d.remove();
