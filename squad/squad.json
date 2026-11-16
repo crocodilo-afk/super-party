@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.17.3",
+    "versao":  "2026.11.17.4",
     "electron":  "45.1.0",
-    "notas":  "Nome novo: YapSquad, e logo nova.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.3.zip",
-    "nucleo_sha256":  "e5153c83715e0f21adb3c36b4d4860f5593323bb3debc074de116682d8e36ffc",
+    "notas":  "Contas com codigo no e-mail, servidores e canais de texto e voz.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.4.zip",
+    "nucleo_sha256":  "28047169a30da41dbb0eb8cbdeac16a439d47526b3e8da52780c8d29404e20fd",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",

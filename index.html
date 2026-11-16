@@ -294,6 +294,75 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
   html,body{overflow:auto}
 }
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#2c2c33;border-radius:6px;border:2px solid var(--painel)}::-webkit-scrollbar-track{background:transparent}
+/* ===== 16/11: login por e-mail e a casa estilo Discord (servidores, canais, bate-papo) ===== */
+#login{align-items:center;justify-content:center;padding:24px;overflow:auto}
+#login .cartao{width:min(440px,100%);padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.6),var(--brilho)}
+#login .forte{width:100%;margin-top:14px}
+#login [hidden],#casa [hidden]{display:none!important}
+.botaoLogin{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;padding:12px;font-size:15px}
+.botaoLogin svg{width:20px;height:20px;flex:0 0 auto}
+.botaoLogin.google{background:#fff;color:#1f1f1f;border-color:#dadce0}
+.botaoLogin.google:hover{background:#eef0f2;border-color:#dadce0}
+.botaoLogin.discord{background:#5865F2;color:#fff;border-color:#5865F2}
+.botaoLogin.discord:hover{background:#4752c4;border-color:#4752c4}
+#avisoLogin{margin-top:12px;color:var(--ambar);font-weight:600;line-height:1.45;min-height:1em}
+.linkSimples{background:none;border:0;color:var(--suave);font-weight:600;text-decoration:underline;padding:6px;box-shadow:none}
+.linkSimples:hover{background:none;color:var(--texto)}
+#casa.ativa{display:grid;grid-template-columns:76px 250px minmax(0,1fr);height:100%;background:var(--fundo)}
+#listaServidores{background:#060608;border-right:1px solid var(--linha);display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0;overflow-y:auto}
+#iconesServidores{display:flex;flex-direction:column;gap:10px;align-items:center}
+.separaServ{width:32px;height:2px;border-radius:2px;background:var(--linha);flex:0 0 auto}
+.bolaServ{width:50px;height:50px;flex:0 0 auto;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;font-family:var(--titulo);font-weight:700;font-size:17px;
+  background:var(--painel3) center/cover no-repeat;border:1px solid var(--linha);position:relative;transition:border-radius .15s,border-color .15s;color:var(--texto)}
+.bolaServ:hover,.bolaServ.sel{border-radius:16px;border-color:var(--laranja)}
+.bolaServ.sel::before{content:"";position:absolute;left:-14px;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--laranja)}
+.bolaServ.mais{color:var(--verde);font-size:26px;font-family:var(--corpo)}
+.bolaServ.mais:hover{background:var(--verde);color:#062b14;border-color:var(--verde)}
+#colCanais{background:var(--painel);border-right:1px solid var(--linha);display:flex;flex-direction:column;min-width:0}
+#topoServidor{height:54px;flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:0 10px 0 16px;border-bottom:1px solid var(--linha)}
+#topoServidor b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--titulo);font-size:16px}
+#topoServidor button{padding:6px 10px}
+#listaCanais{flex:1;overflow-y:auto;padding:6px 8px 10px}
+.grupoCanais{display:flex;align-items:center;justify-content:space-between;margin:14px 6px 6px;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--apagado)}
+.grupoCanais button{padding:0 6px;border:0;background:none;color:var(--suave);font-size:18px;line-height:1;box-shadow:none}
+.grupoCanais button:hover{color:var(--texto);background:none}
+.canalS{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;color:var(--suave);font-weight:600}
+.canalS:hover,.canalS.sel{background:var(--painel3);color:var(--texto)}
+.canalS .simb{width:18px;text-align:center;color:var(--apagado);font-weight:800}
+.canalS span.nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.canalS small{color:var(--verde);font-size:11px;font-weight:800}
+#barraEu{display:flex;align-items:center;gap:8px;padding:10px;background:#0c0c0f;border-top:1px solid var(--linha);flex:0 0 auto}
+.previa.mini{width:36px;height:36px;font-size:15px;border-width:1px}
+#barraEu .quem{flex:1;min-width:0;display:flex;flex-direction:column}
+#barraEu .quem b,#barraEu .quem small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#barraEu .quem small{color:var(--apagado);font-size:11px}
+#barraEu button{padding:6px 8px}
+#colConteudo{display:flex;flex-direction:column;min-width:0;min-height:0;background:#0b0b0e}
+#topoCanal{height:54px;flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid var(--linha);font-family:var(--titulo);font-weight:700;font-size:16px}
+#topoCanal .simb{color:var(--apagado)}
+#conteudoCanal{flex:1;overflow-y:auto;padding:16px 18px;min-height:0}
+.msgS{display:flex;gap:12px;padding:6px 0}
+.msgS .corpoMsg{min-width:0;flex:1}
+.msgS .cab{display:flex;gap:8px;align-items:baseline}
+.msgS .cab small{color:var(--apagado);font-size:11px}
+.msgS .txt{white-space:pre-wrap;word-break:break-word;line-height:1.45;color:#e9e3da}
+.msgS.seguida{padding-top:0}
+.msgS.seguida .previa{visibility:hidden;height:0}
+#formMensagem{display:flex;gap:8px;padding:10px 18px 18px;flex:0 0 auto}
+#formMensagem input{flex:1}
+#formMensagem button{flex:0 0 auto}
+.vazioCanal{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--suave);padding:20px}
+.vazioCanal b{font-family:var(--titulo);font-size:24px;color:var(--texto)}
+.vazioCanal .linha{justify-content:center}
+.vazioCanal .linha>*{flex:0 0 auto}
+.fundoJanelinha{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px}
+.fundoJanelinha[hidden]{display:none}
+.caixaJanelinha{width:min(440px,100%);padding:22px;max-height:90vh;overflow:auto}
+.caixaJanelinha h3{margin:0 0 6px;font-family:var(--titulo);font-size:20px}
+.caixaJanelinha .botoesJ{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.caixaJanelinha .opcaoJ{display:block;width:100%;text-align:left;margin-top:8px}
+body:has(#casa.ativa) .versao-canto{display:none}
+.convite{font-family:var(--titulo);font-size:26px;letter-spacing:.18em;text-align:center;padding:12px;border:1px dashed var(--laranja);border-radius:12px;margin-top:10px;user-select:all}
 </style>
 </head>
 <body>
@@ -401,6 +470,62 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
     <div id="aviso"></div>
   </div>
 </section>
+
+<!-- ============ LOGIN (16/11: entra com o e-mail, chega um codigo) ============ -->
+<section id="login" class="tela">
+  <div class="cartao">
+    <div class="marca">
+      <svg viewBox="0 0 120 120"><use href="#emblema"/></svg>
+      <div><b>YAPSQUAD</b><small>entre com o seu e-mail</small></div>
+    </div>
+    <div id="passoEmail">
+      <button class="botaoLogin google" id="btGoogle" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Entrar com Google</button>
+      <button class="botaoLogin discord" id="btDiscord" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.4 18.4 0 0 0-5.6 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.7.1 18.2a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.9-9.8-3.6-13.8zM8 15.5c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.7 8 10.7s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Entrar com Discord</button>
+      <p class="dica" style="text-align:center">Sem senha: a gente manda um código pro seu e-mail.</p>
+      <p class="ou" hidden>ou com um código no e-mail</p>
+      <label for="loginEmail">Seu e-mail</label>
+      <input id="loginEmail" type="email" autocomplete="email" maxlength="120" placeholder="voce@gmail.com">
+      <button id="btMandarCodigo" style="width:100%;margin-top:10px">Mandar código</button>
+    </div>
+    <div id="passoCodigo" hidden>
+      <p class="dica">Mandamos um código pro <b id="emailMostrado"></b>. Se não achar, olhe no spam.</p>
+      <label for="loginCodigo">Código</label>
+      <input id="loginCodigo" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="12345678">
+      <button class="forte" id="btConferirCodigo">Entrar</button>
+      <div class="linha"><button id="btOutroEmail">Usar outro e-mail</button><button id="btReenviar">Reenviar código</button></div>
+    </div>
+    <div id="avisoLogin"></div>
+    <p style="text-align:center;margin:10px 0 0"><button class="linkSimples" id="btSalaAntiga">Entrar numa sala antiga por código</button></p>
+  </div>
+</section>
+
+<!-- ============ CASA (16/11: servidores, canais e bate-papo, igual ao Discord) ============ -->
+<section id="casa" class="tela">
+  <nav id="listaServidores" aria-label="Seus servidores">
+    <div id="iconesServidores"></div>
+    <div class="separaServ"></div>
+    <button class="bolaServ mais" id="btNovoServidor" title="Criar um servidor">+</button>
+    <button class="bolaServ mais" id="btEntrarServidor" title="Entrar num servidor com convite" style="font-size:18px">⇥</button>
+    <button class="bolaServ" id="btSalaAntiga2" title="Sala antiga por código" style="font-size:15px;color:var(--suave)">#</button>
+  </nav>
+  <aside id="colCanais">
+    <header id="topoServidor"><b id="nomeServidor">YapSquad</b><button id="btMenuServidor" title="Convite e ajustes do servidor" hidden>⚙</button></header>
+    <div id="listaCanais"></div>
+    <footer id="barraEu">
+      <div class="previa mini" id="fotoEu"></div>
+      <div class="quem"><b id="nomeEu"></b><small id="emailEu"></small></div>
+      <button id="btEditarPerfil" title="Mudar nome e foto">✎</button>
+      <button id="btSairConta" title="Sair da conta">⏻</button>
+    </footer>
+  </aside>
+  <main id="colConteudo">
+    <header id="topoCanal"></header>
+    <div id="conteudoCanal"></div>
+    <form id="formMensagem" hidden autocomplete="off"><input id="txtMensagem" maxlength="2000" placeholder="Conversar"><button class="forte" type="submit">Enviar</button></form>
+  </main>
+</section>
+
+<div id="janelinha" class="fundoJanelinha" hidden><div class="cartao caixaJanelinha" role="dialog" aria-modal="true"><h3 id="jTitulo"></h3><div id="jCorpo"></div><div class="botoesJ" id="jBotoes"></div></div></div>
 
 <!-- ============ SALA ============ -->
 <section id="sala" class="tela">
@@ -891,9 +1016,9 @@ function abrirPeer(cod, anfitriao){
   codigo = cod; souAnfitriao = anfitriao;
   peer = anfitriao ? new Peer(PREFIXO + cod, REDE) : new Peer(REDE);
   peer.on("open", () => {
-    if(anfitriao){ entrarNaSala(); sistema("Sala criada. Mande o código pros amigos."); }
+    if(anfitriao){ entrarNaSala(); sistema(servidorDaCall ? "Você abriu a call. A turma do servidor já pode entrar." : "Sala criada. Mande o código pros amigos."); }
     else {
-      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor, conta:eu.id, convite:conviteUsar}});
+      const con = peer.connect(PREFIXO + cod, {reliable:true, metadata:{nome:eu.nome, cor:eu.cor, conta:eu.id, convite:conviteUsar, uid:(servidorDaCall && sessao) ? sessao.user.id : ""}});
       let entrou = false, salaExiste = false;
       con.on("open", ()=>{ entrou = true; salaExiste = true; });
       peer.on("error", e => { if(e.type !== "peer-unavailable") salaExiste = true; });
@@ -919,7 +1044,7 @@ function abrirPeer(cod, anfitriao){
   peer.on("connection", prepararConversa);
   peer.on("call", atenderChamada);
   peer.on("error", err => {
-    if(err.type === "unavailable-id" && anfitriao){ peer.destroy(); const c = novoCodigo(); guarda.por("minhaSala", c); abrirPeer(c, true); return; }
+    if(err.type === "unavailable-id" && anfitriao){ peer.destroy(); if(servidorDaCall){ abrirPeer(cod, false); return; } const c = novoCodigo(); guarda.por("minhaSala", c); abrirPeer(c, true); return; }
     if(err.type === "peer-unavailable"){
       if(!$("sala").classList.contains("ativa")){ aviso("Não achei essa sala. Confira o código."); fecharTudo(false); }
       return;
@@ -936,9 +1061,14 @@ function abrirPeer(cod, anfitriao){
 
 function entrarNaSala(){
   aviso("");
-  guarda.por("ultimaSala", codigo);
-  $("codigo").textContent = "#SQUAD-" + codigo;
-  $("btConvidar").hidden = !souAnfitriao;
+  if(servidorDaCall){
+    $("codigo").textContent = "🔊 " + servidorDaCall.canal.nome + " · " + servidorDaCall.servidor.nome;
+    $("btConvidar").hidden = true;
+  }else{
+    guarda.por("ultimaSala", codigo);
+    $("codigo").textContent = "#SQUAD-" + codigo;
+    $("btConvidar").hidden = !souAnfitriao;
+  }
   mostrar("sala");
   desenharPessoas();
 }
@@ -1105,6 +1235,16 @@ function portaria(con, seguir){
   }
   const conta = contaDe(con), nome = nomeSeguro(con.metadata && con.metadata.nome);
   if(!conta || recusados.has(conta)) return isca(con, nome, "já estava barrado");
+  // 16/11: call de canal de voz de servidor: entra quem e membro do servidor (conferido no banco)
+  if(servidorDaCall){
+    const uid = con.metadata && typeof con.metadata.uid === "string" ? con.metadata.uid : "";
+    membroDoServidor(uid).then(ok => {
+      if(!con.open) return;
+      if(ok){ sistema(nome + " entrou."); return seguir(); }
+      sistema(nome + " não é do servidor e foi barrado."); enviar(con, {t:"recusado"}); setTimeout(()=>con.close(), 300);
+    });
+    return;
+  }
   const conv = con.metadata && typeof con.metadata.convite === "string" ? con.metadata.convite : "";
   if(conv){
     const venc = convites.get(conv); convites.delete(conv);          // uma vez so: apaga na hora
@@ -2057,6 +2197,8 @@ function fecharTudo(avisar){
   if(peer){ try{ peer.destroy(); }catch(e){} peer = null; }
   $("mensagens").innerHTML = ""; mudo = false; surdo = false;
   $("btMudo").classList.remove("ligado"); $("btMudo").innerHTML = ic("mic"); $("btSurdo").classList.remove("ligado"); $("btSurdo").innerHTML = ic("fone");
+  // 16/11: com conta, volta pros servidores; sem conta, pra tela antiga
+  if(typeof voltarDaCall === "function" && voltarDaCall(avisar)) return;
   mostrar("entrada");
   if(avisar) aviso("Você saiu da sala.");
 }
@@ -3007,5 +3149,614 @@ window.ligarFluxoNaChamada = ligarFluxoNaChamada;
 addEventListener("beforeunload", ()=>{ try{ peer && peer.destroy(); }catch(e){} });
 window.salaTeste = { gente, get peer(){return peer;}, get codigo(){return codigo;} };
 </script>
+<script>
+"use strict";
+// =====================================================================
+//  16/11: contas e servidores no Supabase (projeto yapsquad), igual ao Discord.
+//  - Login sem senha: a pessoa poe o e-mail e chega um codigo de 6 numeros.
+//  - Servidor fica guardado no banco (sempre em pe): canais de texto (bate-papo
+//    guardado) e canais de voz (a call de PC pra PC que ja existia).
+//  - A chave abaixo e a "publica" do Supabase: pode ficar no app, porque toda
+//    tabela tem tranca por linha (RLS). O banco esta em servidor/banco.sql.
+//  - O e-mail fica so no cadastro do Supabase: ninguem le o e-mail dos outros.
+// =====================================================================
+const SUPA_URL = "https://abxgrnjdfredjbpcelsz.supabase.co";
+const SUPA_CHAVE = "sb_publishable_PKdrf0PlvEPhDJUxk6X2fA_UWoUbPc2";
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+let sessao = guarda.ler("supaSessao", null);
+if(!sessao || !sessao.access_token || !sessao.user || !UUID.test(sessao.user.id)) sessao = null;
+let perfil = null, servidores = [], servidorAtual = null, canais = [], canalAtual = null;
+let perfisDoServidor = new Map();
+let servidorDaCall = null;          // {servidor, canal} quando a call aberta e de um canal de voz
+let vezServidor = 0, vezCanal = 0;  // ignora resposta atrasada de um clique antigo
+
+function avisoConta(t){ $("avisoLogin").textContent = t || ""; }
+
+// ---------- conversa com o Supabase (so fetch, sem biblioteca) ----------
+async function supa(caminho, op = {}){
+  const h = {"apikey": SUPA_CHAVE, "Content-Type": "application/json"};
+  if(op.auth !== false){ await tokenEmDia(); if(sessao) h.Authorization = "Bearer " + sessao.access_token; }
+  if(op.prefer) h.Prefer = op.prefer;
+  const r = await fetch(SUPA_URL + caminho, {method: op.metodo || "GET", headers: h,
+    body: op.corpo === undefined ? undefined : JSON.stringify(op.corpo)});
+  const txt = await r.text(); let dado = null;
+  try{ dado = txt ? JSON.parse(txt) : null; }catch(e){}
+  if(!r.ok){
+    const e = new Error((dado && (dado.msg || dado.message || dado.error_description || dado.error)) || ("erro " + r.status));
+    e.status = r.status; e.codigo = dado && (dado.error_code || dado.code); throw e;
+  }
+  return dado;
+}
+function guardarSessao(s){
+  if(s && s.access_token && s.user){
+    sessao = {access_token: s.access_token, refresh_token: s.refresh_token,
+      expires_at: s.expires_at || (Math.floor(Date.now()/1000) + (s.expires_in || 3600)),
+      user: {id: s.user.id, email: s.user.email || ""}};
+  } else sessao = null;
+  guarda.por("supaSessao", sessao);
+}
+let renovando = null;
+async function tokenEmDia(){
+  if(!sessao || sessao.expires_at - 90 > Date.now()/1000) return;
+  if(!renovando) renovando = (async () => {
+    try{
+      guardarSessao(await supa("/auth/v1/token?grant_type=refresh_token",
+        {metodo: "POST", auth: false, corpo: {refresh_token: sessao.refresh_token}}));
+    }catch(e){
+      // so desloga se o Supabase recusou; sem internet a sessao fica guardada
+      if(e.status === 400 || e.status === 401 || e.status === 403){ guardarSessao(null); mostrarLogin("Sua conta saiu. Entre de novo."); }
+    }finally{ renovando = null; }
+  })();
+  return renovando;
+}
+
+// ---------- foto quadradinha (servidor e perfil) ----------
+function fotoQuadrada(arquivo){
+  return new Promise((ok, falhou) => {
+    const img = new Image();
+    img.onload = () => {
+      const L = 128, cv = document.createElement("canvas"); cv.width = cv.height = L;
+      const g = cv.getContext("2d"), lado = Math.min(img.width, img.height);
+      g.drawImage(img, (img.width-lado)/2, (img.height-lado)/2, lado, lado, 0, 0, L, L);
+      URL.revokeObjectURL(img.src); ok(cv.toDataURL("image/jpeg", .75));
+    };
+    img.onerror = () => { URL.revokeObjectURL(img.src); falhou(new Error("imagem")); };
+    img.src = URL.createObjectURL(arquivo);
+  });
+}
+function pintarBolinha(el, quem){
+  const foto = fotoSegura(quem && quem.foto);
+  el.style.background = foto ? "url(" + foto + ") center/cover" : corSegura(quem && quem.cor);
+  el.textContent = foto ? "" : inicial(quem && quem.nome);
+}
+
+// ---------- janelinha (o Electron nao tem prompt()) ----------
+function janelinha(titulo, corpoHtml, botoes, depois){
+  if(janelinha.aberta) janelinha.aberta(null);       // so uma janelinha por vez
+  return new Promise(ok => {
+    const fundo = $("janelinha");
+    $("jTitulo").textContent = titulo; $("jCorpo").innerHTML = corpoHtml; $("jBotoes").innerHTML = "";
+    const tecla = e => {
+      if(e.key === "Escape") fechar(null);
+      if(e.key === "Enter" && e.target.tagName === "INPUT"){ const f = botoes.find(b => b.forte); if(f){ e.preventDefault(); fechar(f.v); } }
+    };
+    function fechar(v){ if(janelinha.aberta !== fechar) return; janelinha.aberta = null; fundo.hidden = true; document.removeEventListener("keydown", tecla); fundo.onclick = null; ok(v); }
+    janelinha.aberta = fechar;
+    for(const b of botoes){
+      const bt = document.createElement("button"); bt.type = "button"; bt.textContent = b.t;
+      if(b.forte) bt.className = "forte"; if(b.perigo) bt.className = "perigo";
+      bt.onclick = () => fechar(b.v); $("jBotoes").appendChild(bt);
+    }
+    $("jCorpo").querySelectorAll("[data-v]").forEach(bt => bt.onclick = () => fechar(bt.dataset.v));
+    fundo.onclick = e => { if(e.target === fundo) fechar(null); };
+    document.addEventListener("keydown", tecla);
+    fundo.hidden = false;
+    if(depois) depois($("jCorpo"));
+    const i = $("jCorpo").querySelector("input:not([type=file])"); if(i) setTimeout(() => i.focus(), 30);
+  });
+}
+// campo de foto dentro da janelinha: devolve um "pegador" com a foto escolhida
+function campoFoto(raiz, inicial_){
+  const st = {foto: inicial_ || ""};
+  const pv = raiz.querySelector(".jPrevia"), arq = raiz.querySelector(".jArq");
+  const pintar = () => { pv.style.background = st.foto ? "url(" + st.foto + ") center/cover" : "var(--painel3)"; pv.textContent = st.foto ? "" : "?"; };
+  raiz.querySelector(".jBtFoto").onclick = () => arq.click();
+  raiz.querySelector(".jBtTirar").onclick = () => { st.foto = ""; pintar(); };
+  arq.onchange = async () => { const f = arq.files[0]; arq.value = ""; if(!f) return;
+    try{ st.foto = await fotoQuadrada(f); pintar(); }catch(e){ toque("Não consegui abrir essa imagem."); } };
+  pintar(); return st;
+}
+const HTML_FOTO = '<label>Foto</label><div class="fotoLinha"><div class="previa jPrevia"></div><button type="button" class="jBtFoto">Escolher foto</button>' +
+  '<button type="button" class="jBtTirar">Tirar</button><input type="file" class="jArq" accept="image/*" style="display:none"></div>';
+
+// ---------- login ----------
+function mostrarLogin(msg){
+  tempoReal.desligar(); pararBusca();
+  $("passoEmail").hidden = false; $("passoCodigo").hidden = true;
+  avisoConta(msg || ""); mostrar("login");
+  setTimeout(() => $("loginEmail").focus(), 50);
+}
+async function mandarCodigo(){
+  const email = $("loginEmail").value.trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){ avisoConta("Escreva o e-mail certinho, tipo voce@gmail.com."); $("loginEmail").focus(); return; }
+  $("btMandarCodigo").disabled = true; $("btReenviar").disabled = true; avisoConta("Mandando o código...");
+  try{
+    await supa("/auth/v1/otp", {metodo: "POST", auth: false, corpo: {email, create_user: true}});
+    $("emailMostrado").textContent = email;
+    $("passoEmail").hidden = true; $("passoCodigo").hidden = false; avisoConta("");
+    $("loginCodigo").value = ""; $("loginCodigo").focus();
+    if(mandarCodigo.reenvio) avisoConta("Pronto! Mandamos um código novo.");
+    esperarReenvio(60);
+  }catch(e){
+    avisoConta(e.status === 429 ? "Muitos pedidos de código. Espere 1 minuto e tente de novo."
+      : "Não deu pra mandar o código. Confira a internet e tente de novo.");
+    console.warn("otp", e);
+    if(!mandarCodigo.relogio) $("btReenviar").disabled = false;
+  }finally{ $("btMandarCodigo").disabled = false; mandarCodigo.reenvio = false; }
+}
+// 16/11: o "Reenviar código" fica esperando 60 s com a contagem, igual nos outros apps
+function esperarReenvio(seg){
+  clearInterval(mandarCodigo.relogio);
+  const bt = $("btReenviar"); bt.disabled = true;
+  const pinta = () => { bt.textContent = seg > 0 ? "Reenviar código (" + seg + ")" : "Reenviar código"; };
+  pinta();
+  mandarCodigo.relogio = setInterval(() => {
+    seg--; pinta();
+    if(seg <= 0){ clearInterval(mandarCodigo.relogio); mandarCodigo.relogio = 0; bt.disabled = false; }
+  }, 1000);
+}
+$("btMandarCodigo").onclick = mandarCodigo;
+$("loginEmail").addEventListener("keydown", e => { if(e.key === "Enter") mandarCodigo(); });
+$("btReenviar").onclick = () => { $("loginEmail").value = $("emailMostrado").textContent; mandarCodigo.reenvio = true; mandarCodigo(); };
+$("btOutroEmail").onclick = () => { $("passoCodigo").hidden = true; $("passoEmail").hidden = false; avisoConta(""); $("loginEmail").focus(); };
+async function conferirCodigo(){
+  const token = $("loginCodigo").value.replace(/\D/g, "");
+  if(token.length < 6){ avisoConta("Digite os números do código que chegou no e-mail."); return; }
+  $("btConferirCodigo").disabled = true; avisoConta("Conferindo...");
+  try{
+    guardarSessao(await supa("/auth/v1/verify", {metodo: "POST", auth: false,
+      corpo: {type: "email", email: $("emailMostrado").textContent, token}}));
+    avisoConta(""); $("loginCodigo").value = "";
+    await abrirCasa();
+  }catch(e){
+    avisoConta(e.status === 429 ? "Muitas tentativas. Espere 1 minuto." : "Código errado ou vencido. Confira, ou clique em \"Mandar de novo\".");
+  }finally{ $("btConferirCodigo").disabled = false; }
+}
+$("btConferirCodigo").onclick = conferirCodigo;
+$("loginCodigo").addEventListener("keydown", e => { if(e.key === "Enter") conferirCodigo(); });
+// ---------- entrar com Google / Discord ----------
+// O botao abre o navegador da pessoa (o que ela ja usa, ja logado). Ela escolhe a conta,
+// o Supabase devolve um codigo pro programa (http://127.0.0.1:<porta>/entrou) e o programa
+// troca o codigo pela sessao. PKCE: o codigo so vale junto com o segredo que ficou neste PC.
+let metaLogin = null;   // nome e foto que vieram do Google/Discord (so na primeira vez)
+function b64url(bytes){ let t = ""; for(const b of new Uint8Array(bytes)) t += String.fromCharCode(b); return btoa(t).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+async function entrarCom(provedor){
+  const verificador = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const desafio = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verificador)));
+  guarda.por("pkce", {v: verificador, t: Date.now()});
+  const volta = location.origin + (window.squad ? "/entrou" : location.pathname);
+  const url = SUPA_URL + "/auth/v1/authorize?provider=" + provedor + "&redirect_to=" + encodeURIComponent(volta) +
+    "&code_challenge=" + desafio + "&code_challenge_method=s256";
+  if(window.squad){ window.open(url, "_blank"); avisoConta("Abrimos o seu navegador. Escolha a conta lá e volte pra cá."); }
+  else location.href = url;
+}
+async function trocarCodigo(codigo, erro){
+  if(erro || !codigo){ mostrar("login"); avisoConta("Não deu pra entrar" + (erro ? ": " + String(erro).slice(0, 120) : ".") + " Tente de novo."); return; }
+  const pk = guarda.ler("pkce", null);
+  if(!pk || !pk.v || Date.now() - pk.t > 15 * 60000){ avisoConta("O login demorou demais. Clique no botão de novo."); return; }
+  avisoConta("Entrando...");
+  try{
+    const s = await supa("/auth/v1/token?grant_type=pkce", {metodo: "POST", auth: false, corpo: {auth_code: codigo, code_verifier: pk.v}});
+    guarda.por("pkce", null);
+    metaLogin = (s.user && s.user.user_metadata) || null;
+    guardarSessao(s); avisoConta(""); await abrirCasa();
+  }catch(e){ avisoConta("Não deu pra entrar. Clique no botão de novo."); console.warn("pkce", e); }
+}
+$("btGoogle").onclick = () => entrarCom("google");
+$("btDiscord").onclick = () => entrarCom("discord");
+if(window.squad && window.squad.onEntrou) window.squad.onEntrou((codigo, erro) => trocarCodigo(codigo, erro));
+(function(){   // no navegador comum, o login volta pra esta mesma pagina com ?code=
+  const q = new URLSearchParams(location.search), c = q.get("code"), e = q.get("error_description") || q.get("error");
+  if(c || e){ history.replaceState(null, "", location.pathname); trocarCodigo(c, e); }
+})();
+
+$("btSalaAntiga").onclick = $("btSalaAntiga2").onclick = () => { aviso(""); mostrar("entrada"); };
+// na tela antiga, um caminho de volta pros servidores
+(function(){
+  const b = document.createElement("button"); b.className = "linkSimples"; b.id = "btVoltarCasa";
+  b.textContent = "← Voltar pros servidores"; b.style.cssText = "display:block;margin:12px auto 0";
+  b.onclick = () => sessao ? abrirCasa() : mostrarLogin();
+  $("aviso").after(b);
+})();
+
+$("btSairConta").onclick = async () => {
+  const r = await janelinha("Sair da conta?", '<p class="dica">Pra voltar, é só entrar de novo com o e-mail.</p>',
+    [{t: "Cancelar", v: null}, {t: "Sair", v: "s", perigo: true}]);
+  if(!r) return;
+  if(peer) fecharTudo(false);
+  try{ await supa("/auth/v1/logout", {metodo: "POST"}); }catch(e){}
+  guardarSessao(null); perfil = null; servidores = []; servidorAtual = null;
+  mostrarLogin("Você saiu da conta.");
+};
+
+// ---------- perfil ----------
+async function carregarPerfil(){
+  const r = await supa("/rest/v1/perfis?id=eq." + sessao.user.id + "&select=id,nome,cor,foto");
+  if(r && r[0]){ perfil = r[0]; return; }
+  // primeira vez: usa o nome e a foto do Google/Discord; senao, o que ja estava neste PC
+  const meta = metaLogin || {};
+  const nomeConta = (meta.custom_claims && meta.custom_claims.global_name) || meta.full_name || meta.name || meta.user_name || "";
+  const nome = nomeSeguro(nomeConta || eu.nome || sessao.user.email.split("@")[0]).slice(0, 24);
+  let foto = /^data:image\/(png|jpeg|webp|gif);base64,/.test(eu.foto || "") && eu.foto.length < 120000 ? eu.foto : "";
+  const urlFoto = String(meta.avatar_url || meta.picture || "");
+  if(/^https:\/\/(cdn\.discordapp\.com|lh3\.googleusercontent\.com)\//.test(urlFoto)){
+    try{ const r2 = await fetch(urlFoto); if(r2.ok) foto = await fotoQuadrada(await r2.blob()); }catch(e){}
+  }
+  const novo = await supa("/rest/v1/perfis", {metodo: "POST", prefer: "return=representation",
+    corpo: {id: sessao.user.id, nome, cor: corSegura(eu.cor), foto}});
+  perfil = novo[0];
+}
+function pintarEu(){
+  if(!perfil) return;
+  pintarBolinha($("fotoEu"), perfil);
+  $("nomeEu").textContent = perfil.nome; $("emailEu").textContent = sessao ? sessao.user.email : "";
+  // a call usa o mesmo nome, cor e foto da conta
+  eu.nome = perfil.nome; eu.cor = perfil.cor; if(perfil.foto) eu.foto = perfil.foto;
+  if(!eu.id) eu.id = "c" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+  destravado = true; guardarConta();
+}
+$("btEditarPerfil").onclick = async () => {
+  if(!perfil) return;
+  let st;
+  const r = await janelinha("Seu perfil",
+    '<label for="jNome">Seu nome</label><input id="jNome" maxlength="24">' + HTML_FOTO,
+    [{t: "Cancelar", v: null}, {t: "Salvar", v: "s", forte: true}],
+    raiz => { raiz.querySelector("#jNome").value = perfil.nome; st = campoFoto(raiz, perfil.foto); });
+  if(!r) return;
+  const nome = $("jNome").value.trim().slice(0, 24);
+  if(!nome){ toque("O nome não pode ficar vazio."); return; }
+  try{
+    const p = await supa("/rest/v1/perfis?id=eq." + sessao.user.id, {metodo: "PATCH", prefer: "return=representation", corpo: {nome, foto: st.foto}});
+    perfil = p[0]; if(!perfil.foto) eu.foto = ""; pintarEu(); perfisDoServidor.set(perfil.id, perfil);
+    if(canalAtual && canalAtual.tipo === "texto") abrirCanal(canalAtual);
+    toque("Perfil salvo.");
+  }catch(e){ toque("Não consegui salvar o perfil."); }
+};
+
+// ---------- casa ----------
+async function abrirCasa(){
+  if(!sessao) return mostrarLogin();
+  mostrar("casa");
+  try{ await carregarPerfil(); }
+  catch(e){
+    if(e.status === 401 || e.status === 403){ guardarSessao(null); return mostrarLogin("Sua conta saiu. Entre de novo."); }
+    $("conteudoCanal").innerHTML = '<div class="vazioCanal"><b>Sem conexão</b><p>Não consegui falar com o servidor. Confira a internet.</p><button class="forte" id="btTentarDeNovo">Tentar de novo</button></div>';
+    $("btTentarDeNovo").onclick = abrirCasa; return;
+  }
+  pintarEu();
+  await carregarServidores();
+}
+async function carregarServidores(abrirId){
+  try{ servidores = await supa("/rest/v1/servidores?select=id,nome,foto,dono,convite&order=criado_em") || []; }
+  catch(e){ toque("Não consegui carregar os servidores."); servidores = []; }
+  desenharServidores();
+  const alvo = servidores.find(s => s.id === (abrirId || guarda.ler("ultimoServidor", ""))) || servidores[0];
+  if(alvo) abrirServidor(alvo); else boasVindas();
+}
+function desenharServidores(){
+  const caixa = $("iconesServidores"); caixa.innerHTML = "";
+  for(const s of servidores){
+    const b = document.createElement("button"); b.className = "bolaServ" + (servidorAtual && servidorAtual.id === s.id ? " sel" : "");
+    b.title = s.nome;
+    const foto = fotoSegura(s.foto);
+    if(foto) b.style.backgroundImage = "url(" + foto + ")";
+    else b.textContent = s.nome.trim().split(/\s+/).slice(0, 2).map(p => p.charAt(0).toUpperCase()).join("");
+    b.onclick = () => abrirServidor(s);
+    caixa.appendChild(b);
+  }
+}
+function boasVindas(){
+  servidorAtual = null; canais = []; canalAtual = null; tempoReal.desligar(); pararBusca();
+  desenharServidores();
+  $("nomeServidor").textContent = "YapSquad"; $("btMenuServidor").hidden = true; $("listaCanais").innerHTML = "";
+  $("topoCanal").textContent = ""; $("formMensagem").hidden = true;
+  $("conteudoCanal").innerHTML = '<div class="vazioCanal"><b>Bem-vindo ao YapSquad!</b>' +
+    '<p>Crie o servidor da sua turma, ou entre no de um amigo com o convite.</p>' +
+    '<div class="linha"><button class="forte" id="btBvCriar">Criar meu servidor</button><button id="btBvEntrar">Tenho um convite</button></div></div>';
+  $("btBvCriar").onclick = criarServidor; $("btBvEntrar").onclick = entrarComConvite;
+}
+async function abrirServidor(s){
+  const vez = ++vezServidor;
+  servidorAtual = s; guarda.por("ultimoServidor", s.id); desenharServidores();
+  $("nomeServidor").textContent = s.nome; $("btMenuServidor").hidden = false;
+  $("listaCanais").innerHTML = ""; $("conteudoCanal").innerHTML = ""; $("topoCanal").textContent = "";
+  try{
+    const lista = await supa("/rest/v1/canais?servidor=eq." + s.id + "&select=id,nome,tipo,posicao,sala&order=posicao,criado_em") || [];
+    const ms = await supa("/rest/v1/membros?servidor=eq." + s.id + "&select=usuario") || [];
+    const ids = ms.map(m => m.usuario).filter(i => UUID.test(i));
+    const ps = ids.length ? await supa("/rest/v1/perfis?id=in.(" + ids.join(",") + ")&select=id,nome,cor,foto") : [];
+    if(vez !== vezServidor) return;
+    canais = lista; perfisDoServidor = new Map((ps || []).map(p => [p.id, p]));
+  }catch(e){ if(vez !== vezServidor) return; toque("Não consegui abrir o servidor."); canais = []; }
+  desenharCanais();
+  const ult = guarda.ler("ultimoCanal." + s.id, "");
+  const c = canais.find(x => x.id === ult) || canais.find(x => x.tipo === "texto") || canais[0];
+  if(c) abrirCanal(c);
+}
+function souDono(){ return !!(servidorAtual && sessao && servidorAtual.dono === sessao.user.id); }
+function desenharCanais(){
+  const caixa = $("listaCanais"); caixa.innerHTML = "";
+  for(const [tipo, rotulo] of [["texto", "CANAIS DE TEXTO"], ["voz", "CANAIS DE VOZ"]]){
+    const g = document.createElement("div"); g.className = "grupoCanais";
+    g.innerHTML = "<span>" + rotulo + "</span>";
+    if(souDono()){ const mais = document.createElement("button"); mais.title = "Criar canal"; mais.textContent = "+"; mais.onclick = () => criarCanal(tipo); g.appendChild(mais); }
+    caixa.appendChild(g);
+    for(const c of canais.filter(x => x.tipo === tipo)){
+      const b = document.createElement("button"); b.className = "canalS" + (canalAtual && canalAtual.id === c.id ? " sel" : "");
+      b.innerHTML = '<span class="simb">' + (tipo === "texto" ? "#" : "🔊") + '</span><span class="nm"></span>' +
+        (servidorDaCall && servidorDaCall.canal.id === c.id ? "<small>VOCÊ ESTÁ AQUI</small>" : "");
+      b.querySelector(".nm").textContent = c.nome;
+      b.onclick = () => abrirCanal(c);
+      caixa.appendChild(b);
+    }
+  }
+}
+
+// ---------- canal ----------
+let ultimaMsg = 0, autorAnterior = "", horaAnterior = 0;
+function abrirCanal(c){
+  const vez = ++vezCanal;
+  canalAtual = c; if(servidorAtual) guarda.por("ultimoCanal." + servidorAtual.id, c.id);
+  desenharCanais(); tempoReal.desligar(); pararBusca();
+  const topo = $("topoCanal"); topo.innerHTML = '<span class="simb">' + (c.tipo === "texto" ? "#" : "🔊") + '</span><span></span>';
+  topo.lastChild.textContent = c.nome;
+  if(c.tipo === "voz"){
+    $("formMensagem").hidden = true;
+    const nesta = servidorDaCall && servidorDaCall.canal.id === c.id;
+    $("conteudoCanal").innerHTML = '<div class="vazioCanal"><div style="font-size:54px">🔊</div><b></b>' +
+      '<p>Call com voz, tela e filme, direto de PC pra PC.</p><button class="forte" id="btEntrarVoz"></button></div>';
+    $("conteudoCanal").querySelector("b").textContent = c.nome;
+    $("btEntrarVoz").textContent = nesta ? "Voltar pra call" : "Entrar na call";
+    $("btEntrarVoz").onclick = () => nesta ? mostrar("sala") : entrarNoCanalDeVoz(c);
+    return;
+  }
+  $("formMensagem").hidden = false; $("txtMensagem").placeholder = "Conversar em #" + c.nome;
+  $("conteudoCanal").innerHTML = ""; ultimaMsg = 0; autorAnterior = ""; horaAnterior = 0;
+  supa("/rest/v1/mensagens?canal=eq." + c.id + "&select=id,canal,autor,texto,criado_em&order=id.desc&limit=60")
+    .then(lista => {
+      if(vez !== vezCanal) return;
+      const msgs = (lista || []).reverse();
+      if(!msgs.length) $("conteudoCanal").innerHTML = '<div class="vazioCanal" id="canalVazio"><b>#' + escapar(c.nome) + '</b><p>Esse é o começo do canal. Mande um oi!</p></div>';
+      msgs.forEach(mostrarMensagem);
+      tempoReal.ligar(c.id); comecarBusca(c.id);
+      $("txtMensagem").focus();
+    })
+    .catch(() => { if(vez === vezCanal) $("conteudoCanal").innerHTML = '<div class="vazioCanal"><p>Não consegui carregar as mensagens.</p></div>'; });
+}
+function mostrarMensagem(m){
+  if(!m || !canalAtual || m.canal !== canalAtual.id || m.id <= ultimaMsg) return;
+  const vazio = $("canalVazio"); if(vazio) vazio.remove();
+  ultimaMsg = m.id;
+  const quem = perfisDoServidor.get(m.autor) || {nome: "alguém", cor: "#6f6a63"};
+  const hora = new Date(m.criado_em);
+  const seguida = m.autor === autorAnterior && hora - horaAnterior < 5 * 60000;
+  autorAnterior = m.autor; horaAnterior = hora;
+  const d = document.createElement("div"); d.className = "msgS" + (seguida ? " seguida" : "");
+  d.innerHTML = '<div class="previa mini"></div><div class="corpoMsg">' + (seguida ? "" : '<div class="cab"><b></b><small></small></div>') + '<div class="txt"></div></div>';
+  pintarBolinha(d.querySelector(".previa"), quem);
+  if(!seguida){
+    d.querySelector(".cab b").textContent = nomeSeguro(quem.nome); d.querySelector(".cab b").style.color = corSegura(quem.cor);
+    d.querySelector(".cab small").textContent = hora.toLocaleDateString("pt-BR") === new Date().toLocaleDateString("pt-BR")
+      ? "hoje às " + hora.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"})
+      : hora.toLocaleString("pt-BR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"});
+  }
+  d.querySelector(".txt").textContent = m.texto;
+  const caixa = $("conteudoCanal"), noFim = caixa.scrollHeight - caixa.scrollTop - caixa.clientHeight < 120;
+  caixa.appendChild(d);
+  if(noFim || m.autor === (sessao && sessao.user.id)) caixa.scrollTop = 1e9;
+  // gente nova no servidor: busca o perfil dela
+  if(!perfisDoServidor.has(m.autor) && UUID.test(m.autor)){
+    perfisDoServidor.set(m.autor, quem);
+    supa("/rest/v1/perfis?id=eq." + m.autor + "&select=id,nome,cor,foto").then(r => { if(r && r[0]) perfisDoServidor.set(m.autor, r[0]); }).catch(() => {});
+  }
+}
+$("formMensagem").onsubmit = async e => {
+  e.preventDefault();
+  const txt = $("txtMensagem").value.trim(); if(!txt || !canalAtual || canalAtual.tipo !== "texto") return;
+  $("txtMensagem").value = "";
+  try{
+    const r = await supa("/rest/v1/mensagens", {metodo: "POST", prefer: "return=representation", corpo: {canal: canalAtual.id, texto: txt.slice(0, 2000)}});
+    if(r && r[0]) mostrarMensagem(r[0]);
+  }catch(err){
+    $("txtMensagem").value = txt;
+    toque(/Calma/.test(err.message) ? "Calma: muitas mensagens seguidas." : "Não consegui mandar. Tente de novo.");
+  }
+};
+
+// mensagens novas chegam na hora pelo Realtime do Supabase (WebSocket);
+// e, por garantia, uma olhada a cada 10 s
+const tempoReal = {ws: null, ref: 0, canal: null, hb: null, timer: null, token: "",
+  ligar(canalId){
+    this.desligar(); if(!sessao) return;
+    this.canal = canalId;
+    const ws = new WebSocket(SUPA_URL.replace(/^http/, "ws") + "/realtime/v1/websocket?apikey=" + SUPA_CHAVE + "&vsn=1.0.0");
+    this.ws = ws;
+    const mandar = m => { try{ ws.send(JSON.stringify(m)); }catch(e){} };
+    ws.onopen = async () => {
+      await tokenEmDia(); if(!sessao || this.ws !== ws) return;
+      this.token = sessao.access_token;
+      const r = String(++this.ref);
+      mandar({topic: "realtime:canal-" + canalId, event: "phx_join", ref: r, join_ref: r, payload: {
+        config: {broadcast: {self: false}, presence: {key: ""}, private: false,
+          postgres_changes: [{event: "INSERT", schema: "public", table: "mensagens", filter: "canal=eq." + canalId}]},
+        access_token: this.token}});
+      this.hb = setInterval(async () => {
+        mandar({topic: "phoenix", event: "heartbeat", payload: {}, ref: String(++this.ref)});
+        await tokenEmDia();
+        if(sessao && sessao.access_token !== this.token){ this.token = sessao.access_token;
+          mandar({topic: "realtime:canal-" + canalId, event: "access_token", payload: {access_token: this.token}, ref: String(++this.ref)}); }
+      }, 25000);
+    };
+    ws.onmessage = ev => {
+      let m; try{ m = JSON.parse(ev.data); }catch(e){ return; }
+      if(m.event === "postgres_changes" && m.payload && m.payload.data && m.payload.data.record) mostrarMensagem(m.payload.data.record);
+    };
+    ws.onclose = () => { clearInterval(this.hb); if(this.ws === ws) this.timer = setTimeout(() => { if(this.ws === ws) this.ligar(canalId); }, 5000); };
+  },
+  desligar(){ clearTimeout(this.timer); clearInterval(this.hb); const w = this.ws; this.ws = null; this.canal = null; if(w){ try{ w.close(); }catch(e){} } }
+};
+let busca = null;
+function comecarBusca(canalId){
+  pararBusca();
+  busca = setInterval(() => {
+    if(!canalAtual || canalAtual.id !== canalId || document.hidden) return;
+    supa("/rest/v1/mensagens?canal=eq." + canalId + "&id=gt." + ultimaMsg + "&select=id,canal,autor,texto,criado_em&order=id&limit=50")
+      .then(l => (l || []).forEach(mostrarMensagem)).catch(() => {});
+  }, 10000);
+}
+function pararBusca(){ clearInterval(busca); busca = null; }
+
+// ---------- criar e entrar em servidor ----------
+async function criarServidor(){
+  let st;
+  const r = await janelinha("Criar servidor",
+    '<p class="dica">O servidor fica guardado: você e a turma voltam nele sempre que abrirem o YapSquad.</p>' +
+    '<label for="jNome">Nome do servidor</label><input id="jNome" maxlength="40">' + HTML_FOTO,
+    [{t: "Cancelar", v: null}, {t: "Criar", v: "s", forte: true}],
+    raiz => { raiz.querySelector("#jNome").value = "Servidor do " + (perfil ? perfil.nome : "Rafa"); st = campoFoto(raiz, ""); });
+  if(!r) return;
+  const nome = $("jNome").value.trim().slice(0, 40);
+  if(!nome){ toque("Dê um nome pro servidor."); return; }
+  try{
+    const s = await supa("/rest/v1/servidores", {metodo: "POST", prefer: "return=representation", corpo: {nome, foto: st.foto}});
+    toque("Servidor criado!");
+    await carregarServidores(s[0].id);
+  }catch(e){ toque(/Limite/.test(e.message) ? e.message : "Não consegui criar o servidor."); }
+}
+async function entrarComConvite(){
+  const r = await janelinha("Entrar num servidor",
+    '<label for="jConvite">Convite que o amigo mandou</label><input id="jConvite" maxlength="60" placeholder="Ex.: 7F3A9C21">',
+    [{t: "Cancelar", v: null}, {t: "Entrar", v: "s", forte: true}]);
+  if(!r) return;
+  const cod = ($("jConvite").value.toUpperCase().match(/[0-9A-F]{8}(?![0-9A-F])/g) || []).pop();
+  if(!cod){ toque("Esse convite não parece certo. São 8 letras e números."); return; }
+  try{
+    const id = await supa("/rest/v1/rpc/entrar_no_servidor", {metodo: "POST", corpo: {codigo: cod}});
+    if(!id){ toque("Não achei servidor com esse convite."); return; }
+    toque("Você entrou no servidor!");
+    await carregarServidores(id);
+  }catch(e){ toque("Não consegui entrar. Tente de novo."); }
+}
+$("btNovoServidor").onclick = criarServidor;
+$("btEntrarServidor").onclick = entrarComConvite;
+
+async function criarCanal(tipo){
+  if(!souDono()) return;
+  const r = await janelinha(tipo === "texto" ? "Novo canal de texto" : "Novo canal de voz",
+    '<label for="jNome">Nome do canal</label><input id="jNome" maxlength="32">',
+    [{t: "Cancelar", v: null}, {t: "Criar", v: "s", forte: true}],
+    raiz => { raiz.querySelector("#jNome").value = tipo === "texto" ? "bate-papo" : "Filme"; });
+  if(!r) return;
+  let nome = $("jNome").value.trim().slice(0, 32);
+  if(tipo === "texto") nome = nome.toLowerCase().replace(/\s+/g, "-");
+  if(!nome) return;
+  try{
+    const c = await supa("/rest/v1/canais", {metodo: "POST", prefer: "return=representation",
+      corpo: {servidor: servidorAtual.id, nome, tipo, posicao: canais.length}});
+    canais.push(c[0]); abrirCanal(c[0]);
+  }catch(e){ toque(/Limite/.test(e.message) ? e.message : "Não consegui criar o canal."); }
+}
+
+$("btMenuServidor").onclick = async () => {
+  const s = servidorAtual; if(!s) return;
+  const dono = souDono();
+  const r = await janelinha(s.nome,
+    '<p class="dica">Convite do servidor (mande pros amigos):</p><div class="convite"></div>' +
+    '<button class="opcaoJ" data-v="copiar">📋 Copiar convite</button>' +
+    (dono ? '<button class="opcaoJ" data-v="editar">✎ Mudar nome e foto</button>' +
+            '<button class="opcaoJ" data-v="canalTexto"># Criar canal de texto</button>' +
+            '<button class="opcaoJ" data-v="canalVoz">🔊 Criar canal de voz</button>' +
+            (canalAtual ? '<button class="opcaoJ" data-v="apagarCanal">🗑 Apagar o canal aberto</button>' : '') +
+            '<button class="opcaoJ perigo" data-v="apagar">Apagar o servidor</button>'
+          : '<button class="opcaoJ perigo" data-v="sair">Sair do servidor</button>'),
+    [{t: "Fechar", v: null}],
+    raiz => { raiz.querySelector(".convite").textContent = s.convite; });
+  if(r === "copiar"){
+    try{ await navigator.clipboard.writeText("Entra no meu servidor do YapSquad! Convite: " + s.convite); toque("Convite copiado."); }
+    catch(e){ toque("Convite: " + s.convite); }
+  }
+  if(r === "canalTexto") criarCanal("texto");
+  if(r === "canalVoz") criarCanal("voz");
+  if(r === "editar"){
+    let st;
+    const ok = await janelinha("Mudar servidor", '<label for="jNome">Nome do servidor</label><input id="jNome" maxlength="40">' + HTML_FOTO,
+      [{t: "Cancelar", v: null}, {t: "Salvar", v: "s", forte: true}],
+      raiz => { raiz.querySelector("#jNome").value = s.nome; st = campoFoto(raiz, s.foto); });
+    if(!ok) return;
+    const nome = $("jNome").value.trim().slice(0, 40); if(!nome) return;
+    try{ await supa("/rest/v1/servidores?id=eq." + s.id, {metodo: "PATCH", corpo: {nome, foto: st.foto}}); await carregarServidores(s.id); toque("Servidor salvo."); }
+    catch(e){ toque("Não consegui salvar."); }
+  }
+  if(r === "apagarCanal" && canalAtual){
+    const c = canalAtual;
+    const ok = await janelinha("Apagar o canal " + c.nome + "?", '<p class="dica">As mensagens dele somem junto. Não dá pra desfazer.</p>',
+      [{t: "Cancelar", v: null}, {t: "Apagar", v: "s", perigo: true}]);
+    if(!ok) return;
+    try{ await supa("/rest/v1/canais?id=eq." + c.id, {metodo: "DELETE"}); await abrirServidor(s); toque("Canal apagado."); }
+    catch(e){ toque("Não consegui apagar o canal."); }
+  }
+  if(r === "apagar"){
+    const ok = await janelinha("Apagar " + s.nome + "?", '<p class="dica">O servidor, os canais e todas as mensagens somem pra todo mundo. Não dá pra desfazer.</p>',
+      [{t: "Cancelar", v: null}, {t: "Apagar pra sempre", v: "s", perigo: true}]);
+    if(!ok) return;
+    try{ await supa("/rest/v1/servidores?id=eq." + s.id, {metodo: "DELETE"}); guarda.por("ultimoServidor", ""); await carregarServidores(); toque("Servidor apagado."); }
+    catch(e){ toque("Não consegui apagar."); }
+  }
+  if(r === "sair"){
+    const ok = await janelinha("Sair de " + s.nome + "?", '<p class="dica">Pra voltar, precisa do convite de novo.</p>',
+      [{t: "Cancelar", v: null}, {t: "Sair", v: "s", perigo: true}]);
+    if(!ok) return;
+    try{ await supa("/rest/v1/membros?servidor=eq." + s.id + "&usuario=eq." + sessao.user.id, {metodo: "DELETE"}); guarda.por("ultimoServidor", ""); await carregarServidores(); }
+    catch(e){ toque("Não consegui sair."); }
+  }
+};
+
+// ---------- canal de voz: usa a call de PC pra PC que ja existe ----------
+// Quem entra primeiro abre a sala com o codigo do canal; quem chega depois entra nela.
+// O dono da vez so aceita quem e membro do servidor (confere no banco).
+async function entrarNoCanalDeVoz(c){
+  if(peer){
+    if(servidorDaCall && servidorDaCall.canal.id === c.id){ mostrar("sala"); return; }
+    const r = await janelinha("Trocar de call?", '<p class="dica">Você já está numa call. Sair dela e entrar em ' + escapar(c.nome) + '?</p>',
+      [{t: "Cancelar", v: null}, {t: "Trocar", v: "s", forte: true}]);
+    if(!r) return;
+    fecharTudo(false);
+  }
+  if(!/^[0-9A-F]{6,12}$/.test(c.sala || "")){ toque("Esse canal está com defeito."); return; }
+  pintarEu();
+  servidorDaCall = {servidor: servidorAtual, canal: c};
+  conviteUsar = "";
+  toque("Entrando em " + c.nome + "...");
+  await ligarMicrofone();
+  abrirPeer(c.sala, true);
+}
+async function membroDoServidor(uid){
+  if(!servidorDaCall || !UUID.test(uid || "")) return false;
+  try{
+    const r = await supa("/rest/v1/membros?servidor=eq." + servidorDaCall.servidor.id + "&usuario=eq." + uid + "&select=usuario");
+    return !!(r && r.length);
+  }catch(e){ return false; }
+}
+function voltarDaCall(avisar){
+  servidorDaCall = null;
+  const motivo = $("aviso").textContent; if(motivo && sessao && !avisar){ toque(motivo); aviso(""); }
+  if(sessao){ mostrar("casa"); if(canalAtual) abrirCanal(canalAtual); else desenharCanais(); if(avisar) toque("Você saiu da call."); return true; }
+  return false;
+}
+
+// ---------- comeco ----------
+if(sessao) abrirCasa(); else mostrarLogin();
+</script>
+
 </body>
 </html>
