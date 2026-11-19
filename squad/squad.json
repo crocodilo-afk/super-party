@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.17.6",
+    "versao":  "2026.11.19.1",
     "electron":  "45.1.0",
-    "notas":  "#tag de cada um e lista de membros no servidor.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.17.6.zip",
-    "nucleo_sha256":  "e6785524565ae0b27f82484a3db40ea7c74c765a661fe18d7002fc75c3be14a9",
+    "notas":  "Login fica salvo, Convidar dentro da call, chamar amigo por Nome#1234, voz que gasta menos internet e YapBot na call.",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.19.1.zip",
+    "nucleo_sha256":  "ca73b6b0a38fde6e792084197ec9299281aafef4773afa7157971effb7792182",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",

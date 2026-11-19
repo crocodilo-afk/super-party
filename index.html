@@ -109,6 +109,8 @@ label{display:block;margin:14px 0 6px;font-weight:700;color:#e9e3da}
 .pessoa:hover{background:var(--painel3)}
 .bolha{width:36px;height:36px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;color:#120800;box-shadow:0 0 0 2px var(--painel);transition:box-shadow .12s}
 .pessoa.falando .bolha{box-shadow:0 0 0 2px var(--painel),0 0 0 4px var(--verde)}
+.botCall .nome small{display:block;font-weight:500;font-size:11px;color:var(--suave);overflow:hidden;text-overflow:ellipsis}
+.botCall .tagBot{font-size:10px;background:var(--laranja);color:#120800;padding:1px 5px;border-radius:4px;margin-left:6px;font-weight:800;vertical-align:1px}
 .pessoa .nome{flex:1;min-width:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .icones{display:flex;gap:4px;align-items:center;font-size:13px}
 .aovivo{display:inline-flex;align-items:center;gap:4px;background:var(--vermelho);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;letter-spacing:.06em}
@@ -643,8 +645,10 @@ body:has(#casa.ativa) .versao-canto{display:none}
     <label><input type="checkbox" id="chkGanho">Volume automático do microfone</label>
     <label for="selQualiVoz">Qualidade da voz que sai de você</label>
     <select id="selQualiVoz">
+      <option value="24">24 kbps — mínima (internet fraca)</option>
+      <option value="32">32 kbps — econômica, recomendado (calado não gasta nada)</option>
       <option value="64">64 kbps — igual ao Discord comum</option>
-      <option value="128">128 kbps — recomendado</option>
+      <option value="128">128 kbps — alta</option>
       <option value="256">256 kbps — estúdio</option>
       <option value="384">384 kbps — igual ao servidor turbinado do Discord</option>
     </select>
@@ -864,7 +868,7 @@ const cfg = {
   banda: guarda.ler("banda","0"),
   volMusica: guarda.ler("volMusica",60),
   // Squad (13/11): qualidade do som e tratamento da voz, tudo ajustavel no Mixer
-  qualiVoz: guarda.ler("qualiVoz","128"), qualiTela: guarda.ler("qualiTela","510"),
+  qualiVoz: guarda.ler("qualiVoz2","32"), qualiTela: guarda.ler("qualiTela","510"),
   fluidez: guarda.ler("fluidez","nitidez"), codec: guarda.ler("codec","auto"),
   fxHpf: guarda.ler("fxHpf",80), fxGrave: guarda.ler("fxGrave",0), fxMedio: guarda.ler("fxMedio",0), fxAgudo: guarda.ler("fxAgudo",0),
   fxLimiar: guarda.ler("fxLimiar",-28), fxRazao: guarda.ler("fxRazao",4), fxGanho: guarda.ler("fxGanho",3),
@@ -1065,7 +1069,7 @@ function entrarNaSala(){
   aviso("");
   if(servidorDaCall){
     $("codigo").textContent = "🔊 " + servidorDaCall.canal.nome + " · " + servidorDaCall.servidor.nome;
-    $("btConvidar").hidden = true;
+    $("btConvidar").hidden = !servidorDaCall.servidor.convite;
   }else{
     guarda.por("ultimaSala", codigo);
     $("codigo").textContent = "#SQUAD-" + codigo;
@@ -1171,6 +1175,7 @@ function novoConvite(){
   return t;
 }
 $("btConvidar").onclick = () => {
+  if(servidorDaCall){ convidarProServidor(servidorDaCall.servidor); return; }
   const t = "#SQUAD-" + codigo + "-" + novoConvite();
   // so o codigo, nada mais: o amigo cola direto no campo de entrar (pedido dele em 30/09)
   (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject())
@@ -1440,11 +1445,11 @@ function avisarEstado(){ paraTodos({t:"estado", mudo, surdo, tela:!!telaMinha, e
 // Qualidade (30/09, "a voz esta muito ruim"): o navegador manda Opus a ~32 kbps. O Discord usa 64
 // e sala turbinada ate 384. Pedimos 128 kbps pra voz e 256 kbps ESTEREO pra transmissao (filme e
 // jogo com som cheio), com correcao de perda (FEC) ligada. O pedido vai no SDP dos dois lados.
-function sdpOpus(kbps, estereo){
+function sdpOpus(kbps, estereo, dtx){
   return sdp => {
     const m = sdp.match(/a=rtpmap:(\d+) opus\/48000/i); if(!m) return sdp;
     const pt = m[1];
-    const extra = "maxaveragebitrate=" + (kbps*1000) + ";maxplaybackrate=48000;sprop-maxcapturerate=48000;useinbandfec=1;usedtx=0" +
+    const extra = "maxaveragebitrate=" + (kbps*1000) + ";maxplaybackrate=48000;sprop-maxcapturerate=48000;useinbandfec=1;usedtx=" + (dtx ? 1 : 0) + "" +
       (estereo ? ";stereo=1;sprop-stereo=1" : ";stereo=0");
     const re = new RegExp("a=fmtp:" + pt + " ([^\\r\\n]*)");
     const tirar = /^(maxaveragebitrate|maxplaybackrate|sprop-maxcapturerate|useinbandfec|usedtx|stereo|sprop-stereo)=/;
@@ -1469,7 +1474,9 @@ function preferirCodec(sdp, nome){
   linhas[iv] = cab.concat(pts.filter(x => resto.includes(x)), resto.filter(x => !pts.includes(x))).join(" ");
   return linhas.join("\r\n");
 }
-const SDP_VOZ = sdp => sdpOpus(Number(cfg.qualiVoz) || 128, false)(sdp);
+// 19/11: "transmissao alta, mas a voz puxando o minimo de internet". Voz de 24-32 kbps com DTX (calado = quase 0)
+// soa igual pra fala; a banda que sobra vai pra tela. Quem quiser mais escolhe no Mixer.
+const SDP_VOZ = sdp => { const k = Number(cfg.qualiVoz) || 32; return sdpOpus(k, false, k <= 64)(sdp); };
 // 15/11: no programa Squad o "Automatico" pede H.264 primeiro, igual ao Discord: e o que a placa de video
 // codifica sozinha (medido: NVIDIA H.264 Encoder). Sem H.264 no PC, o preferirCodec deixa como estava.
 let h264Ligado = true;      // chave "OpenH264" do programa (o que esta valendo nesta abertura)
@@ -2297,6 +2304,16 @@ function desenharPessoas(){
   };
   linha(peer ? peer.id : "eu", {nome:eu.nome, cor:eu.cor, foto:eu.foto, mudo, surdo, tela:!!telaMinha}, true);
   gente.forEach((p,id)=>{ if(p.jaDisse) linha(id,p,false); });
+  // 19/11: o YapBot aparece na call como um membro (igual bot de musica do Discord), com a bolinha verde tocando
+  if(jukeAtual){
+    const d = document.createElement("div"); d.className = "pessoa botCall" + (jukeTocando ? " falando" : ""); d.dataset.id = "yapbot";
+    d.innerHTML = '<div class="bolha" style="background:linear-gradient(135deg,#ff7a1a,#ff3d6e);font-size:17px">🎵</div>' +
+      '<div class="nome">YapBot<span class="tagBot">BOT</span><small class="botMusica"></small></div><div class="icones"></div>';
+    d.querySelector(".botMusica").textContent = (jukeTocando ? "▶ " : "⏸ ") + (jukeAtual.titulo || "");
+    d.title = "Bot de música · /tocar, /pular, /pausar, /fila, /parar";
+    d.onclick = () => $("dj").scrollIntoView({behavior: "smooth", block: "center"});
+    box.appendChild(d);
+  }
 }
 
 // ---- porta do microfone: por voz (com sensibilidade) ou apertando a tecla, igual ao Discord ----
@@ -2582,7 +2599,7 @@ $("btOuvirVoz").onclick = async () => {
   $("btOuvirVoz").textContent = ligar ? "⏹ Parar de me ouvir" : "🎧 Ouvir minha voz";
 };
 $("selQualiVoz").value = cfg.qualiVoz;
-$("selQualiVoz").onchange = e => { cfg.qualiVoz = e.target.value; guarda.por("qualiVoz", cfg.qualiVoz); toque("Vale pra quem entrar na call a partir de agora."); };
+$("selQualiVoz").onchange = e => { cfg.qualiVoz = e.target.value; guarda.por("qualiVoz2", cfg.qualiVoz); toque("Vale pra quem entrar na call a partir de agora."); };
 
 // ------------------------- sons de aviso (entrar, sair, mudo, transmitir) -------------------------
 // Feitos na hora pelo proprio audio, sem arquivo. Tocam so pra voce, nunca vao pra call.
@@ -2961,12 +2978,13 @@ function desenharJuke(){
   $("djTitulo").textContent = jukeAtual ? (jukeAtual.titulo || jukeAtual.id) : "—";
   $("djQuem").textContent = jukeAtual ? "pedida por " + jukeAtual.quem + (jukeFila.length ? " · +" + jukeFila.length + " na fila" : "") : "";
   $("btDjPausa").innerHTML = ic(jukeTocando ? "pausa" : "play");
+  if($("sala").classList.contains("ativa")) desenharPessoas();
 }
 
 // mensagem do DJ no chat
 function mensagemDoDj(txt){
   const d = document.createElement("div"); d.className = "msg bot";
-  d.innerHTML = '<div class="bolhaBot">🎵</div><div><b style="color:var(--laranja)">DJ<span class="tagBot">BOT</span></b><div class="txtBot"></div></div>';
+  d.innerHTML = '<div class="bolhaBot">🎵</div><div><b style="color:var(--laranja)">YapBot<span class="tagBot">BOT</span></b><div class="txtBot"></div></div>';
   d.querySelector(".txtBot").textContent = txt;
   $("mensagens").appendChild(d); $("mensagens").scrollTop = 1e9;
 }
@@ -3030,6 +3048,16 @@ async function buscarNoYoutube(termo){
 async function tocarPedido(termo, quem){   // roda no dono: vale pra pedido dele e dos amigos
   termo = String(termo || "").trim().slice(0, 200);
   if(!termo) return falaDoDj("Fala o que tocar: /tocar nome da música");
+  const sp = termo.match(/^(?:https?:\/\/)?open\.spotify\.com\/(?:intl-[a-z-]+\/)?(track|album|playlist)\/([A-Za-z0-9]{10,40})/i);
+  if(sp){
+    if(sp[1].toLowerCase() !== "track") return falaDoDj("Do Spotify eu toco uma música por vez: cole o link da música (não do álbum ou playlist).");
+    try{
+      const j = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent("https://open.spotify.com/track/" + sp[2])).then(r => r.ok ? r.json() : null);
+      const nomeMus = j && j.title ? String(j.title).slice(0, 150) : "";
+      if(!nomeMus) return falaDoDj("Não consegui ler esse link do Spotify.");
+      termo = nomeMus;
+    }catch(e){ return falaDoDj("Não consegui ler esse link do Spotify (sem internet?)."); }
+  }
   const id = idDoYoutube(termo);
   if(id) return receberPedido({id, titulo: await buscarTitulo(id), quem});
   if(ehLink(termo)) return falaDoDj("Não reconheci esse link do YouTube.");
@@ -3166,6 +3194,9 @@ const SUPA_URL = "https://abxgrnjdfredjbpcelsz.supabase.co";
 const SUPA_CHAVE = "sb_publishable_PKdrf0PlvEPhDJUxk6X2fA_UWoUbPc2";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 let sessao = guarda.ler("supaSessao", null);
+// 19/11: o arquivo do programa e o que vale (o localStorage pode ter ficado com a chave velha)
+function contaDoArquivo(){ try{ const t = window.squad && squad.lerConta ? squad.lerConta() : ""; return t ? JSON.parse(t) : null; }catch(e){ return null; } }
+{ const f = contaDoArquivo(); if(f && f.refresh_token && (!sessao || (f.expires_at || 0) >= (sessao.expires_at || 0))) sessao = f; }
 if(!sessao || !sessao.access_token || !sessao.user || !UUID.test(sessao.user.id)) sessao = null;
 let perfil = null, servidores = [], servidorAtual = null, canais = [], canalAtual = null;
 let perfisDoServidor = new Map();
@@ -3196,6 +3227,7 @@ function guardarSessao(s){
       user: {id: s.user.id, email: s.user.email || ""}};
   } else sessao = null;
   guarda.por("supaSessao", sessao);
+  try{ if(window.squad && squad.guardarConta) squad.guardarConta(sessao ? JSON.stringify(sessao) : ""); }catch(e){}
 }
 let renovando = null;
 async function tokenEmDia(){
@@ -3205,6 +3237,11 @@ async function tokenEmDia(){
       guardarSessao(await supa("/auth/v1/token?grant_type=refresh_token",
         {metodo: "POST", auth: false, corpo: {refresh_token: sessao.refresh_token}}));
     }catch(e){
+      // antes de desistir: o arquivo pode ter uma chave mais nova que a da memoria
+      const f = contaDoArquivo();
+      if(f && f.refresh_token && f.refresh_token !== sessao.refresh_token){
+        try{ guardarSessao(await supa("/auth/v1/token?grant_type=refresh_token", {metodo: "POST", auth: false, corpo: {refresh_token: f.refresh_token}})); return; }catch(e2){ e = e2; }
+      }
       // so desloga se o Supabase recusou; sem internet a sessao fica guardada
       if(e.status === 400 || e.status === 401 || e.status === 403){ guardarSessao(null); mostrarLogin("Sua conta saiu. Entre de novo."); }
     }finally{ renovando = null; }
@@ -3702,22 +3739,74 @@ async function criarCanal(tipo){
 }
 
 // 16/11: botao "Convidar" sempre a vista no topo do servidor
-$("btConvidarServ").onclick = async () => {
-  const s = servidorAtual; if(!s) return;
+// 19/11: tambem chama o amigo pelo Nome#1234 (igual ao Discord) e aparece na call do canal de voz
+function meuNomeTag(){ return perfil ? perfil.nome + "#" + (perfil.tag || "0000") : ""; }
+function lerNomeTag(t){
+  const m = String(t || "").trim().match(/^(.{1,32}?)\s*#\s*(\d{4})$/);
+  return m ? {nome: m[1].trim(), tag: m[2]} : null;
+}
+async function convidarProServidor(s){
+  if(!s) return;
   const r = await janelinha("Convidar amigos pra " + s.nome,
-    '<p class="dica">1) Copie o convite e mande pro seu amigo (WhatsApp, Discord...).<br>' +
-    '2) Ele abre o YapSquad, clica no <b>⇥</b> da esquerda e cola o convite.</p><div class="convite"></div>' +
+    '<label for="jAmigo">Chamar pelo nome do amigo</label>' +
+    '<div class="linha"><input id="jAmigo" maxlength="40" placeholder="Nome#1234" style="flex:1;min-width:0"><button type="button" class="forte" id="jChamar" style="flex:0 0 auto">Chamar</button></div>' +
+    '<p class="dica" id="jRes">Ele recebe o pedido no YapSquad dele e clica em Entrar.</p>' +
+    '<p class="dica" style="margin-top:14px">Ou copie o convite e mande no WhatsApp:</p><div class="convite"></div>' +
     '<button class="opcaoJ forte" data-v="copiar">📋 Copiar convite</button>' +
-    (canalAtual && canalAtual.tipo === "texto" ? '<button class="opcaoJ" data-v="chat">💬 Mandar o convite neste canal</button>' : ''),
+    (canalAtual && canalAtual.tipo === "texto" && !servidorDaCall ? '<button class="opcaoJ" data-v="chat">💬 Mandar o convite neste canal</button>' : ''),
     [{t: "Fechar", v: null}],
-    raiz => { raiz.querySelector(".convite").textContent = s.convite; });
+    raiz => {
+      raiz.querySelector(".convite").textContent = s.convite;
+      const campo = raiz.querySelector("#jAmigo"), res = raiz.querySelector("#jRes"), bt = raiz.querySelector("#jChamar");
+      const chamar = async () => {
+        const a = lerNomeTag(campo.value);
+        if(!a){ res.textContent = "Escreva assim: Nome#1234 (o amigo vê o dele embaixo, do lado da foto)."; return; }
+        bt.disabled = true; res.textContent = "Procurando...";
+        try{ const quem = await supa("/rest/v1/rpc/chamar_amigo", {metodo: "POST", corpo: {p_nome: a.nome, p_tag: a.tag, p_servidor: s.id}});
+             res.textContent = "✅ Pedido enviado pra " + quem + "."; campo.value = ""; }
+        catch(e){ res.textContent = e.codigo === "PGRST202" ? "Essa parte ainda está sendo ligada no servidor. Use o convite abaixo." : "❌ " + e.message; }
+        bt.disabled = false;
+      };
+      bt.onclick = chamar;
+      campo.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); e.stopPropagation(); chamar(); } });
+    });
   const textoConv = "Entra no meu servidor do YapSquad! Convite: " + s.convite;
   if(r === "copiar"){
     try{ await navigator.clipboard.writeText(textoConv); toque("Convite copiado! Agora é só colar pro seu amigo."); }
     catch(e){ toque("Convite: " + s.convite); }
   }
   if(r === "chat"){ $("txtMensagem").value = textoConv; $("formMensagem").requestSubmit(); }
+}
+$("btConvidarServ").onclick = () => convidarProServidor(servidorAtual);
+
+// 19/11: clicar no seu nome copia o Nome#1234 (pra passar pro amigo)
+$("barraEu").querySelector(".quem").title = "Clique pra copiar o seu Nome#tag";
+$("barraEu").querySelector(".quem").style.cursor = "pointer";
+$("barraEu").querySelector(".quem").onclick = async () => {
+  const t = meuNomeTag(); if(!t) return;
+  try{ await navigator.clipboard.writeText(t); toque("Copiado: " + t + ". Cole pro seu amigo."); }catch(e){ toque(t); }
 };
+
+// 19/11: pedidos que chegam ("Fulano#1234 te chamou pro servidor X")
+const chamadosVistos = new Set();
+async function olharChamados(){
+  if(!sessao || document.hidden || janelinha.aberta) return;
+  let l; try{ l = await supa("/rest/v1/rpc/meus_chamados", {metodo: "POST", corpo: {}}); }catch(e){ return; }
+  for(const c of (l || [])){
+    if(chamadosVistos.has(c.id)) continue; chamadosVistos.add(c.id);
+    tocarAviso("msg");
+    const r = await janelinha("Convite pra " + nomeSeguro(c.servidor_nome || "um servidor"),
+      '<p class="dica"></p>', [{t: "Recusar", v: "nao"}, {t: "Agora não", v: null}, {t: "Entrar", v: "sim", forte: true}],
+      raiz => { raiz.querySelector(".dica").textContent = (c.de_nome || "Um amigo") + "#" + (c.de_tag || "????") + " te chamou pro servidor " + (c.servidor_nome || "") + "."; });
+    try{
+      if(r === "sim"){ const sid = await supa("/rest/v1/rpc/aceitar_chamado", {metodo: "POST", corpo: {p_id: c.id}}); await carregarServidores(sid); toque("Você entrou em " + (c.servidor_nome || "servidor") + "!"); }
+      if(r === "nao") await supa("/rest/v1/chamados?id=eq." + c.id, {metodo: "DELETE"});
+    }catch(e){ toque("Não deu: " + e.message); }
+    return;   // um por vez
+  }
+}
+setInterval(olharChamados, 15000); setTimeout(olharChamados, 4000);
+
 $("btMenuServidor").onclick = async () => {
   const s = servidorAtual; if(!s) return;
   const dono = souDono();
