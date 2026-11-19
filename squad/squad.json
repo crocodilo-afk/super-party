@@ -1,9 +1,9 @@
 {
-    "versao":  "2026.11.19.1",
+    "versao":  "2026.11.19.2",
     "electron":  "45.1.0",
-    "notas":  "Login fica salvo, Convidar dentro da call, chamar amigo por Nome#1234, voz que gasta menos internet e YapBot na call.",
-    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.19.1.zip",
-    "nucleo_sha256":  "ca73b6b0a38fde6e792084197ec9299281aafef4773afa7157971effb7792182",
+    "notas":  "Entrar com Google voltou (o login fica salvo).",
+    "nucleo":  "squad/nucleo/squad-nucleo-2026.11.19.2.zip",
+    "nucleo_sha256":  "7ff32f062495e649c66f2eb2f76cfed361ef7639d833074e07a2cdd53b8b179e",
     "base_partes":  [
                         "squad/base/Squad-base-45.1.0.zip.001",
                         "squad/base/Squad-base-45.1.0.zip.002",
